@@ -1,0 +1,154 @@
+# OGC API - EDR Part 3 Service Profile — Water Gauge Example
+# Collections use the edr-pydantic Collection schema (id, extent, data_queries, etc.)
+#
+# Generate with:
+#   python src/cli.py --config examples/water_gauge.yaml --output ./water_gauge_profile
+
+name: water_gauge
+title: Water Gauge Observations Profile
+version: "1.0"
+
+collections:
+  - id: water_gauge
+    title: Water Gauge Observations
+    description: Real-time and historical stream gauge observations.
+    links:
+      - href: https://example.noaa.gov/collections/water_gauge
+        rel: self
+        type: application/json
+    extent:
+      spatial:
+        bbox:
+          - [-180, -90, 180, 90]
+        crs: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+    data_queries:
+      items:
+        link:
+          href: https://example.noaa.gov/collections/water_gauge/items
+          rel: data
+          variables:
+            query_type: items
+            output_formats:
+              - GeoJSON
+              - CoverageJSON
+              - CSV
+      locations:
+        link:
+          href: https://example.noaa.gov/collections/water_gauge/locations
+          rel: data
+          variables:
+            query_type: locations
+            output_formats:
+              - GeoJSON
+              - CoverageJSON
+      position:
+        link:
+          href: https://example.noaa.gov/collections/water_gauge/position
+          rel: data
+          variables:
+            query_type: position
+            output_formats:
+              - CoverageJSON
+    output_formats:
+      - GeoJSON
+      - CoverageJSON
+      - CSV
+    parameter_names:
+      gauge_height:
+        type: Parameter
+        observedProperty:
+          label: Gauge Height
+        unit:
+          label: feet
+          symbol: ft
+      streamflow:
+        type: Parameter
+        observedProperty:
+          label: Streamflow
+        unit:
+          label: cubic feet per second
+          symbol: cfs
+
+requirements:
+  - id: openapi
+    statement: The service SHALL provide a valid OpenAPI 3.0 specification.
+    parts:
+      - The service SHALL expose a /api endpoint returning an OpenAPI 3.0 document.
+      - All collection endpoints SHALL be documented in the OpenAPI specification.
+
+  - id: collection-water-gauge
+    statement: The service SHALL provide a /collections/water_gauge endpoint.
+    parts:
+      - The endpoint SHALL return collection metadata including spatial and temporal extent.
+      - The response SHALL conform to the OGC API - EDR collection schema.
+
+  - id: data-query-items-water-gauge
+    statement: The water_gauge collection SHALL support the Items query type.
+    parts:
+      - The service SHALL provide a /collections/water_gauge/items endpoint.
+      - The Items query SHALL return a GeoJSON FeatureCollection.
+      - Each Feature SHALL include gauge_height and streamflow parameter values.
+
+  - id: data-query-locations-water-gauge
+    statement: The water_gauge collection SHALL support the Locations query type.
+    parts:
+      - The service SHALL provide a /collections/water_gauge/locations endpoint.
+      - The service SHALL provide a /collections/water_gauge/locations/{locationId} endpoint.
+      - The Locations query SHALL support the datetime parameter.
+
+  - id: output-format-water-gauge
+    statement: The water_gauge collection SHALL support required output formats.
+    parts:
+      - A format with the label json SHALL provide GeoJSON output.
+      - A format with the label covjson SHALL provide CoverageJSON output.
+      - A format with the label csv SHALL provide CSV output with appropriate headers.
+
+abstract_tests:
+  - id: openapi
+    requirement_id: openapi
+    steps:
+      - Send GET request to /api.
+      - Verify the response is a valid OpenAPI 3.0 document.
+      - Verify all collection endpoints are documented.
+
+  - id: collection-water-gauge
+    requirement_id: collection-water-gauge
+    steps:
+      - Send GET request to /collections/water_gauge.
+      - Verify the response includes spatial and temporal extent.
+      - Verify the response conforms to the OGC API - EDR collection schema.
+
+  - id: data-query-items-water-gauge
+    requirement_id: data-query-items-water-gauge
+    steps:
+      - Send GET request to /collections/water_gauge/items.
+      - Verify the response is a valid GeoJSON FeatureCollection.
+      - Verify each Feature contains gauge_height and streamflow properties.
+
+  - id: data-query-locations-water-gauge
+    requirement_id: data-query-locations-water-gauge
+    steps:
+      - Send GET request to /collections/water_gauge/locations.
+      - Verify the response lists available gauge locations.
+      - Send GET request to /collections/water_gauge/locations/{locationId}.
+      - Verify the response contains observations for the specified location.
+
+  - id: output-format-water-gauge
+    requirement_id: output-format-water-gauge
+    steps:
+      - Request /collections/water_gauge/items with Accept header application/geo+json.
+      - Verify GeoJSON response is returned.
+      - Request with Accept header application/prs.coverage+json.
+      - Verify CoverageJSON response is returned.
+
+pubsub:
+  broker_host: localhost
+  broker_port: 5672
+  protocol: amqp
+  filters:
+    - name: state
+      description: Filter notifications by US state abbreviation.
+      type: string
+    - name: threshold_ft
+      description: Only receive notifications when gauge height exceeds this value.
+      type: number

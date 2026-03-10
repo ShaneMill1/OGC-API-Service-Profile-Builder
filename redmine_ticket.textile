@@ -1,0 +1,169 @@
+h2. OGC API - EDR Part 3 Service Profile Generator
+
+h3. Overview
+
+The goal was to produce authoritative tooling for creating OGC API - Environmental Data Retrieval (EDR) Part 3 Service Profiles. The original implementation was custom code — interactive prompts, f-string templates, and raw dicts — with no schema enforcement. Feedback indicated the approach needed to be grounded in a recognized data model so that the profile definition itself could be treated as authoritative.
+
+The new implementation is built on two foundations:
+
+* *Pydantic v2* — the profile schema is defined as Pydantic models. Instantiating a @ServiceProfile@ validates the entire structure before any files are written. Invalid query types, missing required fields, or abstract tests referencing non-existent requirements all raise validation errors with field-level messages.
+* *edr-pydantic* (https://github.com/KNMI/edr-pydantic) — a KNMI-maintained library providing Pydantic models for OGC API - EDR response objects (@Collection@, @DataQueries@, @Extent@, @Parameter@, etc.). Rather than maintaining our own EDR data model types, we use theirs directly. This means a profile config is simultaneously a valid EDR collection descriptor and a Part 3 profile definition.
+
+h3. Implementation
+
+Repository: https://github.com/ShaneMill1/OGC-Service-Profile-Creation
+
+The implementation is three files:
+
+|_.File|_.Role|
+|@src/models.py@|Authoritative Pydantic schema. @ServiceProfile@ composes @edr_pydantic.collections.Collection@ for collections, plus profile-specific models: @Requirement@, @AbstractTest@, @PubSubConfig@, @SubscriptionFilter@. Cross-model validators enforce referential integrity (e.g. every abstract test must reference a valid requirement id). OGC URIs are derived properties — they cannot be set incorrectly.|
+|@src/generate.py@|Serialization only. Takes a validated @ServiceProfile@ and writes OpenAPI 3.0, AsyncAPI 3.0, Metanorma/AsciiDoc requirements class, conformance class, individual requirement files, individual abstract test files, and a round-trip @profile_config.json@. Active query types are derived directly from the @edr-pydantic@ @DataQueries@ model fields.|
+|@src/cli.py@|Minimal CLI. Loads a YAML or JSON config, validates it via @ServiceProfile.model_validate()@, and calls @generate()@. Validation errors surface before anything touches the filesystem.|
+
+The tool is also importable as a library:
+
+<pre>
+from models import ServiceProfile
+from generate import generate
+from pathlib import Path
+
+profile = ServiceProfile.model_validate(config_dict)
+generate(profile, Path("./output"))
+</pre>
+
+h3. Demo
+
+Using the included @examples/water_gauge.yaml@ config:
+
+<pre>
+python src/cli.py --config examples/water_gauge.yaml --output ./water_gauge_profile
+</pre>
+
+Output:
+
+<pre>
+water_gauge_profile/
+├── openapi.yaml
+├── asyncapi.yaml
+├── profile_config.json
+├── requirements/
+│   ├── requirements_class_core.adoc
+│   └── core/
+│       ├── REQ_openapi.adoc
+│       ├── REQ_collection-water-gauge.adoc
+│       ├── REQ_data-query-items-water-gauge.adoc
+│       ├── REQ_data-query-locations-water-gauge.adoc
+│       └── REQ_output-format-water-gauge.adoc
+└── abstract_tests/
+    ├── ATS_class_core.adoc
+    └── core/
+        ├── ATS_openapi.adoc
+        ├── ATS_collection-water-gauge.adoc
+        ├── ATS_data-query-items-water-gauge.adoc
+        ├── ATS_data-query-locations-water-gauge.adoc
+        └── ATS_output-format-water-gauge.adoc
+</pre>
+
+*openapi.yaml* (paths derived from @edr-pydantic@ @DataQueries@ fields):
+
+<pre>
+openapi: 3.0.3
+info:
+  title: Water Gauge Observations Profile API
+  version: '1.0'
+  description: 'OGC API - EDR Part 3 Service Profile: Water Gauge Observations Profile'
+  x-ogc-profile: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/water_gauge
+paths:
+  /collections/water_gauge:
+    get:
+      summary: Get water_gauge collection metadata
+  /collections/water_gauge/items:
+    get:
+      summary: Query water_gauge items
+      parameters: [bbox, datetime]
+  /collections/water_gauge/items/{featureId}:
+    get:
+      summary: Get water_gauge item by ID
+  /collections/water_gauge/locations:
+    get:
+      summary: List available locations for water_gauge
+  /collections/water_gauge/locations/{locationId}:
+    get:
+      summary: Query water_gauge by location
+      parameters: [locationId, datetime]
+  /collections/water_gauge/position:
+    get:
+      summary: Query water_gauge by position
+      parameters: [coords (required), datetime]
+</pre>
+
+*requirements/requirements_class_core.adoc*:
+
+<pre>
+[[req_class_water_gauge]]
+[requirements_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/water_gauge
+target-type:: Water Gauge Observations Profile Standard
+requirement:: /req/water_gauge/openapi
+requirement:: /req/water_gauge/collection-water-gauge
+requirement:: /req/water_gauge/data-query-items-water-gauge
+requirement:: /req/water_gauge/data-query-locations-water-gauge
+requirement:: /req/water_gauge/output-format-water-gauge
+====
+</pre>
+
+*abstract_tests/ATS_class_core.adoc*:
+
+<pre>
+[[ats_class_water_gauge]]
+[conformance_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/water_gauge
+target:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/water_gauge
+abstract-test:: /conf/water_gauge/openapi
+abstract-test:: /conf/water_gauge/collection-water-gauge
+abstract-test:: /conf/water_gauge/data-query-items-water-gauge
+abstract-test:: /conf/water_gauge/data-query-locations-water-gauge
+abstract-test:: /conf/water_gauge/output-format-water-gauge
+====
+</pre>
+
+*asyncapi.yaml* (generated when @pubsub@ is configured):
+
+<pre>
+asyncapi: 3.0.0
+info:
+  title: Water Gauge Observations Profile AsyncAPI
+  version: '1.0'
+servers:
+  production:
+    host: localhost:5672
+    protocol: amqp
+channels:
+  water_gauge_notifications:
+    address: collections/water_gauge/items/#
+    x-ogc-subscription:
+      filters:
+        - name: state
+          schema: {type: string}
+        - name: threshold_ft
+          schema: {type: number}
+</pre>
+
+h3. Validation example
+
+Attempting to reference a non-existent requirement from an abstract test:
+
+<pre>
+profile = ServiceProfile.model_validate({
+  "name": "test",
+  "title": "Test",
+  "collections": [...],
+  "requirements": [{"id": "openapi", "statement": "...", "parts": ["..."]}],
+  "abstract_tests": [{"id": "missing", "requirement_id": "missing", "steps": ["..."]}]
+})
+# => ValidationError: AbstractTest 'missing' references unknown requirement 'missing'
+</pre>
