@@ -14,42 +14,16 @@ Collections use `edr-pydantic`'s authoritative `Collection` model directly, mean
 pip install ogc-edr-profile
 ```
 
-## CLI
+---
+
+## Workflow
+
+### 1. Author a Profile Config
+
+A profile config is a YAML or JSON file. Copy the example and modify it:
 
 ```bash
-# Validate a config without generating output
-ogc-edr-profile validate --config examples/water_gauge.yaml
-
-# Generate all profile artifacts
-ogc-edr-profile generate --config examples/water_gauge.yaml --output ./my_profile
-
-# Export the JSON Schema (for editor autocompletion)
-ogc-edr-profile schema --output profile.schema.json
-```
-
-### Output
-
-```
-my_profile/
-├── openapi.yaml
-├── asyncapi.yaml                        # if pubsub is configured
-├── profile_config.json                  # round-trip model export
-├── requirements/
-│   ├── requirements_class_core.adoc
-│   └── core/REQ_<id>.adoc
-└── abstract_tests/
-    ├── ATS_class_core.adoc
-    └── core/ATS_<id>.adoc
-```
-
-## Getting Started
-
-Copy the example and modify it:
-
-```bash
-cp examples/water_gauge.yaml my_profile.yaml
-ogc-edr-profile validate --config my_profile.yaml
-ogc-edr-profile generate --config my_profile.yaml --output ./my_profile
+cp examples/nwsviz_profile.yaml my_profile.yaml
 ```
 
 The minimal valid config:
@@ -72,13 +46,111 @@ collections:
     parameter_names: {}
 ```
 
-See [`examples/water_gauge.yaml`](examples/water_gauge.yaml) for a complete working config.
+See [`examples/nwsviz_profile.yaml`](examples/nwsviz_profile.yaml) for a full working config with 13 collections, 3 processes, requirements, abstract tests, `collection_examples`, and `document_metadata`.
+
+### 2. Generate Profile Artifacts
+
+```bash
+ogc-edr-profile generate \
+  --config examples/nwsviz_profile.yaml \
+  --output ./my_profile
+```
+
+Produces:
+
+```
+my_profile/
+├── openapi.yaml
+├── profile_config.json
+├── document.adoc                        # Metanorma root document
+├── sections/
+│   ├── 00-abstract.adoc
+│   ├── 01-preface.adoc
+│   ├── 02-scope.adoc
+│   ├── 03-conformance.adoc
+│   ├── 04-references.adoc
+│   ├── 05-terms.adoc
+│   ├── 06-requirements.adoc
+│   └── 07-abstract-tests.adoc
+├── requirements/
+│   ├── requirements_class_core.adoc
+│   └── core/REQ_<id>.adoc
+└── abstract_tests/
+    ├── ATS_class_core.adoc
+    └── core/ATS_<id>.adoc
+```
+
+Validate a config without generating output:
+
+```bash
+ogc-edr-profile validate --config my_profile.yaml
+```
+
+### 3. Compile OGC PDF
+
+Requires Docker. Shells out to the official `metanorma/metanorma` image — no Ruby or LaTeX install needed.
+
+```bash
+ogc-edr-profile generate \
+  --config examples/nwsviz_profile.yaml \
+  --output ./my_profile \
+  --pdf
+```
+
+The `document_metadata` block in the profile config drives the Metanorma document header:
+
+```yaml
+document_metadata:
+  doc_number: "24-nwsviz"
+  doc_subtype: implementation
+  copyright_year: 2026
+  editors:
+    - Shane Mill
+  submitting_orgs:
+    - NOAA/NWS/MDL
+  keywords:
+    - ogcdoc
+    - OGC API
+    - EDR
+    - NWSViz
+    - service profile
+  external_id: http://www.opengis.net/doc/dp/ogcapi-edr-nwsviz/1.0
+```
+
+Produces `my_profile/document.pdf` — a fully compliant OGC `draft-standard` PDF with Abstract, Preface, Scope, Conformance, References, Terms, Requirements class, and normative Abstract Test Suite annex.
+
+### 4. Validate Against a Live Server
+
+```bash
+ogc-edr-profile validate-server \
+  --config examples/nwsviz_profile.yaml \
+  --url https://edr-api-desi-c.mdl.nws.noaa.gov \
+  --max-examples 3
+```
+
+Results:
+
+```
+Operations:  100 selected / 106 total
+Tested:      47
+Test cases:  1002 generated, 1002 passed
+
+No issues found in 49.51s
+```
+
+Use `--stateful` to additionally test job lifecycle endpoints (`/jobs/{jobId}`, `DELETE /jobs/{jobId}`) via POST `/execution` chaining.
+
+Add `collection_examples` to your config to supply real `instanceId` values for schemathesis path parameters:
+
+```yaml
+collection_examples:
+  my_collection:
+    instanceId: "2025-04-02T00:00:00Z"
+```
 
 ---
 
-## Authoring a Profile Config
-
-A profile config is a YAML or JSON file that defines a `ServiceProfile`. The full machine-readable schema is in [`profile.schema.json`](profile.schema.json).
+## Config Reference
 
 ### Top-level fields
 
@@ -93,6 +165,8 @@ A profile config is a YAML or JSON file that defines a `ServiceProfile`. The ful
 | `requirements` | `list` | no | Normative requirements (see below) |
 | `abstract_tests` | `list` | no | Conformance tests — each must reference a valid requirement `id` (see below) |
 | `pubsub` | `object` | no | OGC API - EDR Part 2 PubSub configuration (see below) |
+| `collection_examples` | `object` | no | Map of collection id → example parameter values (e.g. `instanceId`) for server validation |
+| `document_metadata` | `object` | no | Metanorma document header fields for PDF compilation (see below) |
 
 ---
 
@@ -230,6 +304,22 @@ Each filter: `name` (required), `description` (required), `type` (one of `string
 
 ---
 
+### `document_metadata`
+
+Controls the Metanorma document header when compiling a PDF with `--pdf`.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `doc_number` | `string` | yes | OGC document number e.g. `24-nwsviz` |
+| `doc_subtype` | `string` | yes | One of `implementation`, `best-practice`, `engineering-report` |
+| `editors` | `list[string]` | yes | Editor names |
+| `submitting_orgs` | `list[string]` | yes | Submitting organization names |
+| `keywords` | `list[string]` | no | Document keywords |
+| `copyright_year` | `integer` | no | Defaults to current year |
+| `external_id` | `string` | no | OGC external document URI |
+
+---
+
 ## Programmatic Use
 
 ```python
@@ -246,13 +336,14 @@ generate(profile, Path("./output"))
 ```
 ├── src/
 │   └── ogc_edr_profile/
-│       ├── models.py     # Authoritative Pydantic schema
-│       ├── generate.py   # Serialization: validated model → OpenAPI, AsyncAPI, AsciiDoc
-│       └── cli.py        # CLI entry point
+│       ├── models.py            # Authoritative Pydantic schema
+│       ├── generate.py          # Validated model → OpenAPI, AsyncAPI, AsciiDoc
+│       ├── compile.py           # PDF compilation via metanorma/metanorma Docker image
+│       └── cli.py               # CLI entry point
 ├── examples/
-│   ├── water_gauge.yaml      # Minimal example profile config
-│   └── nwsviz_profile.yaml   # Full NWSViz profile with 13 collections and 3 processes
-├── profile.schema.json   # Machine-readable JSON Schema for profile configs
+│   ├── water_gauge.yaml         # Minimal example profile config
+│   └── nwsviz_profile.yaml      # Full NWSViz profile: 13 collections, 3 processes, PDF metadata
+├── profile.schema.json          # Machine-readable JSON Schema for profile configs
 └── pyproject.toml
 ```
 
