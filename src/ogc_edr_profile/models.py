@@ -122,6 +122,7 @@ class ServiceProfile(BaseModel):
     version: str = "1.0"
     server_url: str | None = None
     collections: list[Collection] = Field(min_length=1)
+    collection_examples: dict[str, dict] = Field(default_factory=dict)
     requirements: list[Requirement] = Field(default_factory=list)
     abstract_tests: list[AbstractTest] = Field(default_factory=list)
     pubsub: PubSubConfig | None = None

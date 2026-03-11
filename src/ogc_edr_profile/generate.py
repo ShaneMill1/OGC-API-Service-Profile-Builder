@@ -57,14 +57,31 @@ _DATETIME = {"$ref": f"{_FEATURES}#/components/parameters/datetime"}
 _PARAM_NAME = {"$ref": f"{_EDR}/parameters/parameter-name.yaml"}
 _Z = {"$ref": f"{_EDR}/parameters/z.yaml"}
 
-_ERR_400 = {"$ref": f"{_FEATURES}#/components/responses/InvalidParameter"}
-_ERR_404 = {"$ref": f"{_FEATURES}#/components/responses/NotFound"}
-_ERR_500 = {"$ref": f"{_FEATURES}#/components/responses/ServerError"}
+_ERR_SCHEMA = {"type": "object", "properties": {"code": {"type": "string"}, "description": {"type": "string"}}}
+_ERR_400 = {"description": "Invalid or missing parameter", "content": {"application/json": {"schema": _ERR_SCHEMA}}}
+_ERR_404 = {"description": "Not found", "content": {"application/json": {"schema": _ERR_SCHEMA}}}
+_ERR_500 = {"description": "Server error", "content": {"application/json": {"schema": _ERR_SCHEMA}}}
 _ERR_DEFAULT = {"$ref": "#/components/responses/default"}
+
+_LINK_SCHEMA = {
+    "type": "object",
+    "required": ["href", "rel"],
+    "properties": {
+        "href": {"type": "string"},
+        "rel": {"type": "string"},
+        "type": {"type": "string"},
+        "title": {"type": "string"},
+    },
+}
+_LINKS_ARRAY = {"type": "array", "items": _LINK_SCHEMA}
+
+_R200_LANDING = {"description": "Landing page / conformance / collections list", "content": {"application/json": {"schema": {"type": "object", "properties": {"links": _LINKS_ARRAY}}}}}
+_R200_COLLECTION = {"description": "Collection metadata", "content": {"application/json": {"schema": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}, "title": {"type": "string"}, "description": {"type": "string"}, "links": _LINKS_ARRAY}}}}}
+_R200_FEATURES = {"description": "Feature collection", "content": {"application/json": {"schema": {"type": "object", "properties": {"instances": {"type": "array", "items": {"type": "object"}}, "features": {"type": "array", "items": {"type": "object"}}}}}}}
 
 _COVERAGE_RESPONSE = {
     "200": {
-        "description": "Response",
+        "description": "Coverage response",
         "content": {
             "application/prs.coverage+json": {
                 "schema": {"$ref": f"{_EDR}/schemas/coverageJSON.yaml"}
@@ -86,7 +103,7 @@ _QUERY_PARAMS: dict[str, list[dict]] = {
     "radius": [
         {"$ref": f"{_EDR}/parameters/positionCoords.yaml"},
         {"$ref": f"{_EDR}/parameters/within.yaml"},
-        {"$ref": f"{_EDR}/parameters/withinUnits.yaml"},
+        {"name": "within-units", "in": "query", "required": True, "description": "Units for the within parameter e.g. km", "schema": {"type": "string"}},
         _DATETIME, _PARAM_NAME, _Z, _F,
     ],
     "cube": [
@@ -94,17 +111,17 @@ _QUERY_PARAMS: dict[str, list[dict]] = {
         _DATETIME, _PARAM_NAME, _Z, _F,
     ],
     "trajectory": [
-        {"$ref": f"{_EDR}/parameters/wkt.yaml"},
+        {"name": "coords", "in": "query", "required": True, "description": "WKT LineString geometry", "schema": {"type": "string"}},
         _DATETIME, _PARAM_NAME, _Z, _F,
     ],
     "corridor": [
-        {"$ref": f"{_EDR}/parameters/wkt.yaml"},
-        {"$ref": f"{_EDR}/parameters/corridorWidth.yaml"},
-        {"$ref": f"{_EDR}/parameters/corridorHeight.yaml"},
+        {"name": "coords", "in": "query", "required": True, "description": "WKT LineString geometry", "schema": {"type": "string"}},
+        {"name": "corridor-width", "in": "query", "required": True, "description": "Width of the corridor", "schema": {"type": "number"}},
+        {"name": "corridor-height", "in": "query", "description": "Height of the corridor", "schema": {"type": "number"}},
         _DATETIME, _PARAM_NAME, _Z, _F,
     ],
     "items": [
-        {"$ref": f"{_EDR}/parameters/itemsCoords.yaml"},
+        {"name": "bbox", "in": "query", "description": "Bounding box filter", "schema": {"type": "string"}},
         _DATETIME, _PARAM_NAME, _Z, _F,
     ],
     "locations": [
@@ -115,7 +132,7 @@ _QUERY_PARAMS: dict[str, list[dict]] = {
 }
 
 
-def _collection_paths(coll: Collection) -> dict:
+def _collection_paths(coll: Collection, examples: dict | None = None) -> dict:
     paths: dict = {}
     base = f"/collections/{coll.id}"
     tag = coll.id
@@ -128,7 +145,7 @@ def _collection_paths(coll: Collection) -> dict:
         "tags": [tag],
         "parameters": [_F, _LANG],
         "responses": {
-            "200": {"$ref": f"{_FEATURES}#/components/responses/Collection"},
+            "200": _R200_COLLECTION,
             "400": _ERR_400, "404": _ERR_404, "500": _ERR_500,
         },
     }}
@@ -149,19 +166,27 @@ def _collection_paths(coll: Collection) -> dict:
                 "tags": [tag],
                 "parameters": [_F],
                 "responses": {
-                    "200": {"$ref": f"{_FEATURES}#/components/responses/Features"},
+                    "200": _R200_FEATURES,
                     "400": _ERR_400, "500": _ERR_500,
                 },
             }}
+            instance_id_param = {"$ref": f"{_EDR}/parameters/instanceId.yaml"}
+            if examples and "instanceId" in examples:
+                instance_id_param = {
+                    "name": "instanceId", "in": "path", "required": True,
+                    "description": "Instance identifier",
+                    "schema": {"type": "string"},
+                    "example": examples["instanceId"],
+                }
             paths[f"{base}/instances/{{instanceId}}"] = {"get": {
                 "summary": f"Get {coll.id} instance",
                 "description": desc,
                 "operationId": f"getInstance{coll.id.title().replace('_', '')}",
                 "tags": [tag],
-                "parameters": [{"$ref": f"{_EDR}/parameters/instanceId.yaml"}, _F],
-                "responses": {"200": {"$ref": f"{_FEATURES}#/components/responses/Features"}},
+                "parameters": [instance_id_param, _F],
+                "responses": {"200": _R200_FEATURES},
             }}
-            # instance-level query sub-paths for position (most common)
+            # instance-level query sub-paths
             for sub_qt in (active - {"instances"}):
                 sub_params = _QUERY_PARAMS.get(sub_qt, [])
                 paths[f"{base}/instances/{{instanceId}}/{sub_qt}"] = {"get": {
@@ -169,7 +194,7 @@ def _collection_paths(coll: Collection) -> dict:
                     "description": desc,
                     "operationId": f"query{sub_qt.title()}Instance{coll.id.title().replace('_', '')}",
                     "tags": [tag],
-                    "parameters": [{"$ref": f"{_EDR}/parameters/instanceId.yaml"}, *sub_params],
+                    "parameters": [instance_id_param, *sub_params],
                     "responses": _COVERAGE_RESPONSE,
                 }}
 
@@ -191,7 +216,7 @@ def _collection_paths(coll: Collection) -> dict:
                 "tags": [tag],
                 "parameters": params,
                 "responses": {
-                    "200": {"$ref": f"{_FEATURES}#/components/responses/Features"},
+                    "200": _R200_FEATURES,
                     "400": _ERR_400, "500": _ERR_500,
                 },
             }}
@@ -228,10 +253,7 @@ def _core_paths() -> dict:
             "operationId": "getLandingPage",
             "tags": ["server"],
             "parameters": [_F, _LANG],
-            "responses": {
-                "200": {"$ref": f"{_FEATURES}#/components/responses/LandingPage"},
-                "400": _ERR_400, "500": _ERR_500,
-            },
+            "responses": {"200": _R200_LANDING, "400": _ERR_400, "500": _ERR_500},
         }},
         "/conformance": {"get": {
             "summary": "API conformance definition",
@@ -239,10 +261,7 @@ def _core_paths() -> dict:
             "operationId": "getConformanceDeclaration",
             "tags": ["server"],
             "parameters": [_F, _LANG],
-            "responses": {
-                "200": {"$ref": f"{_FEATURES}#/components/responses/LandingPage"},
-                "400": _ERR_400, "500": _ERR_500,
-            },
+            "responses": {"200": _R200_LANDING, "400": _ERR_400, "500": _ERR_500},
         }},
         "/collections": {"get": {
             "summary": "Collections",
@@ -250,10 +269,7 @@ def _core_paths() -> dict:
             "operationId": "getCollections",
             "tags": ["server"],
             "parameters": [_F, _LANG],
-            "responses": {
-                "200": {"$ref": f"{_FEATURES}#/components/responses/LandingPage"},
-                "400": _ERR_400, "500": _ERR_500,
-            },
+            "responses": {"200": _R200_LANDING, "400": _ERR_400, "500": _ERR_500},
         }},
         "/openapi": {"get": {
             "summary": "OpenAPI definition",
@@ -287,7 +303,7 @@ def _processes_paths(profile: ServiceProfile) -> dict:
             "tags": ["jobs"],
             "responses": {
                 "200": {"$ref": "#/components/responses/200"},
-                "404": {"$ref": f"{_PROCESSES}/responses/NotFound.yaml"},
+                "404": _ERR_404,
                 "default": _ERR_DEFAULT,
             },
         }},
@@ -300,7 +316,7 @@ def _processes_paths(profile: ServiceProfile) -> dict:
                 "parameters": [{"name": "jobId", "in": "path", "required": True, "description": "job identifier", "schema": {"type": "string"}}, _F],
                 "responses": {
                     "200": {"$ref": "#/components/responses/200"},
-                    "404": {"$ref": f"{_PROCESSES}/responses/NotFound.yaml"},
+                    "404": _ERR_404,
                     "default": _ERR_DEFAULT,
                 },
             },
@@ -312,7 +328,7 @@ def _processes_paths(profile: ServiceProfile) -> dict:
                 "parameters": [{"name": "jobId", "in": "path", "required": True, "description": "job identifier", "schema": {"type": "string"}}],
                 "responses": {
                     "204": {"$ref": "#/components/responses/204"},
-                    "404": {"$ref": f"{_PROCESSES}/responses/NotFound.yaml"},
+                    "404": _ERR_404,
                     "default": _ERR_DEFAULT,
                 },
             },
@@ -325,7 +341,7 @@ def _processes_paths(profile: ServiceProfile) -> dict:
             "parameters": [{"name": "jobId", "in": "path", "required": True, "description": "job identifier", "schema": {"type": "string"}}, _F],
             "responses": {
                 "200": {"$ref": "#/components/responses/200"},
-                "404": {"$ref": f"{_PROCESSES}/responses/NotFound.yaml"},
+                "404": _ERR_404,
                 "default": _ERR_DEFAULT,
             },
         }},
@@ -366,8 +382,8 @@ def _processes_paths(profile: ServiceProfile) -> dict:
             "responses": {
                 "200": {"description": "Process output schema", "content": output_content},
                 "201": {"$ref": f"{_PROCESSES}/responses/ExecuteAsync.yaml"},
-                "404": {"$ref": f"{_PROCESSES}/responses/NotFound.yaml"},
-                "500": {"$ref": f"{_PROCESSES}/responses/ServerError.yaml"},
+                "404": _ERR_404,
+                "500": _ERR_500,
                 "default": _ERR_DEFAULT,
             },
         }}
@@ -381,7 +397,7 @@ def _processes_paths(profile: ServiceProfile) -> dict:
 def build_openapi(profile: ServiceProfile) -> dict:
     paths: dict = _core_paths()
     for coll in profile.collections:
-        paths.update(_collection_paths(coll))
+        paths.update(_collection_paths(coll, profile.collection_examples.get(coll.id)))
     paths.update(_processes_paths(profile))
 
     tags = [{"name": "server", "description": profile.title}]

@@ -38,6 +38,8 @@ License-File: LICENSE
 Requires-Dist: edr-pydantic>=0.3
 Requires-Dist: pydantic>=2.0
 Requires-Dist: pyyaml>=6.0
+Provides-Extra: validate
+Requires-Dist: schemathesis>=3.0; extra == "validate"
 Dynamic: license-file
 
 # OGC API - EDR Part 3 Service Profile Generator
@@ -46,7 +48,7 @@ Authoritative tooling for creating OGC API - Environmental Data Retrieval (EDR) 
 
 ## Overview
 
-Profile structure is defined as Pydantic models (`src/models.py`). Instantiating a `ServiceProfile` validates the entire profile — enums enforce normative OGC values, cross-model validators catch referential errors — before any files are written.
+Profile structure is defined as Pydantic models (`src/ogc_edr_profile/models.py`). Instantiating a `ServiceProfile` validates the entire profile — cross-model validators catch referential errors — before any files are written.
 
 Collections use `edr-pydantic`'s authoritative `Collection` model directly, meaning a profile config is simultaneously a valid EDR collection descriptor and a Part 3 profile definition.
 
@@ -56,27 +58,18 @@ Collections use `edr-pydantic`'s authoritative `Collection` model directly, mean
 pip install ogc-edr-profile
 ```
 
-## Usage
-
-### Generate profile artifacts
+## CLI
 
 ```bash
-ogc-edr-profile generate --config examples/water_gauge.yaml --output ./my_profile
-```
-
-### Validate a config without generating output
-
-```bash
+# Validate a config without generating output
 ogc-edr-profile validate --config examples/water_gauge.yaml
-```
 
-### Export the JSON Schema
+# Generate all profile artifacts
+ogc-edr-profile generate --config examples/water_gauge.yaml --output ./my_profile
 
-```bash
+# Export the JSON Schema (for editor autocompletion)
 ogc-edr-profile schema --output profile.schema.json
 ```
-
-The schema can be used for editor autocompletion — point your YAML extension at `profile.schema.json` to get inline validation and suggestions while authoring configs.
 
 ### Output
 
@@ -95,25 +88,15 @@ my_profile/
 
 ## Getting Started
 
-The fastest way to create a profile is to copy the example and modify it:
+Copy the example and modify it:
 
 ```bash
 cp examples/water_gauge.yaml my_profile.yaml
-```
-
-Then edit `my_profile.yaml` — at minimum change `name`, `title`, and the collection `id`. Validate as you go:
-
-```bash
 ogc-edr-profile validate --config my_profile.yaml
-```
-
-Once valid, generate:
-
-```bash
 ogc-edr-profile generate --config my_profile.yaml --output ./my_profile
 ```
 
-If you prefer to build from scratch, the minimal valid config looks like this:
+The minimal valid config:
 
 ```yaml
 name: my_profile
@@ -133,22 +116,24 @@ collections:
     parameter_names: {}
 ```
 
-From there, add `data_queries` to declare which query types your collection supports, `output_formats` to declare response formats, `requirements` to define normative statements, and `abstract_tests` to define conformance tests. Each section is described in detail below.
+See [`examples/water_gauge.yaml`](examples/water_gauge.yaml) for a complete working config.
 
 ---
 
 ## Authoring a Profile Config
 
-A profile config is a YAML or JSON file that defines a `ServiceProfile`. The full machine-readable schema is in [`profile.schema.json`](profile.schema.json). Below is a field-by-field reference.
+A profile config is a YAML or JSON file that defines a `ServiceProfile`. The full machine-readable schema is in [`profile.schema.json`](profile.schema.json).
 
 ### Top-level fields
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | `string` | yes | Lowercase identifier using only `a-z`, `0-9`, `_`. Used in OGC URIs, filenames, and OpenAPI `operationId`s. e.g. `water_gauge` |
-| `title` | `string` | yes | Human-readable profile title. e.g. `Water Gauge Observations Profile` |
+| `name` | `string` | yes | Lowercase identifier using only `a-z`, `0-9`, `_`. Used in OGC URIs and OpenAPI `operationId`s. e.g. `water_gauge` |
+| `title` | `string` | yes | Human-readable profile title |
 | `version` | `string` | no | Profile version. Defaults to `1.0` |
+| `server_url` | `string` | no | Base URL of the live server. Populates the OpenAPI `servers` block |
 | `collections` | `list` | yes | One or more EDR collections (see below) |
+| `processes` | `list` | no | OGC API Processes to include in the OpenAPI (see below) |
 | `requirements` | `list` | no | Normative requirements (see below) |
 | `abstract_tests` | `list` | no | Conformance tests — each must reference a valid requirement `id` (see below) |
 | `pubsub` | `object` | no | OGC API - EDR Part 2 PubSub configuration (see below) |
@@ -161,24 +146,19 @@ Each collection uses the [edr-pydantic](https://github.com/KNMI/edr-pydantic) `C
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | `string` | yes | Collection identifier. e.g. `water_gauge` |
+| `id` | `string` | yes | Collection identifier |
 | `title` | `string` | no | Human-readable collection name |
 | `description` | `string` | no | Collection description |
 | `links` | `list` | yes | At minimum a `self` link |
-| `extent` | `object` | yes | Spatial (and optionally temporal/vertical) extent |
 | `extent.spatial.bbox` | `list` | yes | Bounding box as `[[minLon, minLat, maxLon, maxLat]]` |
 | `extent.spatial.crs` | `string` | yes | CRS URI, typically `http://www.opengis.net/def/crs/OGC/1.3/CRS84` |
-| `data_queries` | `object` | no | Which EDR query types this collection supports (see below) |
-| `output_formats` | `list` | no | Supported output format labels e.g. `GeoJSON`, `CoverageJSON`, `CSV` |
-| `parameter_names` | `object` | no | Map of parameter id → `Parameter` object describing observed properties |
+| `data_queries` | `object` | no | Which EDR query types this collection supports |
+| `output_formats` | `list` | no | Supported output format labels e.g. `GeoJSON`, `CoverageJSON` |
+| `parameter_names` | `object` | no | Map of parameter id → `Parameter` object |
 
 #### `data_queries`
 
-Each key is an EDR query type. Set it to enable that query type for the collection. Supported keys:
-
-`items` · `position` · `area` · `radius` · `cube` · `trajectory` · `corridor` · `locations` · `instances`
-
-Each value is an `EDRQuery` object with a `link` field:
+Supported keys: `items` · `position` · `area` · `radius` · `cube` · `trajectory` · `corridor` · `locations` · `instances`
 
 ```yaml
 data_queries:
@@ -198,12 +178,9 @@ data_queries:
         query_type: items
         output_formats:
           - GeoJSON
-          - CSV
 ```
 
 #### `parameter_names`
-
-Describes the observed properties the collection exposes. Each entry is a `Parameter` object:
 
 ```yaml
 parameter_names:
@@ -214,41 +191,56 @@ parameter_names:
     unit:
       label: feet
       symbol: ft
-  streamflow:
-    type: Parameter
-    observedProperty:
-      label: Streamflow
-    unit:
-      label: cubic feet per second
-      symbol: cfs
+```
+
+---
+
+### `processes[]`
+
+OGC API Processes to expose in the generated OpenAPI. Each entry produces `/processes/{id}` and `/processes/{id}/execution` paths, plus `/processes`, `/jobs`, `/jobs/{jobId}`, and `/jobs/{jobId}/results`.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | `string` | yes | Process identifier e.g. `edr-zarr-difference` |
+| `title` | `string` | no | Human-readable process name |
+| `description` | `string` | no | Process description |
+| `output_content` | `object` | no | OpenAPI content map for the 200 response. Defaults to `application/json` |
+
+```yaml
+processes:
+  - id: edr-zarr-difference
+    title: EDR Zarr Dataset Difference
+    description: Calculates the difference between two EDR Zarr datasets.
+    output_content:
+      application/zip:
+        schema:
+          type: object
 ```
 
 ---
 
 ### `requirements[]`
 
-Normative requirements that implementations of this profile must satisfy. Each requirement becomes a `REQ_<id>.adoc` file and an entry in the requirements class.
-
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | `string` | yes | Lowercase, hyphen-separated identifier. e.g. `data-query-items-water-gauge`. Must match pattern `^[a-z0-9][a-z0-9\-]*$` |
-| `statement` | `string` | yes | One-sentence normative statement of the requirement |
-| `parts` | `list[string]` | yes | One or more SHALL/MUST clauses that make up the requirement body |
+| `id` | `string` | yes | Lowercase, hyphen-separated. Must match `^[a-z0-9][a-z0-9\-]*$` |
+| `statement` | `string` | yes | One-sentence normative statement |
+| `parts` | `list[string]` | yes | One or more SHALL/MUST clauses |
 
 ```yaml
 requirements:
-  - id: data-query-items-water-gauge
-    statement: The water_gauge collection SHALL support the Items query type.
+  - id: position-coveragejson
+    statement: The position query SHALL return CoverageJSON.
     parts:
-      - The service SHALL provide a /collections/water_gauge/items endpoint.
-      - The Items query SHALL return a GeoJSON FeatureCollection.
+      - The service SHALL provide a /collections/{id}/position endpoint.
+      - The response Content-Type SHALL be application/prs.coverage+json.
 ```
 
 ---
 
 ### `abstract_tests[]`
 
-Conformance tests corresponding to requirements. Each test becomes an `ATS_<id>.adoc` file and an entry in the conformance class. **Every `requirement_id` must match an existing requirement `id`** — the model validator will reject the profile if not.
+Every `requirement_id` must match an existing requirement `id` — the model validator will reject the profile if not.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -258,51 +250,29 @@ Conformance tests corresponding to requirements. Each test becomes an `ATS_<id>.
 
 ```yaml
 abstract_tests:
-  - id: data-query-items-water-gauge
-    requirement_id: data-query-items-water-gauge
+  - id: position-coveragejson
+    requirement_id: position-coveragejson
     steps:
-      - Send GET request to /collections/water_gauge/items.
-      - Verify the response is a valid GeoJSON FeatureCollection.
+      - Send GET request to /collections/{id}/position?coords=POINT(lon lat).
+      - Verify the response Content-Type is application/prs.coverage+json.
 ```
 
 ---
 
 ### `pubsub`
 
-Optional. Configures OGC API - EDR Part 2 (PubSub) output. When present, an `asyncapi.yaml` is generated.
+When present, an `asyncapi.yaml` is generated.
 
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `broker_host` | `string` | `localhost` | Message broker hostname |
 | `broker_port` | `integer` | `5672` | Broker port (1–65535) |
 | `protocol` | `string` | `amqp` | One of `amqp`, `mqtt`, `kafka` |
-| `filters` | `list` | `[]` | Subscription filters (see below) |
+| `filters` | `list` | `[]` | Subscription filters |
 
-#### `pubsub.filters[]`
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `name` | `string` | yes | Filter parameter name |
-| `description` | `string` | yes | What the filter does |
-| `type` | `string` | no | One of `string`, `number`, `array`, `boolean`. Defaults to `string` |
-
-```yaml
-pubsub:
-  broker_host: localhost
-  broker_port: 5672
-  protocol: amqp
-  filters:
-    - name: state
-      description: Filter by US state abbreviation.
-      type: string
-    - name: threshold_ft
-      description: Only notify when gauge height exceeds this value.
-      type: number
-```
+Each filter: `name` (required), `description` (required), `type` (one of `string`, `number`, `array`, `boolean`, default `string`).
 
 ---
-
-See [`examples/water_gauge.yaml`](examples/water_gauge.yaml) for a complete working config.
 
 ## Programmatic Use
 
@@ -319,11 +289,13 @@ generate(profile, Path("./output"))
 
 ```
 ├── src/
-│   ├── models.py         # Authoritative Pydantic schema
-│   ├── generate.py       # Serialization: validated model → OpenAPI, AsyncAPI, AsciiDoc
-│   └── cli.py            # CLI entry point
+│   └── ogc_edr_profile/
+│       ├── models.py     # Authoritative Pydantic schema
+│       ├── generate.py   # Serialization: validated model → OpenAPI, AsyncAPI, AsciiDoc
+│       └── cli.py        # CLI entry point
 ├── examples/
-│   └── water_gauge.yaml  # Complete example profile config
+│   ├── water_gauge.yaml      # Minimal example profile config
+│   └── nwsviz_profile.yaml   # Full NWSViz profile with 13 collections and 3 processes
 ├── profile.schema.json   # Machine-readable JSON Schema for profile configs
 └── pyproject.toml
 ```
@@ -333,12 +305,13 @@ generate(profile, Path("./output"))
 - OGC API - EDR Part 1: Core
 - OGC API - EDR Part 2: PubSub
 - OGC API - EDR Part 3: Service Profiles (draft)
+- OGC API - Processes Part 1
 - OpenAPI 3.0 / AsyncAPI 3.0
 - Metanorma/AsciiDoc documentation format
 
 ## License
 
-Apache License 2.0 — See [LICENSE](LICENSE) for details.
+MIT — See [LICENSE](LICENSE) for details.
 
 ## Contact
 

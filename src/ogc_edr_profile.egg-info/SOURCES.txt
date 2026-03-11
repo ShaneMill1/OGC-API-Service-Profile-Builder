@@ -5,6 +5,7 @@ src/ogc_edr_profile/__init__.py
 src/ogc_edr_profile/cli.py
 src/ogc_edr_profile/generate.py
 src/ogc_edr_profile/models.py
+src/ogc_edr_profile/server_validation.py
 src/ogc_edr_profile.egg-info/PKG-INFO
 src/ogc_edr_profile.egg-info/SOURCES.txt
 src/ogc_edr_profile.egg-info/dependency_links.txt
