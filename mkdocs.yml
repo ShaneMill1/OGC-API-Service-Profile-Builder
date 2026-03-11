@@ -1,10 +1,9 @@
-site_name: OGC API - EDR Profile Generator
-site_description: Tools and documentation for creating OGC API - EDR Part 3 Service Profiles
-site_author: NOAA/NWS/MDL
+site_name: OGC API - EDR Part 3 Service Profile Generator
+site_description: Authoritative tooling for creating OGC API - EDR Part 3 Service Profiles
+site_author: Shane Mill (NOAA/NWS/MDL)
 site_url: https://shanemill1.github.io/OGC-Service-Profile-Creation/
 repo_url: https://github.com/ShaneMill1/OGC-Service-Profile-Creation
 repo_name: GitHub
-use_directory_urls: true
 
 theme:
   name: material
@@ -12,9 +11,6 @@ theme:
     primary: blue
     accent: light blue
   features:
-    - navigation.tabs
-    - navigation.sections
-    - navigation.expand
     - navigation.top
     - search.suggest
     - search.highlight
@@ -22,37 +18,19 @@ theme:
 
 nav:
   - Home: index.md
-  - Overview: overview.md
-  - Quick Reference: QUICK_REFERENCE.md
-  - Documentation:
-      - Generator Guide: GENERATOR_GUIDE.md
-      - Manual Creation: PROFILE_CREATION_GUIDE.md
-      - Testing & Validation: TESTING.md
-  - Advanced:
-      - API Reference: api-reference.md
-      - Examples: examples.md
-      - Dynamic UI from OpenAPI: SUBSCRIPTION_UI_IMPLEMENTATION.md
 
 markdown_extensions:
   - admonition
-  - codehilite
   - toc:
       permalink: true
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.details
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.snippets
   - attr_list
-  - md_in_html
 
 plugins:
   - search
-  - git-revision-date-localized
 
 extra:
   social:
