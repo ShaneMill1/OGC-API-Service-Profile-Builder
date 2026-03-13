@@ -4,8 +4,6 @@ site_author: Shane Mill
 repo_url: https://github.com/ShaneMill1/OGC-Service-Profile-Creation
 repo_name: ShaneMill1/OGC-Service-Profile-Creation
 
-docs_dir: .
-
 theme:
   name: material
   palette:
@@ -17,7 +15,7 @@ theme:
     - content.code.copy
 
 nav:
-  - Home: README.md
+  - Home: index.md
 
 markdown_extensions:
   - pymdownx.highlight:

@@ -1,6 +1,7 @@
 edr-pydantic>=0.3
 pydantic>=2.0
 pyyaml>=6.0
+requests>=2.31
 
 [validate]
 schemathesis>=3.0

@@ -26,6 +26,11 @@ jobs:
         run: |
           pip install -r requirements.txt
       
+      - name: Sync README to docs
+        run: |
+          mkdir -p docs
+          cp README.md docs/index.md
+      
       - name: Build documentation
         run: |
           mkdocs build
