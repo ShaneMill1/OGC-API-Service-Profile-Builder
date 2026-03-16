@@ -3,6 +3,7 @@ README.md
 pyproject.toml
 src/ogc_edr_profile/__init__.py
 src/ogc_edr_profile/cite.py
+src/ogc_edr_profile/cite_features.py
 src/ogc_edr_profile/cli.py
 src/ogc_edr_profile/compile.py
 src/ogc_edr_profile/generate.py

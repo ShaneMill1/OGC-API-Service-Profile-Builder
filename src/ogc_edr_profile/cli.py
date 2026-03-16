@@ -48,6 +48,7 @@ from ogc_edr_profile.generate import generate, build_openapi
 from ogc_edr_profile.models import ServiceProfile
 from ogc_edr_profile.compile import compile_pdf
 from ogc_edr_profile.cite import run_cite
+from ogc_edr_profile.cite_features import run_cite_features
 
 
 def _parse_datetimes(obj, _in_examples: bool = False):
@@ -116,6 +117,11 @@ def main() -> None:
     ct.add_argument("--url", required=True, help="Base URL of the live server")
     ct.add_argument("--report", type=Path, default=None, help="Directory to write cite_results.json")
 
+    # cite-test-features
+    ctf = sub.add_parser("cite-test-features", help="Run OGC CITE ETS for OGC API - Features against a live server")
+    ctf.add_argument("--url", required=True, help="Base URL of the live server")
+    ctf.add_argument("--report", type=Path, default=None, help="Directory to write cite_features_results.json")
+
     args = parser.parse_args()
 
     if args.command == "schema":
@@ -133,6 +139,10 @@ def main() -> None:
 
     if args.command == "cite-test":
         ok = run_cite(args.url, report_dir=args.report)
+        sys.exit(0 if ok else 1)
+
+    if args.command == "cite-test-features":
+        ok = run_cite_features(args.url, report_dir=args.report)
         sys.exit(0 if ok else 1)
 
     if not args.config.exists():

@@ -150,6 +150,8 @@ collection_examples:
 
 ### 5. OGC CITE Conformance Testing
 
+#### EDR Conformance Testing
+
 Run the official OGC API - EDR Part 1 conformance test suite (ets-ogcapi-edr10):
 
 ```bash
@@ -172,6 +174,35 @@ OGC API - EDR CITE Results
 The tool automatically:
 - Clones and builds ets-ogcapi-edr10 from GitHub on first run
 - Caches Docker image (`ogccite/ets-ogcapi-edr10:local`) for subsequent runs
+- Runs TestNG tests via `docker exec`
+- Supports localhost testing with `--network host` mode
+- Generates JSON report with detailed test results
+
+The skipped tests are optional features not implemented by the server.
+
+#### Features Conformance Testing
+
+Run the official OGC API - Features Part 1 conformance test suite (ets-ogcapi-features10):
+
+```bash
+ogc-edr-profile cite-test-features \
+  --url https://api.example.com \
+  --report ./cite_features_results
+```
+
+Results:
+
+```
+OGC API - Features CITE Results
+  Passed:  639/712
+  Failed:  18
+  Skipped: 55
+
+✗ 18 test(s) failed.
+```
+
+The tool automatically:
+- Pulls pre-built Docker image (`ogccite/ets-ogcapi-features10:latest`) from Docker Hub
 - Runs TestNG tests via `docker exec`
 - Supports localhost testing with `--network host` mode
 - Generates JSON report with detailed test results
