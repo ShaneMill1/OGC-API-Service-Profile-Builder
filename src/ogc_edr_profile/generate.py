@@ -454,7 +454,14 @@ def build_asyncapi(profile: ServiceProfile) -> dict:
     operations: dict = {}
     messages: dict = {}
 
+    # Only generate channels for collections specified in pubsub.collections
+    # If no collections specified, generate for all collections (backward compatibility)
+    pubsub_collections = pub.collections if pub.collections else [c.id for c in profile.collections]
+
     for coll in profile.collections:
+        if coll.id not in pubsub_collections:
+            continue
+            
         ch_key = f"{coll.id}_notifications"
         msg_key = f"{coll.id}Observation"
 

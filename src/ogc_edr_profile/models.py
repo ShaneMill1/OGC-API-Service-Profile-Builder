@@ -113,6 +113,7 @@ class PubSubConfig(BaseModel):
     broker_host: str = "localhost"
     broker_port: int = Field(default=5672, ge=1, le=65535)
     protocol: Literal["amqp", "mqtt", "kafka"] = "amqp"
+    collections: list[str] = Field(default_factory=list, description="Collection IDs that support PubSub")
     filters: list[SubscriptionFilter] = Field(default_factory=list)
 
 
