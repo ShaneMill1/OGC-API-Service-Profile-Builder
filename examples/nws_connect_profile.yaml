@@ -260,36 +260,196 @@ output_formats:
     schema_ref: https://geojson.org/schema/FeatureCollection.json
 
 requirements:
-  - id: water-gauge-geojson
-    statement: The water_gauge collection SHALL return GeoJSON features.
+  - id: conformance
+    statement: The service SHALL declare conformance to OGC API - EDR Part 1 Core and Part 2 PubSub.
     parts:
+      - The service SHALL provide a /conformance endpoint.
+      - The response SHALL include http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.
+      - The response SHALL include http://www.opengis.net/spec/ogcapi-edr-2/1.0/conf/pubsub.
+
+  - id: collections-endpoint
+    statement: The service SHALL provide a /collections endpoint listing all four collections.
+    parts:
+      - The service SHALL provide a /collections endpoint.
+      - The response SHALL include water_gauge, wwa, cwa, and states collections.
+      - Each collection SHALL have id, title, description, extent, and links properties.
+
+  - id: water-gauge-collection
+    statement: The water_gauge collection SHALL provide GeoJSON features with flood stage information.
+    parts:
+      - The service SHALL provide a /collections/water_gauge endpoint.
       - The service SHALL provide a /collections/water_gauge/items endpoint.
       - The response Content-Type SHALL be application/geo+json.
       - Each feature SHALL include flood_stage, feet_above_stage, and value properties.
-  
-  - id: pubsub-amqp
-    statement: The service SHALL support AMQP pub/sub for real-time notifications.
+      - Each feature geometry SHALL be a GeoJSON Point.
+
+  - id: wwa-collection
+    statement: The wwa collection SHALL provide GeoJSON features for weather watches and warnings.
     parts:
-      - The service SHALL provide an AMQP broker at port 5672.
-      - Clients SHALL be able to subscribe to collections/water_gauge/items channel.
+      - The service SHALL provide a /collections/wwa endpoint.
+      - The service SHALL provide a /collections/wwa/items endpoint.
+      - The response Content-Type SHALL be application/geo+json.
+      - Each feature SHALL include CAP_info_event, CAP_info_severity, CAP_info_urgency, and CAP_status properties.
+      - Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon.
+
+  - id: cwa-collection
+    statement: The cwa collection SHALL provide GeoJSON features for NWS County Warning Areas.
+    parts:
+      - The service SHALL provide a /collections/cwa endpoint.
+      - The service SHALL provide a /collections/cwa/items endpoint.
+      - The response Content-Type SHALL be application/geo+json.
+      - Each feature SHALL include a CWA identifier property.
+      - Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon.
+
+  - id: states-collection
+    statement: The states collection SHALL provide GeoJSON features for US state boundaries.
+    parts:
+      - The service SHALL provide a /collections/states endpoint.
+      - The service SHALL provide a /collections/states/items endpoint.
+      - The response Content-Type SHALL be application/geo+json.
+      - Each feature SHALL include a state identifier property.
+      - Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon.
+
+  - id: items-by-id
+    statement: All collections SHALL support retrieval of individual features by ID.
+    parts:
+      - Each collection SHALL provide a /collections/{collectionId}/items/{featureId} endpoint.
+      - The response SHALL return a single GeoJSON feature.
+      - The response SHALL return 404 if the feature does not exist.
+
+  - id: pubsub-amqp
+    statement: The service SHALL support AMQP pub/sub for real-time notifications on water_gauge and wwa collections.
+    parts:
+      - The service SHALL provide an AMQP broker at edr-api-desi-c.mdl.nws.noaa.gov:5672.
+      - Clients SHALL be able to subscribe to collections/water_gauge/items/# channel.
+      - Clients SHALL be able to subscribe to collections/wwa/items/# channel.
       - Notifications SHALL be published as GeoJSON features.
 
+  - id: pubsub-websocket
+    statement: The service SHALL support WebSocket pub/sub endpoints for browser clients.
+    parts:
+      - The service SHALL provide a WebSocket endpoint at ws://205.156.8.80:15670 for local development.
+      - The service SHALL provide a secure WebSocket endpoint at wss://edr-api-c.mdl.nws.noaa.gov/wifs_wss/ for production.
+      - WebSocket connections SHALL support AMQP protocol over WebSocket.
+
+  - id: pubsub-filters-water-gauge
+    statement: The water_gauge collection pub/sub SHALL support filtering by flood stages, stations, and WFO.
+    parts:
+      - Subscriptions SHALL accept flood_stages filter (array of stage values).
+      - Subscriptions SHALL accept stations filter (comma-separated station IDs or 'all').
+      - Subscriptions SHALL accept wfo filter (Weather Forecast Office codes).
+      - Subscriptions SHALL accept email filter for notification delivery.
+
+  - id: pubsub-filters-wwa
+    statement: The wwa collection pub/sub SHALL support filtering by event types, state, and CWA.
+    parts:
+      - Subscriptions SHALL accept event_types filter (array of weather event types).
+      - Subscriptions SHALL accept state filter (state code or blank for all).
+      - Subscriptions SHALL accept cwa filter (County Warning Area code).
+      - Subscriptions SHALL accept email filter for notification delivery.
+
 abstract_tests:
-  - id: water-gauge-geojson
-    requirement_id: water-gauge-geojson
+  - id: conformance
+    requirement_id: conformance
     steps:
-      - Send GET request to /collections/water_gauge/items.
-      - Verify the response Content-Type is application/geo+json.
+      - Send GET request to /conformance.
+      - Verify response contains http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.
+      - Verify response contains http://www.opengis.net/spec/ogcapi-edr-2/1.0/conf/pubsub.
+
+  - id: collections-endpoint
+    requirement_id: collections-endpoint
+    steps:
+      - Send GET request to /collections.
+      - Verify response contains collections array.
+      - Verify water_gauge, wwa, cwa, and states are present in the collections array.
+      - Verify each collection has id, title, description, extent, and links.
+
+  - id: water-gauge-collection
+    requirement_id: water-gauge-collection
+    steps:
+      - Send GET request to /collections/water_gauge.
+      - Verify response contains collection metadata.
+      - Send GET request to /collections/water_gauge/items?limit=10.
+      - Verify response Content-Type is application/geo+json.
       - Verify each feature contains flood_stage, feet_above_stage, and value properties.
-      - Verify geometry is a valid GeoJSON Point.
-  
+      - Verify each feature geometry type is Point.
+
+  - id: wwa-collection
+    requirement_id: wwa-collection
+    steps:
+      - Send GET request to /collections/wwa.
+      - Verify response contains collection metadata.
+      - Send GET request to /collections/wwa/items?limit=10.
+      - Verify response Content-Type is application/geo+json.
+      - Verify each feature contains CAP_info_event, CAP_info_severity, CAP_info_urgency, and CAP_status properties.
+      - Verify each feature geometry type is Polygon or MultiPolygon.
+
+  - id: cwa-collection
+    requirement_id: cwa-collection
+    steps:
+      - Send GET request to /collections/cwa.
+      - Verify response contains collection metadata.
+      - Send GET request to /collections/cwa/items?limit=10.
+      - Verify response Content-Type is application/geo+json.
+      - Verify each feature contains a CWA identifier.
+      - Verify each feature geometry type is Polygon or MultiPolygon.
+
+  - id: states-collection
+    requirement_id: states-collection
+    steps:
+      - Send GET request to /collections/states.
+      - Verify response contains collection metadata.
+      - Send GET request to /collections/states/items?limit=10.
+      - Verify response Content-Type is application/geo+json.
+      - Verify each feature contains a state identifier.
+      - Verify each feature geometry type is Polygon or MultiPolygon.
+
+  - id: items-by-id
+    requirement_id: items-by-id
+    steps:
+      - Send GET request to /collections/water_gauge/items?limit=1.
+      - Extract the id of the first feature.
+      - Send GET request to /collections/water_gauge/items/{featureId}.
+      - Verify response is a single GeoJSON feature with matching id.
+      - Send GET request to /collections/water_gauge/items/nonexistent.
+      - Verify response status is 404.
+
   - id: pubsub-amqp
     requirement_id: pubsub-amqp
     steps:
       - Connect to AMQP broker at edr-api-desi-c.mdl.nws.noaa.gov:5672.
-      - Subscribe to collections/water_gauge/items channel.
+      - Subscribe to collections/water_gauge/items/# channel.
       - Verify notifications are received as GeoJSON features.
-      - Verify each notification contains required properties.
+      - Subscribe to collections/wwa/items/# channel.
+      - Verify notifications are received as GeoJSON features.
+
+  - id: pubsub-websocket
+    requirement_id: pubsub-websocket
+    steps:
+      - Connect to WebSocket endpoint at ws://205.156.8.80:15670.
+      - Verify connection succeeds and supports AMQP over WebSocket.
+      - Connect to secure WebSocket endpoint at wss://edr-api-c.mdl.nws.noaa.gov/wifs_wss/.
+      - Verify connection succeeds and supports AMQP over WebSocket.
+
+  - id: pubsub-filters-water-gauge
+    requirement_id: pubsub-filters-water-gauge
+    steps:
+      - Subscribe to collections/water_gauge/items/# with flood_stages filter set to ["major", "moderate"].
+      - Verify only notifications matching the specified flood stages are received.
+      - Subscribe with stations filter set to specific station IDs.
+      - Verify only notifications for those stations are received.
+      - Subscribe with wfo filter set to a specific office code.
+      - Verify only notifications for that WFO are received.
+
+  - id: pubsub-filters-wwa
+    requirement_id: pubsub-filters-wwa
+    steps:
+      - Subscribe to collections/wwa/items/# with event_types filter set to ["Tornado Warning"].
+      - Verify only notifications matching the specified event types are received.
+      - Subscribe with state filter set to a specific state code.
+      - Verify only notifications for that state are received.
+      - Subscribe with cwa filter set to a specific CWA code.
+      - Verify only notifications for that CWA are received.
 
 document_metadata:
   doc_number: "25-nwsconnect"
