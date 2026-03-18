@@ -1,13 +1,28 @@
 # Release Notes - Version 2.0.0
 
-## OGC API - EDR Part 3 Compliance Release
+## Package Rename + OGC API Service Profile Builder
 
-This major release brings full compliance with the OGC API - Environmental Data Retrieval Part 3: Service Profiles specification (draft).
+This major release renames the package to reflect expanded scope (EDR + Features API profiles) and brings full compliance with the OGC API - Environmental Data Retrieval Part 3: Service Profiles specification (draft).
 
-### Breaking Changes
+### BREAKING CHANGES
 
+- **Package renamed**: `ogc-edr-profile` → `oapi-profile-builder`
+- **CLI command**: `ogc-edr-profile` → `oapi-profile-builder`
+- **Module**: `ogc_edr_profile` → `oapi_profile_builder`
 - **Parameter Validation**: All parameters in `parameter_names` must now specify `unit` and `observedProperty` fields (per REQ_parameter-names)
 - **OpenAPI Servers**: Generated OpenAPI documents now have empty `servers: []` array (per REQ_publishing - profiles are specifications, not implementations)
+
+### Migration
+
+Uninstall the old package first:
+```bash
+pip uninstall ogc-edr-profile
+pip install oapi-profile-builder
+```
+
+Update your scripts:
+- `ogc-edr-profile generate` → `oapi-profile-builder generate`
+- `from ogc_edr_profile import ...` → `from oapi_profile_builder import ...`
 
 ### New Features
 
@@ -86,7 +101,7 @@ output_formats:
 
 3. **Regenerate OpenAPI documents**:
 ```bash
-ogc-edr-profile generate --config my_profile.yaml --output ./output
+oapi-profile-builder generate --config my_profile.yaml --output ./output
 ```
 
 ### Standard Compliance
@@ -102,17 +117,17 @@ This release implements the following OGC API - EDR Part 3 requirements:
 ### Installation
 
 ```bash
-pip install ogc-edr-profile==2.0.0
+pip install oapi-profile-builder
 ```
 
 Or upgrade from previous versions:
 
 ```bash
-pip install --upgrade ogc-edr-profile
+pip install --upgrade oapi-profile-builder
 ```
 
 ### Links
 
-- **PyPI**: https://pypi.org/project/ogc-edr-profile/2.0.0/
-- **GitHub**: https://github.com/ShaneMill1/OGC-Service-Profile-Creation
+- **PyPI**: https://pypi.org/project/oapi-profile-builder/
+- **GitHub**: https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder
 - **Documentation**: See README.md and CHANGELOG.md
