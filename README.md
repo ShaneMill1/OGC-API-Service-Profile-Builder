@@ -68,6 +68,21 @@ collections:
         unit:              # REQUIRED per OGC API - EDR Part 3
           label: Celsius
           symbol: C
+#Example requirement and abstract test for asciidoc/PDF
+requirements:
+  - id: items-endpoint
+    statement: The service SHALL provide a /collections/water_gauge/items endpoint.
+    parts:
+      - The service SHALL return GeoJSON FeatureCollection.
+      - Each feature SHALL include gauge_height property.
+
+abstract_tests:
+  - id: items-endpoint
+    requirement_id: items-endpoint
+    steps:
+      - Send GET request to /collections/water_gauge/items.
+      - Verify response Content-Type is application/geo+json.
+      - Verify each feature contains gauge_height property.
 ```
 
 See [`examples/minimal_profile.yaml`](examples/minimal_profile.yaml) for a complete working example and [`examples/nwsviz_profile.yaml`](examples/nwsviz_profile.yaml) for a full profile with 13 collections, 3 processes, requirements, abstract tests, and document metadata.
