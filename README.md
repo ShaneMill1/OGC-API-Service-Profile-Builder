@@ -576,7 +576,7 @@ generate(profile, Path("./output"))
 
 ## License
 
-MIT — See [LICENSE](LICENSE) for details.
+Apache — See [LICENSE](LICENSE) for details.
 
 ## Contact
 
