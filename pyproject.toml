@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oapi-profile-builder"
-version = "2.0.2"
+version = "2.0.3"
 description = "Authoritative tooling for creating OGC API Service Profiles (EDR, Features)"
 readme = "README.md"
 license = { file = "LICENSE" }
