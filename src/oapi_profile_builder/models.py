@@ -38,6 +38,7 @@ so that EDR data model types are authoritative and shared with the broader ecosy
 
 from __future__ import annotations
 
+import re
 from enum import Enum
 from typing import Annotated, Literal
 
@@ -201,6 +202,10 @@ class ServiceProfile(BaseModel):
         default=None,
         description="Regex pattern for valid collection IDs"
     )
+    parameter_name_pattern: str | None = Field(
+        default=None,
+        description="Regex pattern that all parameter_names keys must match"
+    )
 
     # OGC identifiers derived from name — not user-supplied
     @property
@@ -270,3 +275,113 @@ class ServiceProfile(BaseModel):
                     )
                 )
         return self
+
+    @model_validator(mode="after")
+    def validate_collection_id_pattern(self) -> ServiceProfile:
+        """Validate collection IDs against collection_id_pattern if specified."""
+        if not self.collection_id_pattern:
+            return self
+        try:
+            pat = re.compile(self.collection_id_pattern)
+        except re.error as exc:
+            raise ValueError(f"Invalid collection_id_pattern regex: {exc}") from exc
+        for coll in self.collections:
+            if not pat.fullmatch(coll.id):
+                raise ValueError(
+                    f"Collection id '{coll.id}' does not match "
+                    f"collection_id_pattern '{self.collection_id_pattern}'"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def validate_collection_extent_patterns(self) -> ServiceProfile:
+        """Validate collection CRS/TRS/VRS values against extent_requirements patterns and enums."""
+        if not self.extent_requirements:
+            return self
+        er = self.extent_requirements
+
+        # Compile patterns once, validating regex syntax
+        crs_pat = _compile_optional_pattern("crs_pattern", er.crs_pattern)
+        trs_pat = _compile_optional_pattern("trs_pattern", er.trs_pattern)
+        vrs_pat = _compile_optional_pattern("vrs_pattern", er.vrs_pattern)
+
+        for coll in self.collections:
+            # --- CRS ---
+            crs = coll.extent.spatial.crs if coll.extent and coll.extent.spatial else None
+            if crs:
+                if er.allowed_crs and crs not in er.allowed_crs:
+                    raise ValueError(
+                        f"Collection '{coll.id}' CRS '{crs}' is not in allowed_crs "
+                        f"{er.allowed_crs}"
+                    )
+                if crs_pat and not crs_pat.fullmatch(crs):
+                    raise ValueError(
+                        f"Collection '{coll.id}' CRS '{crs}' does not match "
+                        f"crs_pattern '{er.crs_pattern}'"
+                    )
+
+            # --- TRS ---
+            trs = (
+                coll.extent.temporal.trs
+                if coll.extent and coll.extent.temporal else None
+            )
+            if trs:
+                if er.allowed_trs and trs not in er.allowed_trs:
+                    raise ValueError(
+                        f"Collection '{coll.id}' TRS '{trs}' is not in allowed_trs "
+                        f"{er.allowed_trs}"
+                    )
+                if trs_pat and not trs_pat.fullmatch(trs):
+                    raise ValueError(
+                        f"Collection '{coll.id}' TRS '{trs}' does not match "
+                        f"trs_pattern '{er.trs_pattern}'"
+                    )
+
+            # --- VRS ---
+            vrs = (
+                coll.extent.vertical.vrs
+                if coll.extent and coll.extent.vertical else None
+            )
+            if vrs:
+                if er.allowed_vrs and vrs not in er.allowed_vrs:
+                    raise ValueError(
+                        f"Collection '{coll.id}' VRS '{vrs}' is not in allowed_vrs "
+                        f"{er.allowed_vrs}"
+                    )
+                if vrs_pat and not vrs_pat.fullmatch(vrs):
+                    raise ValueError(
+                        f"Collection '{coll.id}' VRS '{vrs}' does not match "
+                        f"vrs_pattern '{er.vrs_pattern}'"
+                    )
+        return self
+
+    @model_validator(mode="after")
+    def validate_parameter_name_patterns(self) -> ServiceProfile:
+        """Validate parameter_names keys against parameter_name_pattern if specified."""
+        if not self.parameter_name_pattern:
+            return self
+        try:
+            pat = re.compile(self.parameter_name_pattern)
+        except re.error as exc:
+            raise ValueError(f"Invalid parameter_name_pattern regex: {exc}") from exc
+        for coll in self.collections:
+            if not coll.parameter_names:
+                continue
+            for name in coll.parameter_names.root:
+                if not pat.fullmatch(name):
+                    raise ValueError(
+                        f"Parameter name '{name}' in collection '{coll.id}' "
+                        f"does not match parameter_name_pattern "
+                        f"'{self.parameter_name_pattern}'"
+                    )
+        return self
+
+
+def _compile_optional_pattern(label: str, pattern: str | None) -> re.Pattern | None:
+    """Compile a regex pattern string, raising ValueError on invalid syntax."""
+    if pattern is None:
+        return None
+    try:
+        return re.compile(pattern)
+    except re.error as exc:
+        raise ValueError(f"Invalid {label} regex '{pattern}': {exc}") from exc

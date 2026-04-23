@@ -176,11 +176,110 @@ _QUERY_PARAMS: dict[str, list[dict]] = {
 }
 
 
-def _collection_paths(coll: Collection, examples: dict | None = None) -> dict:
+def _collection_response_schema(coll: Collection,
+                                profile: "ServiceProfile | None") -> dict:
+    """Build a 200 response schema for a single collection endpoint.
+
+    When the profile specifies extent_requirements (allowed_crs / crs_pattern,
+    allowed_trs / trs_pattern, allowed_vrs / vrs_pattern) or a
+    parameter_name_pattern, those constraints are embedded in the response
+    schema so that downstream tools (schemathesis, CITE, client SDKs) can
+    enforce them at runtime.
+    """
+    # Start with the base collection schema
+    crs_schema: dict = {"type": "string"}
+    param_name_schema: dict = {"type": "string"}
+
+    if profile and profile.extent_requirements:
+        er = profile.extent_requirements
+        if er.allowed_crs:
+            crs_schema["enum"] = er.allowed_crs
+        elif er.crs_pattern:
+            crs_schema["pattern"] = er.crs_pattern
+
+    if profile and profile.parameter_name_pattern:
+        param_name_schema["pattern"] = profile.parameter_name_pattern
+
+    schema: dict = {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+            "id": {"type": "string"},
+            "title": {"type": "string"},
+            "description": {"type": "string"},
+            "links": _LINKS_ARRAY,
+            "crs": {
+                "type": "array",
+                "items": crs_schema,
+            },
+            "parameter_names": {
+                "type": "object",
+                "additionalProperties": {"type": "object"},
+            },
+        },
+    }
+
+    # If we have a parameter_name_pattern, constrain the property names
+    if profile and profile.parameter_name_pattern:
+        schema["properties"]["parameter_names"]["propertyNames"] = param_name_schema
+
+    # Embed TRS constraint in extent.temporal if present
+    if profile and profile.extent_requirements:
+        er = profile.extent_requirements
+        trs_schema: dict = {"type": "string"}
+        if er.allowed_trs:
+            trs_schema["enum"] = er.allowed_trs
+        elif er.trs_pattern:
+            trs_schema["pattern"] = er.trs_pattern
+
+        vrs_schema: dict = {"type": "string"}
+        if er.allowed_vrs:
+            vrs_schema["enum"] = er.allowed_vrs
+        elif er.vrs_pattern:
+            vrs_schema["pattern"] = er.vrs_pattern
+
+        schema["properties"]["extent"] = {
+            "type": "object",
+            "properties": {
+                "spatial": {
+                    "type": "object",
+                    "properties": {
+                        "bbox": {"type": "array"},
+                        "crs": crs_schema,
+                    },
+                },
+                "temporal": {
+                    "type": "object",
+                    "properties": {
+                        "trs": trs_schema,
+                    },
+                },
+                "vertical": {
+                    "type": "object",
+                    "properties": {
+                        "vrs": vrs_schema,
+                    },
+                },
+            },
+        }
+
+    return {
+        "description": "Collection metadata",
+        "content": {"application/json": {"schema": schema}},
+    }
+
+
+def _collection_paths(coll: Collection, examples: dict | None = None,
+                      profile: ServiceProfile | None = None) -> dict:
     paths: dict = {}
     base = f"/collections/{coll.id}"
     tag = coll.id
     desc = getattr(coll, "description", None) or coll.id
+
+    # Build a collection-specific response schema that includes CRS and
+    # parameter-name constraints from the profile's extent_requirements
+    # and parameter_name_pattern.
+    coll_schema = _collection_response_schema(coll, profile)
 
     paths[base] = {"get": {
         "summary": f"Get {coll.title or coll.id} metadata",
@@ -189,7 +288,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None) -> dict:
         "tags": [tag],
         "parameters": [_F, _LANG],
         "responses": {
-            "200": _R200_COLLECTION,
+            "200": coll_schema,
             "400": _ERR_400, "404": _ERR_404, "500": _ERR_500,
         },
     }}
@@ -477,7 +576,7 @@ def _processes_paths(profile: ServiceProfile) -> dict:
 def build_openapi(profile: ServiceProfile) -> dict:
     paths: dict = _core_paths(profile)
     for coll in profile.collections:
-        paths.update(_collection_paths(coll, profile.collection_examples.get(coll.id)))
+        paths.update(_collection_paths(coll, profile.collection_examples.get(coll.id), profile))
     paths.update(_processes_paths(profile))
 
     tags = [{"name": "server", "description": profile.title}]

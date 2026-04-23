@@ -183,6 +183,20 @@
       "title": "Collection",
       "type": "object"
     },
+    "CollectionPubSub": {
+      "description": "Per-collection pub/sub filter overrides.",
+      "properties": {
+        "filters": {
+          "items": {
+            "$ref": "#/$defs/SubscriptionFilter"
+          },
+          "title": "Filters",
+          "type": "array"
+        }
+      },
+      "title": "CollectionPubSub",
+      "type": "object"
+    },
     "CorridorVariables": {
       "additionalProperties": true,
       "properties": {
@@ -454,6 +468,68 @@
       "title": "DataQueries",
       "type": "object"
     },
+    "DocumentMetadata": {
+      "description": "Metanorma/OGC document header metadata for PDF compilation.",
+      "properties": {
+        "doc_number": {
+          "title": "Doc Number",
+          "type": "string"
+        },
+        "doc_subtype": {
+          "default": "implementation",
+          "enum": [
+            "implementation",
+            "best-practice",
+            "engineering-report"
+          ],
+          "title": "Doc Subtype",
+          "type": "string"
+        },
+        "editors": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Editors",
+          "type": "array"
+        },
+        "submitting_orgs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Submitting Orgs",
+          "type": "array"
+        },
+        "keywords": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Keywords",
+          "type": "array"
+        },
+        "copyright_year": {
+          "default": 2026,
+          "title": "Copyright Year",
+          "type": "integer"
+        },
+        "external_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "External Id"
+        }
+      },
+      "required": [
+        "doc_number"
+      ],
+      "title": "DocumentMetadata",
+      "type": "object"
+    },
     "EDRQuery": {
       "additionalProperties": false,
       "properties": {
@@ -615,6 +691,113 @@
         "spatial"
       ],
       "title": "Extent",
+      "type": "object"
+    },
+    "ExtentRequirements": {
+      "description": "Profile-level extent restrictions per OGC API - EDR Part 3.",
+      "properties": {
+        "minimum_bbox": {
+          "description": "Minimum spatial bounds [minLon, minLat, maxLon, maxLat]",
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Minimum Bbox",
+          "type": "array"
+        },
+        "allowed_crs": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enumerated list of valid CRS values",
+          "title": "Allowed Crs"
+        },
+        "crs_pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Regular expression defining valid CRS string patterns",
+          "title": "Crs Pattern"
+        },
+        "allowed_trs": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enumerated list of valid TRS values",
+          "title": "Allowed Trs"
+        },
+        "trs_pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Regular expression defining valid TRS string patterns",
+          "title": "Trs Pattern"
+        },
+        "allowed_vrs": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enumerated list of valid VRS values",
+          "title": "Allowed Vrs"
+        },
+        "vrs_pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Regular expression defining valid VRS string patterns",
+          "title": "Vrs Pattern"
+        }
+      },
+      "required": [
+        "minimum_bbox"
+      ],
+      "title": "ExtentRequirements",
       "type": "object"
     },
     "FilterType": {
@@ -843,6 +1026,40 @@
       "title": "ObservedProperty",
       "type": "object"
     },
+    "OutputFormat": {
+      "description": "Output format with schema reference per OGC API - EDR Part 3.",
+      "properties": {
+        "name": {
+          "description": "Format name (e.g., GeoJSON, CoverageJSON)",
+          "title": "Name",
+          "type": "string"
+        },
+        "media_type": {
+          "description": "MIME type (e.g., application/geo+json)",
+          "title": "Media Type",
+          "type": "string"
+        },
+        "schema_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "URL to schema definition",
+          "title": "Schema Ref"
+        }
+      },
+      "required": [
+        "name",
+        "media_type"
+      ],
+      "title": "OutputFormat",
+      "type": "object"
+    },
     "Parameter": {
       "additionalProperties": true,
       "properties": {
@@ -972,15 +1189,99 @@
           "title": "Protocol",
           "type": "string"
         },
+        "collections": {
+          "description": "Collection IDs that support PubSub",
+          "items": {
+            "type": "string"
+          },
+          "title": "Collections",
+          "type": "array"
+        },
         "filters": {
           "items": {
             "$ref": "#/$defs/SubscriptionFilter"
           },
           "title": "Filters",
           "type": "array"
+        },
+        "servers": {
+          "description": "Additional server endpoints (ws, wss)",
+          "items": {
+            "$ref": "#/$defs/PubSubServer"
+          },
+          "title": "Servers",
+          "type": "array"
+        },
+        "collection_filters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CollectionPubSub"
+          },
+          "description": "Per-collection filter overrides",
+          "title": "Collection Filters",
+          "type": "object"
         }
       },
       "title": "PubSubConfig",
+      "type": "object"
+    },
+    "PubSubServer": {
+      "description": "A single pub/sub server endpoint.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "host": {
+          "title": "Host",
+          "type": "string"
+        },
+        "port": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Port"
+        },
+        "protocol": {
+          "default": "amqp",
+          "enum": [
+            "amqp",
+            "mqtt",
+            "kafka",
+            "ws",
+            "wss"
+          ],
+          "title": "Protocol",
+          "type": "string"
+        },
+        "pathname": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pathname"
+        }
+      },
+      "required": [
+        "name",
+        "host"
+      ],
+      "title": "PubSubServer",
       "type": "object"
     },
     "RadiusVariables": {
@@ -1310,6 +1611,19 @@
       "title": "Version",
       "type": "string"
     },
+    "server_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Base URL for implementation (not used in profile OpenAPI per standard)",
+      "title": "Server Url"
+    },
     "collections": {
       "items": {
         "$ref": "#/$defs/Collection"
@@ -1317,6 +1631,13 @@
       "minItems": 1,
       "title": "Collections",
       "type": "array"
+    },
+    "collection_examples": {
+      "additionalProperties": {
+        "type": "object"
+      },
+      "title": "Collection Examples",
+      "type": "object"
     },
     "requirements": {
       "items": {
@@ -1342,6 +1663,78 @@
         }
       ],
       "default": null
+    },
+    "processes": {
+      "items": {
+        "type": "object"
+      },
+      "title": "Processes",
+      "type": "array"
+    },
+    "document_metadata": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DocumentMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "required_conformance_classes": {
+      "description": "Conformance classes that implementations must declare",
+      "items": {
+        "type": "string"
+      },
+      "title": "Required Conformance Classes",
+      "type": "array"
+    },
+    "extent_requirements": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtentRequirements"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Profile-level extent restrictions"
+    },
+    "output_formats": {
+      "description": "Profile-level output format definitions with schema references",
+      "items": {
+        "$ref": "#/$defs/OutputFormat"
+      },
+      "title": "Output Formats",
+      "type": "array"
+    },
+    "collection_id_pattern": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Regex pattern for valid collection IDs",
+      "title": "Collection Id Pattern"
+    },
+    "parameter_name_pattern": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Regex pattern that all parameter_names keys must match",
+      "title": "Parameter Name Pattern"
     }
   },
   "required": [

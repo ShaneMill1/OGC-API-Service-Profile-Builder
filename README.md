@@ -68,7 +68,8 @@ collections:
         unit:              # REQUIRED per OGC API - EDR Part 3
           label: Celsius
           symbol: C
-#Example requirement and abstract test for asciidoc/PDF
+
+# Example requirement and abstract test for asciidoc/PDF
 requirements:
   - id: items-endpoint
     statement: The service SHALL provide a /collections/water_gauge/items endpoint.
@@ -250,6 +251,133 @@ The skipped tests are optional features not implemented by the server.
 
 ---
 
+## Profile Configuration Guide
+
+This section explains what is and isn't allowed when creating a profile, and how the tool validates your configuration.
+
+### What Gets Validated
+
+When you run `generate` or `validate`, the tool instantiates a `ServiceProfile` Pydantic model that enforces all of the following rules before any files are written. If any rule is violated, you get a clear error message pointing to the offending field.
+
+#### Profile-Level Fields
+
+| Field | Rules |
+|---|---|
+| `name` | Must match `^[a-z0-9_]+$` — lowercase letters, digits, and underscores only. Used in OGC URIs. |
+| `title` | Any non-empty string. |
+| `version` | Any string. Defaults to `"1.0"`. |
+| `collections` | At least one collection is required. No duplicate `id` values. |
+
+#### Collection IDs
+
+By default, collection IDs can be any string accepted by edr-pydantic. To enforce a naming convention across all collections, use `collection_id_pattern`:
+
+```yaml
+# Only allow lowercase snake_case collection IDs
+collection_id_pattern: "^[a-z][a-z0-9_]*$"
+```
+
+The pattern is matched using Python's `re.fullmatch()`, so it must match the **entire** ID string.
+
+#### CRS, TRS, and VRS Constraints
+
+Each collection declares a CRS in `extent.spatial.crs`, and optionally a TRS in `extent.temporal.trs` and VRS in `extent.vertical.vrs`. The profile can constrain these values in two ways:
+
+**Enumerated list** — only the exact values listed are accepted:
+
+```yaml
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  allowed_crs:
+    - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+    - "http://www.opengis.net/def/crs/EPSG/0/4326"
+```
+
+**Regex pattern** — any value matching the pattern is accepted:
+
+```yaml
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  # Accept any OGC or EPSG CRS
+  crs_pattern: "^http://www\\.opengis\\.net/def/crs/(OGC|EPSG)/.*$"
+```
+
+If both `allowed_crs` and `crs_pattern` are specified, a collection's CRS must satisfy **both**. At least one of `allowed_crs` or `crs_pattern` is required when `extent_requirements` is present.
+
+The same enum/regex approach works for TRS (`allowed_trs` / `trs_pattern`) and VRS (`allowed_vrs` / `vrs_pattern`).
+
+#### Parameter Name Constraints
+
+By default, parameter names (the keys in `parameter_names`) can be any string. To enforce a naming convention, use `parameter_name_pattern`:
+
+```yaml
+# CF-style lowercase parameter names
+parameter_name_pattern: "^[a-z][a-z0-9_]*$"
+```
+
+```yaml
+# Allow uppercase abbreviations like WMO codes
+parameter_name_pattern: "^[A-Za-z][A-Za-z0-9_]*$"
+```
+
+Every key in every collection's `parameter_names` must match this pattern. The pattern uses `re.fullmatch()`.
+
+Additionally, per OGC API - EDR Part 3, every parameter must specify both `unit` and `observedProperty`. The tool enforces this automatically.
+
+#### Requirement and Test IDs
+
+| Field | Rules |
+|---|---|
+| Requirement `id` | Must match `^[a-z0-9][a-z0-9\-]*$` — lowercase, digits, hyphens. Cannot end with a hyphen. |
+| AbstractTest `id` | Must exactly equal its `requirement_id`. |
+| AbstractTest `requirement_id` | Must reference an existing requirement `id`. |
+
+#### What Happens When Validation Fails
+
+The tool prints a Pydantic validation error with the field path and a human-readable message. For example:
+
+```
+Value error, Collection 'my_data' CRS 'urn:ogc:def:crs:EPSG::4326'
+does not match crs_pattern '^http://www\.opengis\.net/def/crs/(OGC|EPSG)/.*$'
+```
+
+```
+Value error, Parameter name 'WIND_SPEED' in collection 'weather'
+does not match parameter_name_pattern '^[a-z][a-z0-9_]*$'
+```
+
+```
+Value error, Collection id 'My-Collection' does not match
+collection_id_pattern '^[a-z][a-z0-9_]*$'
+```
+
+### How Patterns Flow Into the Generated OpenAPI
+
+When you specify `crs_pattern`, `allowed_crs`, or `parameter_name_pattern`, those constraints are embedded in the generated `openapi.yaml` so that runtime validation tools can enforce them:
+
+- `crs_pattern` → `pattern` on the CRS string schema in collection responses
+- `allowed_crs` → `enum` on the CRS string schema
+- `trs_pattern` / `allowed_trs` → `pattern` / `enum` on the TRS field in extent.temporal
+- `vrs_pattern` / `allowed_vrs` → `pattern` / `enum` on the VRS field in extent.vertical
+- `parameter_name_pattern` → `propertyNames.pattern` on the `parameter_names` object schema
+
+This means schemathesis, CITE tests, and client SDKs can validate server responses against these constraints without needing access to the original profile YAML.
+
+### Quick Reference: Regex Examples
+
+| Use Case | Pattern |
+|---|---|
+| Only OGC CRS84 | `^http://www\\.opengis\\.net/def/crs/OGC/1\\.3/CRS84$` |
+| Any OGC or EPSG CRS | `^http://www\\.opengis\\.net/def/crs/(OGC\|EPSG)/.*$` |
+| Any valid CRS URI | `^http://www\\.opengis\\.net/def/crs/.*$` |
+| ISO-8601 TRS family | `^http://www\\.opengis\\.net/def/uom/ISO-8601/.*$` |
+| Lowercase snake_case names | `^[a-z][a-z0-9_]*$` |
+| CF standard name style | `^[a-z][a-z0-9_]*(_[a-z0-9]+)*$` |
+| WMO-style alphanumeric | `^[A-Za-z][A-Za-z0-9_]*$` |
+| Lowercase with hyphens | `^[a-z][a-z0-9\\-]*$` |
+
+---
+
 ## Config Reference
 
 ### Top-level fields
@@ -270,7 +398,8 @@ The skipped tests are optional features not implemented by the server.
 | `required_conformance_classes` | `list[string]` | no | Conformance classes that implementations must declare. Defaults to EDR Core |
 | `extent_requirements` | `object` | no | Profile-level extent restrictions (see below) |
 | `output_formats` | `list` | no | Profile-level output format definitions with schema references (see below) |
-| `collection_id_pattern` | `string` | no | Regex pattern for valid collection IDs |
+| `collection_id_pattern` | `string` | no | Regex pattern that all collection IDs must match (validated at build time) |
+| `parameter_name_pattern` | `string` | no | Regex pattern that all `parameter_names` keys must match (validated at build time) |
 
 ---
 
@@ -333,7 +462,7 @@ parameter_names:
 
 ### `extent_requirements`
 
-Profile-level extent restrictions per OGC API - EDR Part 3 REQ_extent.
+Profile-level extent restrictions per OGC API - EDR Part 3 REQ_extent. These constraints are **enforced at profile build time** — if any collection's CRS, TRS, or VRS value violates the rules here, the profile will be rejected with a clear error message. The constraints are also **embedded in the generated OpenAPI** so that downstream tools (schemathesis, CITE tests, client SDKs) can enforce them at runtime.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -347,6 +476,8 @@ Profile-level extent restrictions per OGC API - EDR Part 3 REQ_extent.
 
 **Note:** Either `allowed_crs` or `crs_pattern` must be specified.
 
+**Enum approach** — lock down to specific values:
+
 ```yaml
 extent_requirements:
   minimum_bbox: [-180, -90, 180, 90]
@@ -356,6 +487,19 @@ extent_requirements:
   allowed_trs:
     - "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
 ```
+
+**Regex approach** — allow any CRS from a family:
+
+```yaml
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  # Accept any OGC or EPSG CRS
+  crs_pattern: "^http://www\\.opengis\\.net/def/crs/(OGC|EPSG)/.*$"
+  # Accept any ISO-8601 TRS
+  trs_pattern: "^http://www\\.opengis\\.net/def/uom/ISO-8601/.*$"
+```
+
+Both approaches can coexist — if both `allowed_crs` and `crs_pattern` are specified, a collection's CRS must satisfy **both** constraints.
 
 ---
 
@@ -518,12 +662,23 @@ This tool implements the requirements of OGC API - EDR Part 3: Service Profiles 
 4. **Extent Requirements** (REQ_extent)
    - Profile-level `extent_requirements` specify minimum bounds
    - CRS/TRS/VRS restrictions via enumerated lists or regex patterns
+   - **Enforced at build time**: collection CRS/TRS/VRS values are validated against `allowed_*` lists and `*_pattern` regexes
+   - **Propagated to OpenAPI**: constraints appear as `enum` or `pattern` in the generated collection response schemas
 
-5. **Output Formats** (REQ_output-format)
+5. **Parameter Names** (REQ_parameter-names)
+   - Validates that all parameters specify `unit` and `observedProperty`
+   - Optional `parameter_name_pattern` enforces naming conventions across all collections
+   - Pattern constraints are embedded in the generated OpenAPI as `propertyNames.pattern`
+
+6. **Collection ID Pattern**
+   - Optional `collection_id_pattern` enforces naming conventions for collection IDs
+   - Validated at build time via `re.fullmatch()`
+
+7. **Output Formats** (REQ_output-format)
    - Profile-level `output_formats` with schema references
    - Links to JSON Schema, XML Schema, or format specifications
 
-6. **Pub/Sub** (REQ_pubsub)
+8. **Pub/Sub** (REQ_pubsub)
    - Automatically adds Part 2 conformance requirement when `pubsub` is present
    - AsyncAPI document specifies channels and payloads
 
