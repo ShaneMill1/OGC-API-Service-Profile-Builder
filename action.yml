@@ -98,6 +98,22 @@ runs:
           --pdf
         echo "PDF compilation complete."
 
+    - name: Set up Java (required for OGC CITE EDR image build)
+      if: inputs.cite-url != '' && (inputs.cite-type == 'edr' || inputs.cite-type == 'both')
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Cache Maven packages (for CITE EDR build)
+      if: inputs.cite-url != '' && (inputs.cite-type == 'edr' || inputs.cite-type == 'both')
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-ets-ogcapi-edr10
+        restore-keys: |
+          ${{ runner.os }}-maven-
+
     - name: Run OGC CITE EDR tests (optional)
       if: inputs.cite-url != '' && (inputs.cite-type == 'edr' || inputs.cite-type == 'both')
       shell: bash

@@ -1,0 +1,165 @@
+name: OGC CITE Conformance Tests
+
+on:
+  # Run manually with a server URL
+  workflow_dispatch:
+    inputs:
+      server-url:
+        description: Base URL of the live server to test
+        required: true
+        default: https://edr-api-desi-c.mdl.nws.noaa.gov
+      cite-type:
+        description: Which test suite to run
+        required: true
+        default: edr
+        type: choice
+        options:
+          - edr
+          - features
+          - both
+  # Also run on a schedule against the known NWSViz server
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  cite-edr:
+    name: OGC CITE — EDR
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'schedule' ||
+      inputs.cite-type == 'edr' ||
+      inputs.cite-type == 'both'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Java (required for Maven build of ets-ogcapi-edr10)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-ets-ogcapi-edr10
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Cache Docker image layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/docker-cache
+          key: ${{ runner.os }}-docker-ets-ogcapi-edr10-${{ hashFiles('**/cite.py') }}
+          restore-keys: |
+            ${{ runner.os }}-docker-ets-ogcapi-edr10-
+
+      - name: Restore Docker image from cache
+        run: |
+          if [ -f /tmp/docker-cache/ets-ogcapi-edr10.tar ]; then
+            echo "Loading cached Docker image..."
+            docker load -i /tmp/docker-cache/ets-ogcapi-edr10.tar
+            echo "Image loaded."
+          else
+            echo "No cached image found, will build from source."
+          fi
+
+      - name: Install oapi-profile-builder
+        run: pip install oapi-profile-builder
+
+      - name: Run OGC CITE EDR tests
+        run: |
+          SERVER_URL="${{ github.event.inputs.server-url || 'https://edr-api-desi-c.mdl.nws.noaa.gov' }}"
+          echo "Testing server: $SERVER_URL"
+          oapi-profile-builder cite-test \
+            --url "$SERVER_URL" \
+            --report ./cite_edr_results
+
+      - name: Save Docker image to cache
+        if: always()
+        run: |
+          mkdir -p /tmp/docker-cache
+          if docker image inspect ogccite/ets-ogcapi-edr10:local > /dev/null 2>&1; then
+            echo "Saving Docker image to cache..."
+            docker save ogccite/ets-ogcapi-edr10:local -o /tmp/docker-cache/ets-ogcapi-edr10.tar
+          fi
+
+      - name: Upload CITE EDR results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cite-edr-results
+          path: ./cite_edr_results/
+          retention-days: 90
+
+      - name: Print results summary
+        if: always()
+        run: |
+          if [ -f ./cite_edr_results/cite_results.json ]; then
+            python3 -c "
+          import json
+          r = json.load(open('./cite_edr_results/cite_results.json'))
+          total = r['passed'] + r['failed'] + r['skipped']
+          print(f'OGC CITE EDR Results: {r[\"passed\"]}/{total} passed, {r[\"failed\"]} failed, {r[\"skipped\"]} skipped')
+          "
+          fi
+
+  cite-features:
+    name: OGC CITE — Features
+    runs-on: ubuntu-latest
+    if: >
+      inputs.cite-type == 'features' ||
+      inputs.cite-type == 'both'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Pull CITE Features Docker image
+        run: docker pull ogccite/ets-ogcapi-features10:latest
+
+      - name: Install oapi-profile-builder
+        run: pip install oapi-profile-builder
+
+      - name: Run OGC CITE Features tests
+        run: |
+          SERVER_URL="${{ github.event.inputs.server-url || 'https://edr-api-desi-c.mdl.nws.noaa.gov' }}"
+          echo "Testing server: $SERVER_URL"
+          oapi-profile-builder cite-test-features \
+            --url "$SERVER_URL" \
+            --report ./cite_features_results
+
+      - name: Upload CITE Features results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cite-features-results
+          path: ./cite_features_results/
+          retention-days: 90
+
+      - name: Print results summary
+        if: always()
+        run: |
+          if [ -f ./cite_features_results/cite_features_results.json ]; then
+            python3 -c "
+          import json
+          r = json.load(open('./cite_features_results/cite_features_results.json'))
+          total = r['passed'] + r['failed'] + r['skipped']
+          print(f'OGC CITE Features Results: {r[\"passed\"]}/{total} passed, {r[\"failed\"]} failed, {r[\"skipped\"]} skipped')
+          "
+          fi
