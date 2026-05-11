@@ -44,6 +44,9 @@ import requests
 
 _IMAGE_NAME = "ogccite/ets-ogcapi-edr10:local"
 _REPO_URL = "https://github.com/opengeospatial/ets-ogcapi-edr10.git"
+# Pin to the latest stable release tag. Using a tag ensures reproducible
+# builds — cloning HEAD can pick up breaking changes.
+_REPO_TAG = "1.3"
 _POLL_INTERVAL = 3
 _STARTUP_TIMEOUT = 60
 _TEST_TIMEOUT = 600
@@ -86,10 +89,10 @@ def _build_image() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         repo_dir = Path(tmpdir) / "ets-ogcapi-edr10"
         
-        # Clone
+        # Clone at the pinned tag
         print("Cloning ets-ogcapi-edr10...")
         subprocess.run(
-            ["git", "clone", "--depth", "1", _REPO_URL, str(repo_dir)],
+            ["git", "clone", "--depth", "1", "--branch", _REPO_TAG, _REPO_URL, str(repo_dir)],
             check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
@@ -189,6 +192,8 @@ def _run_tests(container_name: str, server_url: str) -> dict:
     
     # Create custom testng.xml with IUT parameter at BOTH suite and test level
     # apiDefinition should point to the OpenAPI spec
+    # Note: SuiteFixtureListener is included — it sets rootUri on the test context
+    # which all test classes depend on. The container must be running before TestNG starts.
     testng_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="ogcapi-edr10" verbose="0" configfailurepolicy="continue">
@@ -198,6 +203,7 @@ def _run_tests(container_name: str, server_url: str) -> dict:
 
   <listeners>
     <listener class-name="org.opengis.cite.ogcapiedr10.TestRunListener" />
+    <listener class-name="org.opengis.cite.ogcapiedr10.SuiteFixtureListener" />
     <listener class-name="org.opengis.cite.ogcapiedr10.TestFailureListener" />
   </listeners>
 
