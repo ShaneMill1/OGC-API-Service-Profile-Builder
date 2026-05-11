@@ -427,20 +427,20 @@ paths:
       tags:
       - aigfs0p25_v1p0_global_latlon
       parameters: &id022
-      - &id013
+      - &id017
         name: bbox
         in: query
         description: Bounding box filter
         schema:
           type: string
-      - &id014
+      - &id013
         $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - &id015
+      - &id014
         $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - &id016
+      - &id015
         $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - *id002
-      responses: &id017
+      responses: &id016
         '200':
           description: Coverage data response
           content:
@@ -525,22 +525,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/aigfs0p25_v1p0_global_latlon/instances/{instanceId}/items:
-    get:
-      summary: query aigfs0p25_v1p0_global_latlon instance by items
-      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
-        icechunk format
-      operationId: QueryItemsInstanceAigfs0p25V1p0GlobalLatlon
-      tags:
-      - aigfs0p25_v1p0_global_latlon
-      parameters:
-      - *id012
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id017
   /collections/aigfs0p25_v1p0_global_latlon/instances/{instanceId}/position:
     get:
       summary: query aigfs0p25_v1p0_global_latlon instance by position
@@ -553,11 +537,27 @@ paths:
       - *id012
       - &id018
         $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - *id013
       - *id014
       - *id015
-      - *id016
       - *id002
-      responses: *id017
+      responses: *id016
+  /collections/aigfs0p25_v1p0_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query aigfs0p25_v1p0_global_latlon instance by items
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryItemsInstanceAigfs0p25V1p0GlobalLatlon
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters:
+      - *id012
+      - *id017
+      - *id013
+      - *id014
+      - *id015
+      - *id002
+      responses: *id016
   /collections/aigfs0p25_v1p0_global_latlon/position:
     get:
       summary: query aigfs0p25_v1p0_global_latlon by position
@@ -568,11 +568,11 @@ paths:
       - aigfs0p25_v1p0_global_latlon
       parameters: &id026
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
       - *id002
-      responses: *id017
+      responses: *id016
   /collections/air_quality_alaska_polar_stereographic:
     get:
       summary: Get Air Quality Alaska Polar Stereographic metadata
@@ -878,22 +878,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/air_quality_alaska_polar_stereographic/instances/{instanceId}/items:
-    get:
-      summary: query air_quality_alaska_polar_stereographic instance by items
-      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
-        stored in icechunk format
-      operationId: QueryItemsInstanceAirQualityAlaskaPolarStereographic
-      tags:
-      - air_quality_alaska_polar_stereographic
-      parameters:
-      - *id024
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id025
   /collections/air_quality_alaska_polar_stereographic/instances/{instanceId}/position:
     get:
       summary: query air_quality_alaska_polar_stereographic instance by position
@@ -905,9 +889,25 @@ paths:
       parameters:
       - *id024
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id025
+  /collections/air_quality_alaska_polar_stereographic/instances/{instanceId}/items:
+    get:
+      summary: query air_quality_alaska_polar_stereographic instance by items
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: QueryItemsInstanceAirQualityAlaskaPolarStereographic
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters:
+      - *id024
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id025
   /collections/air_quality_alaska_polar_stereographic/position:
@@ -1225,22 +1225,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/air_quality_conus_lambert/instances/{instanceId}/items:
-    get:
-      summary: query air_quality_conus_lambert instance by items
-      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryItemsInstanceAirQualityConusLambert
-      tags:
-      - air_quality_conus_lambert
-      parameters:
-      - *id029
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id030
   /collections/air_quality_conus_lambert/instances/{instanceId}/position:
     get:
       summary: query air_quality_conus_lambert instance by position
@@ -1252,9 +1236,25 @@ paths:
       parameters:
       - *id029
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id030
+  /collections/air_quality_conus_lambert/instances/{instanceId}/items:
+    get:
+      summary: query air_quality_conus_lambert instance by items
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsInstanceAirQualityConusLambert
+      tags:
+      - air_quality_conus_lambert
+      parameters:
+      - *id029
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id030
   /collections/air_quality_conus_lambert/position:
@@ -1572,22 +1572,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/air_quality_hawaii_mercator/instances/{instanceId}/items:
-    get:
-      summary: query air_quality_hawaii_mercator instance by items
-      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
-        format
-      operationId: QueryItemsInstanceAirQualityHawaiiMercator
-      tags:
-      - air_quality_hawaii_mercator
-      parameters:
-      - *id033
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id034
   /collections/air_quality_hawaii_mercator/instances/{instanceId}/position:
     get:
       summary: query air_quality_hawaii_mercator instance by position
@@ -1599,9 +1583,25 @@ paths:
       parameters:
       - *id033
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id034
+  /collections/air_quality_hawaii_mercator/instances/{instanceId}/items:
+    get:
+      summary: query air_quality_hawaii_mercator instance by items
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: QueryItemsInstanceAirQualityHawaiiMercator
+      tags:
+      - air_quality_hawaii_mercator
+      parameters:
+      - *id033
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id034
   /collections/air_quality_hawaii_mercator/position:
@@ -1919,22 +1919,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/gefs0p25_v12p3_global_latlon/instances/{instanceId}/items:
-    get:
-      summary: query gefs0p25_v12p3_global_latlon instance by items
-      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
-        icechunk format
-      operationId: QueryItemsInstanceGefs0p25V12p3GlobalLatlon
-      tags:
-      - gefs0p25_v12p3_global_latlon
-      parameters:
-      - *id037
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id038
   /collections/gefs0p25_v12p3_global_latlon/instances/{instanceId}/position:
     get:
       summary: query gefs0p25_v12p3_global_latlon instance by position
@@ -1946,9 +1930,25 @@ paths:
       parameters:
       - *id037
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id038
+  /collections/gefs0p25_v12p3_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query gefs0p25_v12p3_global_latlon instance by items
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryItemsInstanceGefs0p25V12p3GlobalLatlon
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters:
+      - *id037
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id038
   /collections/gefs0p25_v12p3_global_latlon/position:
@@ -2266,22 +2266,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/gefs0p5_v12p3_global_latlon/instances/{instanceId}/items:
-    get:
-      summary: query gefs0p5_v12p3_global_latlon instance by items
-      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
-        format
-      operationId: QueryItemsInstanceGefs0p5V12p3GlobalLatlon
-      tags:
-      - gefs0p5_v12p3_global_latlon
-      parameters:
-      - *id041
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id042
   /collections/gefs0p5_v12p3_global_latlon/instances/{instanceId}/position:
     get:
       summary: query gefs0p5_v12p3_global_latlon instance by position
@@ -2293,9 +2277,25 @@ paths:
       parameters:
       - *id041
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id042
+  /collections/gefs0p5_v12p3_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query gefs0p5_v12p3_global_latlon instance by items
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryItemsInstanceGefs0p5V12p3GlobalLatlon
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters:
+      - *id041
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id042
   /collections/gefs0p5_v12p3_global_latlon/position:
@@ -2613,22 +2613,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/gfs0p25_v16p3_global_latlon/instances/{instanceId}/items:
-    get:
-      summary: query gfs0p25_v16p3_global_latlon instance by items
-      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
-        format
-      operationId: QueryItemsInstanceGfs0p25V16p3GlobalLatlon
-      tags:
-      - gfs0p25_v16p3_global_latlon
-      parameters:
-      - *id045
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id046
   /collections/gfs0p25_v16p3_global_latlon/instances/{instanceId}/position:
     get:
       summary: query gfs0p25_v16p3_global_latlon instance by position
@@ -2640,9 +2624,25 @@ paths:
       parameters:
       - *id045
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id046
+  /collections/gfs0p25_v16p3_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query gfs0p25_v16p3_global_latlon instance by items
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryItemsInstanceGfs0p25V16p3GlobalLatlon
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters:
+      - *id045
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id046
   /collections/gfs0p25_v16p3_global_latlon/position:
@@ -2960,22 +2960,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/gfs0p25_v17_global_latlon/instances/{instanceId}/items:
-    get:
-      summary: query gfs0p25_v17_global_latlon instance by items
-      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
-        format
-      operationId: QueryItemsInstanceGfs0p25V17GlobalLatlon
-      tags:
-      - gfs0p25_v17_global_latlon
-      parameters:
-      - *id049
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id050
   /collections/gfs0p25_v17_global_latlon/instances/{instanceId}/position:
     get:
       summary: query gfs0p25_v17_global_latlon instance by position
@@ -2987,9 +2971,25 @@ paths:
       parameters:
       - *id049
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id050
+  /collections/gfs0p25_v17_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query gfs0p25_v17_global_latlon instance by items
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryItemsInstanceGfs0p25V17GlobalLatlon
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters:
+      - *id049
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id050
   /collections/gfs0p25_v17_global_latlon/position:
@@ -3307,22 +3307,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/nbm_v5p0_conus_lambert/instances/{instanceId}/items:
-    get:
-      summary: query nbm_v5p0_conus_lambert instance by items
-      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryItemsInstanceNbmV5p0ConusLambert
-      tags:
-      - nbm_v5p0_conus_lambert
-      parameters:
-      - *id053
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id054
   /collections/nbm_v5p0_conus_lambert/instances/{instanceId}/position:
     get:
       summary: query nbm_v5p0_conus_lambert instance by position
@@ -3334,9 +3318,25 @@ paths:
       parameters:
       - *id053
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id054
+  /collections/nbm_v5p0_conus_lambert/instances/{instanceId}/items:
+    get:
+      summary: query nbm_v5p0_conus_lambert instance by items
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsInstanceNbmV5p0ConusLambert
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters:
+      - *id053
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id054
   /collections/nbm_v5p0_conus_lambert/position:
@@ -3654,22 +3654,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/processed_gefs0p25_v12p3_global_latlon/instances/{instanceId}/items:
-    get:
-      summary: query processed_gefs0p25_v12p3_global_latlon instance by items
-      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
-        stored in icechunk format
-      operationId: QueryItemsInstanceProcessedGefs0p25V12p3GlobalLatlon
-      tags:
-      - processed_gefs0p25_v12p3_global_latlon
-      parameters:
-      - *id057
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id058
   /collections/processed_gefs0p25_v12p3_global_latlon/instances/{instanceId}/position:
     get:
       summary: query processed_gefs0p25_v12p3_global_latlon instance by position
@@ -3681,9 +3665,25 @@ paths:
       parameters:
       - *id057
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id058
+  /collections/processed_gefs0p25_v12p3_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query processed_gefs0p25_v12p3_global_latlon instance by items
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: QueryItemsInstanceProcessedGefs0p25V12p3GlobalLatlon
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters:
+      - *id057
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id058
   /collections/processed_gefs0p25_v12p3_global_latlon/position:
@@ -4001,22 +4001,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/rtma2p5_v2p10_conus_lambert/instances/{instanceId}/items:
-    get:
-      summary: query rtma2p5_v2p10_conus_lambert instance by items
-      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryItemsInstanceRtma2p5V2p10ConusLambert
-      tags:
-      - rtma2p5_v2p10_conus_lambert
-      parameters:
-      - *id061
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id062
   /collections/rtma2p5_v2p10_conus_lambert/instances/{instanceId}/position:
     get:
       summary: query rtma2p5_v2p10_conus_lambert instance by position
@@ -4028,9 +4012,25 @@ paths:
       parameters:
       - *id061
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id062
+  /collections/rtma2p5_v2p10_conus_lambert/instances/{instanceId}/items:
+    get:
+      summary: query rtma2p5_v2p10_conus_lambert instance by items
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsInstanceRtma2p5V2p10ConusLambert
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters:
+      - *id061
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id062
   /collections/rtma2p5_v2p10_conus_lambert/position:
@@ -4348,22 +4348,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/urma2p5_v2p10_conus_lambert/instances/{instanceId}/items:
-    get:
-      summary: query urma2p5_v2p10_conus_lambert instance by items
-      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryItemsInstanceUrma2p5V2p10ConusLambert
-      tags:
-      - urma2p5_v2p10_conus_lambert
-      parameters:
-      - *id065
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id066
   /collections/urma2p5_v2p10_conus_lambert/instances/{instanceId}/position:
     get:
       summary: query urma2p5_v2p10_conus_lambert instance by position
@@ -4375,9 +4359,25 @@ paths:
       parameters:
       - *id065
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id066
+  /collections/urma2p5_v2p10_conus_lambert/instances/{instanceId}/items:
+    get:
+      summary: query urma2p5_v2p10_conus_lambert instance by items
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsInstanceUrma2p5V2p10ConusLambert
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters:
+      - *id065
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id066
   /collections/urma2p5_v2p10_conus_lambert/position:
@@ -4690,21 +4690,6 @@ paths:
       - *id002
       responses:
         '200': *id011
-  /collections/petss_test/instances/{instanceId}/items:
-    get:
-      summary: query petss_test instance by items
-      description: P-ETSS test data collection from local filesystem
-      operationId: QueryItemsInstancePetssTest
-      tags:
-      - petss_test
-      parameters:
-      - *id069
-      - *id013
-      - *id014
-      - *id015
-      - *id016
-      - *id002
-      responses: *id070
   /collections/petss_test/instances/{instanceId}/position:
     get:
       summary: query petss_test instance by position
@@ -4715,9 +4700,24 @@ paths:
       parameters:
       - *id069
       - *id018
+      - *id013
       - *id014
       - *id015
-      - *id016
+      - *id002
+      responses: *id070
+  /collections/petss_test/instances/{instanceId}/items:
+    get:
+      summary: query petss_test instance by items
+      description: P-ETSS test data collection from local filesystem
+      operationId: QueryItemsInstancePetssTest
+      tags:
+      - petss_test
+      parameters:
+      - *id069
+      - *id017
+      - *id013
+      - *id014
+      - *id015
       - *id002
       responses: *id070
   /collections/petss_test/position:
