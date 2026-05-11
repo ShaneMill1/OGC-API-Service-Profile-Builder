@@ -251,6 +251,98 @@ The skipped tests are optional features not implemented by the server.
 
 ---
 
+## GitHub Actions
+
+The tooling is available as a reusable GitHub Action. You can generate profile artifacts directly from a config file in any GitHub repository — no local install needed.
+
+### Generate artifacts from a profile config
+
+Add this to any workflow in your repo:
+
+```yaml
+name: Generate Profile
+
+on:
+  push:
+    paths:
+      - 'my_profile.yaml'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate profile artifacts
+        uses: ShaneMill1/OGC-API-Service-Profile-Builder@main
+        with:
+          config: my_profile.yaml
+          output: ./profile_output
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: profile-artifacts
+          path: ./profile_output/
+```
+
+This produces the full set of artifacts as a downloadable zip attached to the workflow run:
+
+```
+profile_output/
+├── openapi.yaml          # OpenAPI 3.1.0 document
+├── profile_config.json   # Round-trip serialized profile
+├── document.adoc         # Metanorma root document
+├── requirements/         # Individual requirement AsciiDoc files
+├── abstract_tests/       # Individual abstract test AsciiDoc files
+└── sections/             # Boilerplate document sections
+```
+
+### Action inputs
+
+| Input | Required | Default | Description |
+|---|---|---|---|
+| `config` | yes | — | Path to the profile config YAML file |
+| `output` | no | `./profile_output` | Output directory for generated artifacts |
+| `version` | no | `latest` | `oapi-profile-builder` version to install |
+| `pdf` | no | `false` | Compile a PDF via Metanorma Docker (requires Docker on runner) |
+| `cite-url` | no | — | URL of a live server to run OGC CITE tests against |
+| `cite-type` | no | `edr` | Which CITE suite to run: `edr`, `features`, or `both` |
+
+### Action outputs
+
+| Output | Description |
+|---|---|
+| `openapi` | Path to the generated `openapi.yaml` |
+| `profile-config` | Path to the generated `profile_config.json` |
+| `asyncapi` | Path to the generated `asyncapi.yaml` (if pubsub configured) |
+
+### Run OGC CITE conformance tests
+
+CITE testing requires a publicly reachable server. Pass the server URL via `cite-url`:
+
+```yaml
+- name: Generate and test profile
+  uses: ShaneMill1/OGC-API-Service-Profile-Builder@main
+  with:
+    config: my_profile.yaml
+    output: ./profile_output
+    cite-url: https://my-public-edr-server.example.com
+    cite-type: edr
+```
+
+> **Note:** The CITE EDR test suite (`cite-type: edr`) clones and builds `ets-ogcapi-edr10` from GitHub on first run (~2 minutes). Subsequent runs use cached Maven packages and Docker image layers. The server must be publicly reachable from GitHub Actions runners — servers behind a VPN require a [self-hosted runner](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners).
+
+### This repository's own workflows
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `generate-profile.yml` | Push to `main` touching any profile YAML or `src/` | Generates all three example profiles in parallel, uploads artifacts, commits `generated/` back to repo |
+| `release.yml` | Tag push (`v*.*.*`) | Generates all profiles, packages as zips, creates GitHub Release with artifacts attached |
+| `cite-test.yml` | Manual (`workflow_dispatch`) | Runs OGC CITE EDR or Features tests against a specified server URL |
+
+---
+
 ## Profile Configuration Guide
 
 This section explains what is and isn't allowed when creating a profile, and how the tool validates your configuration.
