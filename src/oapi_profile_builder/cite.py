@@ -155,23 +155,16 @@ def _start_container(container_name: str, port: int, iut_url: str) -> subprocess
 
 
 def _wait_ready(container_name: str, port: int, use_host_network: bool = False) -> bool:
-    """Wait for TEAM Engine and the ETS webapp to be fully ready."""
+    """Wait for TEAM Engine to be ready."""
     check_port = 8080 if use_host_network else port
     base = f"http://localhost:{check_port}"
     deadline = time.time() + _STARTUP_TIMEOUT
 
     while time.time() < deadline:
         try:
-            # Check both the TEAM Engine root and the ETS-specific endpoint
-            resp = requests.get(f"{base}/teamengine", timeout=2)
-            if resp.status_code == 200:
-                # Also verify the ETS suite is deployed
-                ets_resp = requests.get(
-                    f"{base}/teamengine/rest/suites",
-                    timeout=2,
-                )
-                if ets_resp.status_code == 200:
-                    return True
+            resp = requests.get(f"{base}/teamengine", timeout=2, allow_redirects=True)
+            if resp.status_code in (200, 302, 303):
+                return True
         except requests.exceptions.RequestException:
             pass
 
@@ -431,9 +424,9 @@ def run_cite(server_url: str, report_dir: Path | None = None) -> bool:
             print(logs.stderr[-2000:], file=sys.stderr)
             return False
 
-        # Give Tomcat a few extra seconds to fully deploy the ETS webapp
+        # Give Tomcat extra time to fully deploy the ETS webapp
         # after the /teamengine endpoint first responds.
-        time.sleep(5)
+        time.sleep(15)
 
         print(f"Running OGC API - EDR tests against {test_url}...\n")
         results = _run_tests(container_name, test_url)
