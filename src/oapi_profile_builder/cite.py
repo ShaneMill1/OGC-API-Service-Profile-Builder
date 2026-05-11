@@ -198,7 +198,6 @@ def _run_tests(container_name: str, server_url: str) -> dict:
 
   <listeners>
     <listener class-name="org.opengis.cite.ogcapiedr10.TestRunListener" />
-    <listener class-name="org.opengis.cite.ogcapiedr10.SuiteFixtureListener" />
     <listener class-name="org.opengis.cite.ogcapiedr10.TestFailureListener" />
   </listeners>
 
