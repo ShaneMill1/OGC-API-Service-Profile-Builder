@@ -155,20 +155,26 @@ def _start_container(container_name: str, port: int, iut_url: str) -> subprocess
 
 
 def _wait_ready(container_name: str, port: int, use_host_network: bool = False) -> bool:
-    """Wait for TEAM Engine to be ready."""
-    # In host network mode, container uses port 8080 directly
+    """Wait for TEAM Engine and the ETS webapp to be fully ready."""
     check_port = 8080 if use_host_network else port
     base = f"http://localhost:{check_port}"
     deadline = time.time() + _STARTUP_TIMEOUT
-    
+
     while time.time() < deadline:
         try:
+            # Check both the TEAM Engine root and the ETS-specific endpoint
             resp = requests.get(f"{base}/teamengine", timeout=2)
             if resp.status_code == 200:
-                return True
+                # Also verify the ETS suite is deployed
+                ets_resp = requests.get(
+                    f"{base}/teamengine/rest/suites",
+                    timeout=2,
+                )
+                if ets_resp.status_code == 200:
+                    return True
         except requests.exceptions.RequestException:
             pass
-        
+
         # Check if container exited
         result = subprocess.run(
             ["docker", "ps", "-q", "-f", f"name={container_name}"],
@@ -177,9 +183,9 @@ def _wait_ready(container_name: str, port: int, use_host_network: bool = False) 
         )
         if not result.stdout.strip():
             return False
-        
+
         time.sleep(2)
-    
+
     return False
 
 
@@ -424,7 +430,11 @@ def run_cite(server_url: str, report_dir: Path | None = None) -> bool:
             print(logs.stdout[-2000:], file=sys.stderr)
             print(logs.stderr[-2000:], file=sys.stderr)
             return False
-        
+
+        # Give Tomcat a few extra seconds to fully deploy the ETS webapp
+        # after the /teamengine endpoint first responds.
+        time.sleep(5)
+
         print(f"Running OGC API - EDR tests against {test_url}...\n")
         results = _run_tests(container_name, test_url)
         print("Tests complete.\n")
