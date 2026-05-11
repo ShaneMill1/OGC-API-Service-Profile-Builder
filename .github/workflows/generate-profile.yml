@@ -1,0 +1,99 @@
+name: Generate Profile Artifacts
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'examples/**_profile.yaml'
+      - 'examples/minimal_profile.yaml'
+      - 'action.yml'
+      - 'src/**'
+  pull_request:
+    paths:
+      - 'examples/**_profile.yaml'
+      - 'examples/minimal_profile.yaml'
+      - 'src/**'
+  workflow_dispatch:
+    inputs:
+      config:
+        description: Profile config file to generate (relative path)
+        required: false
+        default: examples/insitu_observations_profile.yaml
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    name: Generate — ${{ matrix.profile }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile:
+          - examples/minimal_profile.yaml
+          - examples/insitu_observations_profile.yaml
+          - examples/nwsviz_profile.yaml
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate profile artifacts
+        uses: ./
+        with:
+          config: ${{ matrix.profile }}
+          output: ./output/${{ matrix.profile }}
+          version: latest
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: profile-artifacts-${{ hashFiles(matrix.profile) }}
+          path: ./output/${{ matrix.profile }}/
+          retention-days: 30
+
+  # Commit generated artifacts back to the repo on pushes to main
+  commit-artifacts:
+    name: Commit generated artifacts
+    runs-on: ubuntu-latest
+    needs: generate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install oapi-profile-builder
+        run: pip install oapi-profile-builder
+
+      - name: Generate all example profiles
+        run: |
+          for profile in examples/minimal_profile.yaml examples/insitu_observations_profile.yaml examples/nwsviz_profile.yaml; do
+            name=$(basename "$profile" .yaml)
+            echo "Generating $name..."
+            oapi-profile-builder generate \
+              --config "$profile" \
+              --output "generated/$name"
+          done
+
+      - name: Commit generated artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add generated/
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: regenerate profile artifacts [skip ci]"
+            git push
+          fi

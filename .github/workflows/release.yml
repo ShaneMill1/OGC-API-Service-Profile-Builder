@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (e.g. v2.1.5)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and release profile artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+            # Strip leading 'v' for pip version
+            echo "pip_version=${${{ github.event.inputs.tag }}#v}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "pip_version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate minimal profile artifacts
+        uses: ./
+        with:
+          config: examples/minimal_profile.yaml
+          output: ./release_artifacts/minimal_profile
+          version: ${{ steps.version.outputs.pip_version }}
+
+      - name: Generate insitu observations profile artifacts
+        uses: ./
+        with:
+          config: examples/insitu_observations_profile.yaml
+          output: ./release_artifacts/insitu_observations_profile
+          version: ${{ steps.version.outputs.pip_version }}
+
+      - name: Generate nwsviz profile artifacts
+        uses: ./
+        with:
+          config: examples/nwsviz_profile.yaml
+          output: ./release_artifacts/nwsviz_profile
+          version: ${{ steps.version.outputs.pip_version }}
+
+      - name: Package artifacts
+        run: |
+          cd release_artifacts
+          for dir in */; do
+            name="${dir%/}"
+            zip -r "../${name}_artifacts.zip" "$dir"
+            echo "Packaged ${name}_artifacts.zip"
+          done
+          ls -lh ../*.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          body: |
+            ## OGC API Service Profile Builder ${{ steps.version.outputs.tag }}
+
+            ### Generated Profile Artifacts
+
+            Each zip contains the full set of generated artifacts for that example profile:
+            - `openapi.yaml` — OpenAPI 3.1.0 document
+            - `asyncapi.yaml` — AsyncAPI 3.0 document (if pubsub configured)
+            - `profile_config.json` — Round-trip serialized profile
+            - `document.adoc` — Metanorma root document
+            - `requirements/` — Individual requirement AsciiDoc files
+            - `abstract_tests/` — Individual abstract test AsciiDoc files
+            - `sections/` — Boilerplate document sections
+
+            ### Install
+
+            ```bash
+            pip install oapi-profile-builder==${{ steps.version.outputs.pip_version }}
+            ```
+
+            ### Use in GitHub Actions
+
+            ```yaml
+            - uses: ShaneMill1/OGC-API-Service-Profile-Builder@${{ steps.version.outputs.tag }}
+              with:
+                config: my_profile.yaml
+                output: ./profile_output
+            ```
+          files: |
+            minimal_profile_artifacts.zip
+            insitu_observations_profile_artifacts.zip
+            nwsviz_profile_artifacts.zip
+          draft: false
+          prerelease: false

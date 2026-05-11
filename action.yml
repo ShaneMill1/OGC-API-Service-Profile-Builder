@@ -1,0 +1,117 @@
+name: OGC API Service Profile Builder
+description: >
+  Generate OGC API EDR Part 3 profile artifacts (OpenAPI, AsyncAPI, AsciiDoc)
+  from a profile config YAML. Optionally compile a PDF via Metanorma and run
+  OGC CITE conformance tests against a live server.
+author: Shane Mill
+
+branding:
+  icon: file-text
+  color: blue
+
+inputs:
+  config:
+    description: Path to the profile config YAML file
+    required: true
+  output:
+    description: Output directory for generated artifacts
+    required: false
+    default: ./profile_output
+  version:
+    description: >
+      oapi-profile-builder version to install from PyPI.
+      Defaults to latest.
+    required: false
+    default: latest
+  pdf:
+    description: >
+      Compile a PDF via Metanorma Docker image (requires Docker on the runner).
+      Set to 'true' to enable.
+    required: false
+    default: 'false'
+  cite-url:
+    description: >
+      URL of a live server to run OGC CITE conformance tests against.
+      Leave empty to skip CITE testing.
+    required: false
+    default: ''
+  cite-type:
+    description: >
+      Which CITE test suite to run. One of: edr, features, both.
+      Only used when cite-url is set.
+    required: false
+    default: edr
+
+outputs:
+  openapi:
+    description: Path to the generated openapi.yaml
+    value: ${{ inputs.output }}/openapi.yaml
+  profile-config:
+    description: Path to the generated profile_config.json
+    value: ${{ inputs.output }}/profile_config.json
+  asyncapi:
+    description: Path to the generated asyncapi.yaml (if pubsub is configured)
+    value: ${{ inputs.output }}/asyncapi.yaml
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install oapi-profile-builder
+      shell: bash
+      run: |
+        VERSION="${{ inputs.version }}"
+        if [ "$VERSION" = "latest" ]; then
+          pip install oapi-profile-builder
+        else
+          pip install "oapi-profile-builder==$VERSION"
+        fi
+
+    - name: Validate profile config
+      shell: bash
+      run: |
+        echo "Validating ${{ inputs.config }}..."
+        oapi-profile-builder validate --config "${{ inputs.config }}"
+
+    - name: Generate profile artifacts
+      shell: bash
+      run: |
+        echo "Generating artifacts from ${{ inputs.config }}..."
+        oapi-profile-builder generate \
+          --config "${{ inputs.config }}" \
+          --output "${{ inputs.output }}"
+        echo "Generated files:"
+        ls -lh "${{ inputs.output }}"
+
+    - name: Compile PDF (optional)
+      if: inputs.pdf == 'true'
+      shell: bash
+      run: |
+        echo "Compiling PDF via Metanorma..."
+        oapi-profile-builder generate \
+          --config "${{ inputs.config }}" \
+          --output "${{ inputs.output }}" \
+          --pdf
+        echo "PDF compilation complete."
+
+    - name: Run OGC CITE EDR tests (optional)
+      if: inputs.cite-url != '' && (inputs.cite-type == 'edr' || inputs.cite-type == 'both')
+      shell: bash
+      run: |
+        echo "Running OGC API - EDR CITE tests against ${{ inputs.cite-url }}..."
+        oapi-profile-builder cite-test \
+          --url "${{ inputs.cite-url }}" \
+          --report "${{ inputs.output }}/cite_edr_results"
+
+    - name: Run OGC CITE Features tests (optional)
+      if: inputs.cite-url != '' && (inputs.cite-type == 'features' || inputs.cite-type == 'both')
+      shell: bash
+      run: |
+        echo "Running OGC API - Features CITE tests against ${{ inputs.cite-url }}..."
+        oapi-profile-builder cite-test-features \
+          --url "${{ inputs.cite-url }}" \
+          --report "${{ inputs.output }}/cite_features_results"

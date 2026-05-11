@@ -86,7 +86,7 @@ abstract_tests:
       - Verify each feature contains gauge_height property.
 ```
 
-See [`examples/minimal_profile.yaml`](examples/minimal_profile.yaml) for a complete working example and [`examples/nwsviz_profile.yaml`](examples/nwsviz_profile.yaml) for a full profile with 13 collections, 3 processes, requirements, abstract tests, and document metadata.
+See [`examples/minimal_profile.yaml`](examples/minimal_profile.yaml) for a complete working example, [`examples/insitu_observations_profile.yaml`](examples/insitu_observations_profile.yaml) for a full in-situ observations profile with rich parameter constraints, CRS listing, temporal extent, and custom dimensions, and [`examples/nwsviz_profile.yaml`](examples/nwsviz_profile.yaml) for a full profile with 13 collections, 3 processes, requirements, abstract tests, and document metadata.
 
 ### 2. Generate Profile Artifacts
 
@@ -647,6 +647,7 @@ This tool implements the requirements of OGC API - EDR Part 3: Service Profiles 
 ### Key Compliance Features
 
 1. **Profile OpenAPI Document** (REQ_publishing)
+   - Generated OpenAPI version is **3.1.0** (required by OGC API - EDR Part 3)
    - Generated OpenAPI has empty `servers` array (profile is implementation-independent)
    - Landing page schema requires `profile` link relation
    - Profile URI advertised in `x-ogc-profile` info field
@@ -714,8 +715,9 @@ generate(profile, Path("./output"))
 │       ├── cite.py              # OGC CITE test suite orchestration
 │       └── cli.py               # CLI entry point
 ├── examples/
-│   ├── water_gauge.yaml         # Minimal example profile config
-│   └── nwsviz_profile.yaml      # Full NWSViz profile: 13 collections, 3 processes, PDF metadata
+│   ├── minimal_profile.yaml              # Minimal working profile
+│   ├── insitu_observations_profile.yaml  # Full in-situ profile: parameters, CRS, temporal, custom dims
+│   └── nwsviz_profile.yaml               # Full NWSViz profile: 13 collections, 3 processes, PDF metadata
 ├── profile.schema.json          # Machine-readable JSON Schema for profile configs
 └── pyproject.toml
 ```

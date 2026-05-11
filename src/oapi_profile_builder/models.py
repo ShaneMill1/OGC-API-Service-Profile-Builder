@@ -206,6 +206,16 @@ class ServiceProfile(BaseModel):
         default=None,
         description="Regex pattern that all parameter_names keys must match"
     )
+    parameter_schema: dict | None = Field(
+        default=None,
+        description=(
+            "JSON Schema fragment used as the additionalProperties definition for "
+            "parameter_names in the generated OpenAPI. Replaces the default parameter "
+            "schema, allowing full control over required fields, patterns, and custom "
+            "extension properties (e.g. metocean:standard_name). Must be a valid JSON "
+            "Schema object."
+        ),
+    )
 
     # OGC identifiers derived from name — not user-supplied
     @property
@@ -353,6 +363,35 @@ class ServiceProfile(BaseModel):
                         f"Collection '{coll.id}' VRS '{vrs}' does not match "
                         f"vrs_pattern '{er.vrs_pattern}'"
                     )
+
+            # --- crs_details in data_queries ---
+            # Each data query may declare crs_details with per-query CRS support.
+            # Validate those CRS values against the same allowed_crs / crs_pattern.
+            if coll.data_queries and (er.allowed_crs or crs_pat):
+                for qt_name, qt_val in coll.data_queries:
+                    if qt_val is None:
+                        continue
+                    crs_details = (
+                        qt_val.link.variables.model_extra.get("crs_details", [])
+                        if hasattr(qt_val.link.variables, "model_extra")
+                        else []
+                    )
+                    for entry in (crs_details or []):
+                        dq_crs = entry.get("crs") if isinstance(entry, dict) else None
+                        if not dq_crs:
+                            continue
+                        if er.allowed_crs and dq_crs not in er.allowed_crs:
+                            raise ValueError(
+                                f"Collection '{coll.id}' data query '{qt_name}' "
+                                f"crs_details CRS '{dq_crs}' is not in allowed_crs "
+                                f"{er.allowed_crs}"
+                            )
+                        if crs_pat and not crs_pat.fullmatch(dq_crs):
+                            raise ValueError(
+                                f"Collection '{coll.id}' data query '{qt_name}' "
+                                f"crs_details CRS '{dq_crs}' does not match "
+                                f"crs_pattern '{er.crs_pattern}'"
+                            )
         return self
 
     @model_validator(mode="after")
@@ -374,6 +413,20 @@ class ServiceProfile(BaseModel):
                         f"does not match parameter_name_pattern "
                         f"'{self.parameter_name_pattern}'"
                     )
+        return self
+
+    @model_validator(mode="after")
+    def validate_parameter_schema(self) -> ServiceProfile:
+        """Validate that parameter_schema is a dict (JSON Schema object) if specified."""
+        if self.parameter_schema is not None:
+            if not isinstance(self.parameter_schema, dict):
+                raise ValueError("parameter_schema must be a JSON Schema object (dict)")
+            # Must have at least 'type' or 'properties' or '$ref' to be meaningful
+            if not any(k in self.parameter_schema for k in ("type", "properties", "$ref", "allOf", "anyOf", "oneOf")):
+                raise ValueError(
+                    "parameter_schema must contain at least one of: "
+                    "type, properties, $ref, allOf, anyOf, oneOf"
+                )
         return self
 
 

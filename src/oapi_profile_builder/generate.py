@@ -121,18 +121,73 @@ _R200_CONFORMANCE = {
     }
 }
 _R200_COLLECTION = {"description": "Collection metadata", "content": {"application/json": {"schema": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}, "title": {"type": "string"}, "description": {"type": "string"}, "links": _LINKS_ARRAY}}}}}
-_R200_FEATURES = {"description": "Feature collection", "content": {"application/json": {"schema": {"type": "object", "properties": {"instances": {"type": "array", "items": {"type": "object"}}, "features": {"type": "array", "items": {"type": "object"}}}}}}}
-
-_COVERAGE_RESPONSE = {
-    "200": {
-        "description": "Coverage response",
-        "content": {
-            "application/prs.coverage+json": {
-                "schema": {"$ref": f"{_EDR}/schemas/coverageJSON.yaml"}
+_R200_FEATURES = {
+    "description": "Feature collection",
+    "content": {
+        "application/json": {
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "type": {"type": "string", "const": "FeatureCollection"},
+                    "features": {
+                        "type": "array",
+                        "items": {"type": "object"},
+                    },
+                },
             }
-        },
-    }
+        }
+    },
 }
+
+def _coverage_response(coll: Collection, profile: "ServiceProfile | None") -> dict:
+    """Build a coverage response dict reflecting the collection's actual output formats."""
+    # Collect media_type → schema_ref from profile-level output_formats
+    fmt_map: dict[str, str | None] = {}
+    if profile:
+        for fmt in profile.output_formats:
+            fmt_map[fmt.name] = fmt.schema_ref
+
+    # Determine which formats this collection supports
+    coll_formats: list[str] = []
+    if coll.output_formats:
+        coll_formats = list(coll.output_formats)
+
+    content: dict = {}
+    if coll_formats:
+        for fmt_name in coll_formats:
+            schema_ref = fmt_map.get(fmt_name)
+            if fmt_name == "CoverageJSON":
+                media_type = "application/prs.coverage+json"
+                # Also accept the newer media type
+                alt_media = "application/vnd.cov+json"
+                schema = (
+                    {"$ref": schema_ref}
+                    if schema_ref
+                    else {"$ref": f"{_EDR}/schemas/coverageJSON.yaml"}
+                )
+                content[media_type] = {"schema": schema}
+                content[alt_media] = {"schema": schema}
+            elif fmt_name == "GeoJSON":
+                media_type = "application/geo+json"
+                schema = {"$ref": schema_ref} if schema_ref else {"type": "object"}
+                content[media_type] = {"schema": schema}
+            elif fmt_name == "NetCDF":
+                content["application/netcdf"] = {"schema": {"type": "string", "format": "binary"}}
+            else:
+                # Generic: look up media type from profile output_formats
+                if profile:
+                    for pf in profile.output_formats:
+                        if pf.name == fmt_name:
+                            schema = {"$ref": pf.schema_ref} if pf.schema_ref else {"type": "object"}
+                            content[pf.media_type] = {"schema": schema}
+                            break
+    else:
+        # Fallback: CoverageJSON only
+        content["application/prs.coverage+json"] = {
+            "schema": {"$ref": f"{_EDR}/schemas/coverageJSON.yaml"}
+        }
+
+    return {"200": {"description": "Coverage data response", "content": content}}
 
 # Parameters keyed by EDR query type
 _QUERY_PARAMS: dict[str, list[dict]] = {
@@ -176,19 +231,37 @@ _QUERY_PARAMS: dict[str, list[dict]] = {
 }
 
 
+def _operation_id(*parts: str) -> str:
+    """Build a valid operationId (letters, digits, underscores only).
+
+    Each part is sanitized by splitting on non-alphanumeric characters,
+    capitalizing the first letter of each word while preserving the rest,
+    then joining everything together.
+    """
+    import re as _re
+
+    def sanitize(s: str) -> str:
+        words = _re.split(r"[^a-zA-Z0-9]+", s)
+        return "".join((w[0].upper() + w[1:]) for w in words if w)
+
+    return "".join(sanitize(p) for p in parts)
+
+
 def _collection_response_schema(coll: Collection,
                                 profile: "ServiceProfile | None") -> dict:
     """Build a 200 response schema for a single collection endpoint.
 
-    When the profile specifies extent_requirements (allowed_crs / crs_pattern,
-    allowed_trs / trs_pattern, allowed_vrs / vrs_pattern) or a
-    parameter_name_pattern, those constraints are embedded in the response
-    schema so that downstream tools (schemathesis, CITE, client SDKs) can
-    enforce them at runtime.
+    Includes:
+    - CRS constraints from extent_requirements (enum or pattern)
+    - TRS/VRS constraints from extent_requirements
+    - Full temporal extent schema (interval, values, trs)
+    - Collection-level crs array
+    - Full parameter_names objects with all fields
+    - parameter_name_pattern as propertyNames constraint
     """
-    # Start with the base collection schema
     crs_schema: dict = {"type": "string"}
-    param_name_schema: dict = {"type": "string"}
+    trs_schema: dict = {"type": "string"}
+    vrs_schema: dict = {"type": "string"}
 
     if profile and profile.extent_requirements:
         er = profile.extent_requirements
@@ -196,76 +269,232 @@ def _collection_response_schema(coll: Collection,
             crs_schema["enum"] = er.allowed_crs
         elif er.crs_pattern:
             crs_schema["pattern"] = er.crs_pattern
-
-    if profile and profile.parameter_name_pattern:
-        param_name_schema["pattern"] = profile.parameter_name_pattern
-
-    schema: dict = {
-        "type": "object",
-        "required": ["id"],
-        "properties": {
-            "id": {"type": "string"},
-            "title": {"type": "string"},
-            "description": {"type": "string"},
-            "links": _LINKS_ARRAY,
-            "crs": {
-                "type": "array",
-                "items": crs_schema,
-            },
-            "parameter_names": {
-                "type": "object",
-                "additionalProperties": {"type": "object"},
-            },
-        },
-    }
-
-    # If we have a parameter_name_pattern, constrain the property names
-    if profile and profile.parameter_name_pattern:
-        schema["properties"]["parameter_names"]["propertyNames"] = param_name_schema
-
-    # Embed TRS constraint in extent.temporal if present
-    if profile and profile.extent_requirements:
-        er = profile.extent_requirements
-        trs_schema: dict = {"type": "string"}
         if er.allowed_trs:
             trs_schema["enum"] = er.allowed_trs
         elif er.trs_pattern:
             trs_schema["pattern"] = er.trs_pattern
-
-        vrs_schema: dict = {"type": "string"}
         if er.allowed_vrs:
             vrs_schema["enum"] = er.allowed_vrs
         elif er.vrs_pattern:
             vrs_schema["pattern"] = er.vrs_pattern
 
-        schema["properties"]["extent"] = {
-            "type": "object",
-            "properties": {
-                "spatial": {
-                    "type": "object",
-                    "properties": {
-                        "bbox": {"type": "array"},
-                        "crs": crs_schema,
+    # Build parameter_names schema — use profile-supplied schema if present,
+    # otherwise fall back to the default EDR Parameter schema.
+    if profile and profile.parameter_schema:
+        # Deep-copy so we don't mutate the profile model
+        import copy
+        param_item_schema = copy.deepcopy(profile.parameter_schema)
+    else:
+        param_item_schema = _parameter_schema()
+
+    param_names_schema: dict = {
+        "type": "object",
+        "additionalProperties": param_item_schema,
+    }
+    if profile and profile.parameter_name_pattern:
+        param_names_schema["propertyNames"] = {
+            "type": "string",
+            "pattern": profile.parameter_name_pattern,
+        }
+
+    # Build output_formats enum from collection's declared formats
+    output_formats_schema: dict = {"type": "array", "items": {"type": "string"}}
+    if coll.output_formats:
+        output_formats_schema["items"] = {"type": "string", "enum": list(coll.output_formats)}
+
+    # Build crs array schema — use collection-level crs list if present
+    crs_array_schema: dict = {"type": "array", "items": crs_schema}
+    if coll.crs:
+        # Collection declares its supported CRS list explicitly
+        crs_array_schema["items"] = {"type": "string", "enum": list(coll.crs)}
+
+    schema: dict = {
+        "type": "object",
+        "required": ["id", "links", "extent"],
+        "properties": {
+            "id": {"type": "string"},
+            "title": {"type": "string"},
+            "description": {"type": "string"},
+            "keywords": {"type": "array", "items": {"type": "string"}},
+            "links": _LINKS_ARRAY,
+            "crs": crs_array_schema,
+            "output_formats": output_formats_schema,
+            "parameter_names": param_names_schema,
+            "extent": {
+                "type": "object",
+                "required": ["spatial"],
+                "properties": {
+                    "spatial": {
+                        "type": "object",
+                        "required": ["bbox", "crs"],
+                        "properties": {
+                            "bbox": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {"type": "number"},
+                                    "minItems": 4,
+                                    "maxItems": 6,
+                                },
+                            },
+                            "crs": crs_schema,
+                        },
                     },
-                },
-                "temporal": {
-                    "type": "object",
-                    "properties": {
-                        "trs": trs_schema,
+                    "temporal": {
+                        "type": "object",
+                        "properties": {
+                            "interval": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {"type": "string", "format": "date-time"},
+                                    "minItems": 2,
+                                    "maxItems": 2,
+                                },
+                            },
+                            "values": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                            },
+                            "trs": trs_schema,
+                        },
                     },
-                },
-                "vertical": {
-                    "type": "object",
-                    "properties": {
-                        "vrs": vrs_schema,
+                    "vertical": {
+                        "type": "object",
+                        "properties": {
+                            "interval": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                            },
+                            "values": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                            },
+                            "vrs": vrs_schema,
+                        },
+                    },
+                    "custom": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["id", "interval", "reference"],
+                            "properties": {
+                                "id": {"type": "string"},
+                                "interval": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "values": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "reference": {"type": "string"},
+                            },
+                        },
                     },
                 },
             },
-        }
+            "data_queries": {
+                "type": "object",
+                "description": "Available EDR data query types for this collection",
+                "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                        "link": {
+                            "type": "object",
+                            "properties": {
+                                "href": {"type": "string"},
+                                "rel": {"type": "string"},
+                                "variables": {
+                                    "type": "object",
+                                    "properties": {
+                                        "query_type": {"type": "string"},
+                                        "output_formats": {
+                                            "type": "array",
+                                            "items": {"type": "string"},
+                                        },
+                                        "crs_details": {
+                                            "type": "array",
+                                            "description": "CRS values supported by this data query",
+                                            "items": {
+                                                "type": "object",
+                                                "required": ["crs"],
+                                                "properties": {
+                                                    "crs": crs_schema,
+                                                    "wkt": {"type": "string"},
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
 
     return {
         "description": "Collection metadata",
         "content": {"application/json": {"schema": schema}},
+    }
+
+
+def _parameter_schema() -> dict:
+    """OpenAPI schema for a single EDR Parameter object."""
+    return {
+        "type": "object",
+        "required": ["type", "observedProperty"],
+        "properties": {
+            "type": {"type": "string", "const": "Parameter"},
+            "id": {"type": "string"},
+            "label": {"type": "string"},
+            "description": {"type": "string"},
+            "data-type": {"type": "string", "enum": ["integer", "float", "string"]},
+            "unit": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    "label": {"type": "string"},
+                    "symbol": {
+                        "oneOf": [
+                            {"type": "string"},
+                            {
+                                "type": "object",
+                                "required": ["value", "type"],
+                                "properties": {
+                                    "value": {"type": "string"},
+                                    "type": {"type": "string"},
+                                },
+                            },
+                        ]
+                    },
+                },
+            },
+            "observedProperty": {
+                "type": "object",
+                "required": ["label"],
+                "properties": {
+                    "id": {"type": "string"},
+                    "label": {"type": "string"},
+                    "description": {"type": "string"},
+                },
+            },
+            "measurementType": {
+                "type": "object",
+                "required": ["method", "duration"],
+                "properties": {
+                    "method": {"type": "string"},
+                    "duration": {"type": "string"},
+                },
+            },
+            "extent": {"type": "object"},
+        },
+        "additionalProperties": True,
     }
 
 
@@ -280,11 +509,13 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
     # parameter-name constraints from the profile's extent_requirements
     # and parameter_name_pattern.
     coll_schema = _collection_response_schema(coll, profile)
+    # Build coverage response reflecting this collection's actual output formats
+    cov_resp = _coverage_response(coll, profile)
 
     paths[base] = {"get": {
         "summary": f"Get {coll.title or coll.id} metadata",
         "description": desc,
-        "operationId": f"describe{coll.id.title().replace('_', '')}Collection",
+        "operationId": _operation_id("describe", coll.id, "Collection"),
         "tags": [tag],
         "parameters": [_F, _LANG],
         "responses": {
@@ -297,7 +528,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
     paths[f"{base}/items"] = {"get": {
         "summary": f"Get {coll.title or coll.id} items",
         "description": desc,
-        "operationId": f"get{coll.id.title().replace('_', '')}Features",
+        "operationId": _operation_id("get", coll.id, "Features"),
         "tags": [tag],
         "parameters": [_F, _LANG],
         "responses": {
@@ -308,7 +539,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
     paths[f"{base}/items/{{featureId}}"] = {"get": {
         "summary": f"Get {coll.title or coll.id} item by id",
         "description": desc,
-        "operationId": f"get{coll.id.title().replace('_', '')}Feature",
+        "operationId": _operation_id("get", coll.id, "Feature"),
         "tags": [tag],
         "parameters": [
             {"name": "featureId", "in": "path", "required": True, "description": "Feature identifier", "schema": {"type": "string"}},
@@ -332,7 +563,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
             paths[f"{base}/instances"] = {"get": {
                 "summary": f"Get pre-defined instances of {coll.id}",
                 "description": desc,
-                "operationId": f"getInstances{coll.id.title().replace('_', '')}",
+                "operationId": _operation_id("getInstances", coll.id),
                 "tags": [tag],
                 "parameters": [_F],
                 "responses": {
@@ -351,7 +582,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
             paths[f"{base}/instances/{{instanceId}}"] = {"get": {
                 "summary": f"Get {coll.id} instance",
                 "description": desc,
-                "operationId": f"getInstance{coll.id.title().replace('_', '')}",
+                "operationId": _operation_id("getInstance", coll.id),
                 "tags": [tag],
                 "parameters": [instance_id_param, _F],
                 "responses": {"200": _R200_FEATURES},
@@ -362,27 +593,27 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
                 paths[f"{base}/instances/{{instanceId}}/{sub_qt}"] = {"get": {
                     "summary": f"query {coll.id} instance by {sub_qt}",
                     "description": desc,
-                    "operationId": f"query{sub_qt.title()}Instance{coll.id.title().replace('_', '')}",
+                    "operationId": _operation_id("query", sub_qt, "Instance", coll.id),
                     "tags": [tag],
                     "parameters": [instance_id_param, *sub_params],
-                    "responses": _COVERAGE_RESPONSE,
+                    "responses": cov_resp,
                 }}
 
         elif qt == "items":
             paths[f"{base}/items"] = {"get": {
                 "summary": f"query {coll.id} by items",
                 "description": desc,
-                "operationId": f"queryItems{coll.id.title().replace('_', '')}",
+                "operationId": _operation_id("queryItems", coll.id),
                 "tags": [tag],
                 "parameters": params,
-                "responses": _COVERAGE_RESPONSE,
+                "responses": cov_resp,
             }}
 
         elif qt == "locations":
             paths[f"{base}/locations"] = {"get": {
                 "summary": f"Get pre-defined locations of {coll.id}",
                 "description": desc,
-                "operationId": f"getLocations{coll.id.title().replace('_', '')}",
+                "operationId": _operation_id("getLocations", coll.id),
                 "tags": [tag],
                 "parameters": params,
                 "responses": {
@@ -393,23 +624,23 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
             paths[f"{base}/locations/{{locId}}"] = {"get": {
                 "summary": f"query {coll.id} by location",
                 "description": desc,
-                "operationId": f"getLocation{coll.id.title().replace('_', '')}",
+                "operationId": _operation_id("getLocation", coll.id),
                 "tags": [tag],
                 "parameters": [
                     {"$ref": f"{_EDR}/parameters/locationId.yaml"},
                     _DATETIME, _PARAM_NAME, _F,
                 ],
-                "responses": _COVERAGE_RESPONSE,
+                "responses": cov_resp,
             }}
 
         else:
             paths[f"{base}/{qt}"] = {"get": {
                 "summary": f"query {coll.id} by {qt}",
                 "description": desc,
-                "operationId": f"query{qt.title()}{coll.id.title().replace('_', '')}",
+                "operationId": _operation_id("query", qt, coll.id),
                 "tags": [tag],
                 "parameters": params,
-                "responses": _COVERAGE_RESPONSE,
+                "responses": cov_resp,
             }}
 
     return paths
@@ -452,6 +683,7 @@ def _core_paths(profile: ServiceProfile) -> dict:
         }},
         "/openapi": {"get": {
             "summary": "OpenAPI definition",
+            "description": "Retrieve the OpenAPI definition document for this API.",
             "operationId": "getOpenAPI",
             "tags": ["server"],
             "parameters": [_F],
@@ -481,7 +713,7 @@ def _processes_paths(profile: ServiceProfile) -> dict:
             "operationId": "getJobs",
             "tags": ["jobs"],
             "responses": {
-                "200": {"$ref": "#/components/responses/200"},
+                "200": {"description": "List of jobs", "content": {"application/json": {"schema": {"type": "object"}}}},
                 "404": _ERR_404,
                 "default": _ERR_DEFAULT,
             },
@@ -494,7 +726,7 @@ def _processes_paths(profile: ServiceProfile) -> dict:
                 "tags": ["jobs"],
                 "parameters": [{"name": "jobId", "in": "path", "required": True, "description": "job identifier", "schema": {"type": "string"}}, _F],
                 "responses": {
-                    "200": {"$ref": "#/components/responses/200"},
+                    "200": {"description": "Job details", "content": {"application/json": {"schema": {"type": "object"}}}},
                     "404": _ERR_404,
                     "default": _ERR_DEFAULT,
                 },
@@ -506,7 +738,7 @@ def _processes_paths(profile: ServiceProfile) -> dict:
                 "tags": ["jobs"],
                 "parameters": [{"name": "jobId", "in": "path", "required": True, "description": "job identifier", "schema": {"type": "string"}}],
                 "responses": {
-                    "204": {"$ref": "#/components/responses/204"},
+                    "204": {"description": "Job deleted successfully"},
                     "404": _ERR_404,
                     "default": _ERR_DEFAULT,
                 },
@@ -519,7 +751,7 @@ def _processes_paths(profile: ServiceProfile) -> dict:
             "tags": ["jobs"],
             "parameters": [{"name": "jobId", "in": "path", "required": True, "description": "job identifier", "schema": {"type": "string"}}, _F],
             "responses": {
-                "200": {"$ref": "#/components/responses/200"},
+                "200": {"description": "Job results", "content": {"application/json": {"schema": {"type": "object"}}}},
                 "404": _ERR_404,
                 "default": _ERR_DEFAULT,
             },
@@ -533,18 +765,18 @@ def _processes_paths(profile: ServiceProfile) -> dict:
         paths[f"/processes/{pid}"] = {"get": {
             "summary": "Get process metadata",
             "description": pdesc,
-            "operationId": f"describe{pid.title().replace('-', '')}Process",
+            "operationId": _operation_id("describe", pid, "Process"),
             "tags": [pid],
             "parameters": [_F],
             "responses": {
-                "200": {"$ref": "#/components/responses/200"},
+                "200": {"description": f"{ptitle} process metadata", "content": {"application/json": {"schema": {"type": "object"}}}},
                 "default": _ERR_DEFAULT,
             },
         }}
         paths[f"/processes/{pid}/execution"] = {"post": {
             "summary": f"Process {ptitle} execution",
             "description": pdesc,
-            "operationId": f"execute{pid.title().replace('-', '')}Job",
+            "operationId": _operation_id("execute", pid, "Job"),
             "tags": [pid],
             "parameters": [{
                 "name": "Prefer",
@@ -586,24 +818,53 @@ def build_openapi(profile: ServiceProfile) -> dict:
         tags += [{"name": p["id"]} for p in profile.processes]
         tags += [{"name": "jobs"}]
 
+    # Build f parameter enum from profile output formats + standard formats
+    f_enum = ["json", "html"]
+    for fmt in profile.output_formats:
+        if fmt.media_type not in f_enum:
+            f_enum.append(fmt.media_type)
+
+    # Build contact from document_metadata if available
+    m = profile.document_metadata
+    contact: dict = {}
+    if m and m.editors:
+        contact["name"] = m.editors[0]
+    if m and m.submitting_orgs:
+        contact["x-organization"] = m.submitting_orgs[0]
+    # Fall back to a generic contact if nothing is specified
+    if not contact:
+        contact["name"] = profile.title
+
     return {
-        "openapi": "3.0.3",
+        "openapi": "3.1.0",
         "info": {
             "title": profile.title,
             "version": profile.version,
             "description": f"OGC API - EDR Part 3 Service Profile: {profile.title}",
             "x-ogc-profile": profile.req_uri,
+            "contact": contact,
         },
-        # Per OGC API - EDR Part 3 REQ_publishing: servers SHALL be blank (profile is not implementation-specific)
-        "servers": [],
+        # Per OGC API - EDR Part 3 REQ_publishing: this profile is implementation-independent.
+        # The placeholder server URL "/" is required by OpenAPI validators but implementations
+        # SHALL substitute their own server URL when deploying this profile.
+        "servers": [
+            {
+                "url": "/",
+                "description": (
+                    "Placeholder server URL. Per OGC API - EDR Part 3 REQ_publishing, "
+                    "this profile document is implementation-independent. "
+                    "Implementations SHALL substitute their own server URL."
+                ),
+            }
+        ],
         "tags": tags,
         "paths": paths,
         "components": {
             "parameters": {
                 "f": {
                     "name": "f", "in": "query", "required": False,
-                    "description": "The optional f parameter indicates the output format which the server shall provide as part of the response document. The default format is GeoJSON.",
-                    "schema": {"type": "string", "default": "json", "enum": ["json", "html", "jsonld"]},
+                    "description": "The optional f parameter indicates the output format which the server shall provide as part of the response document.",
+                    "schema": {"type": "string", "enum": f_enum},
                     "style": "form", "explode": False,
                 },
                 "lang": {
@@ -613,8 +874,6 @@ def build_openapi(profile: ServiceProfile) -> dict:
                 },
             },
             "responses": {
-                "200": {"description": "Successful operation", "content": {"application/json": {"schema": {"type": "object"}}}},
-                "204": {"description": "No content"},
                 "default": {"description": "Unexpected error", "content": {"application/json": {"schema": {"type": "object"}}}},
             },
         },
