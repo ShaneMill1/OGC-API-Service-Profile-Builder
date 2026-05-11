@@ -17,9 +17,11 @@ on:
           - edr
           - features
           - both
-  # Also run on a schedule against the known NWSViz server
-  schedule:
-    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
+  # Scheduled run disabled — the target server is behind a VPN and not
+  # reachable from GitHub Actions runners. Re-enable by uncommenting below
+  # and pointing at a publicly accessible server, or use a self-hosted runner.
+  # schedule:
+  #   - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
 
 permissions:
   contents: read
