@@ -1,0 +1,13 @@
+[[req_nwsviz_process_zarr_wind_streaming]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwsviz/process-zarr-wind-streaming
+statement:: The service SHALL provide the edr-zarr-wind-streaming process for deriving wind speed and direction from u/v components via a virtual Zarr endpoint.
+part:: The service SHALL expose a /processes/edr-zarr-wind-streaming endpoint.
+part:: The process SHALL accept collection, instance, output_parameters, and zoom_level as required inputs.
+part:: The output_parameters input SHALL accept wind_speed, wind_direction, or both.
+part:: The process SHALL accept datetime, epsg, and units as optional inputs.
+part:: The process SHALL support sync-execute job control.
+part:: The process SHALL return a zarr_endpoint output containing a URL to stream wind data chunks on-demand.
+====

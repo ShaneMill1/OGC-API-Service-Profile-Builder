@@ -1,0 +1,13 @@
+[[ats_insitu_observations_profile_error_handling]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu_observations_profile/error-handling
+target:: /req/insitu_observations_profile/error-handling
+test-purpose:: Validate that error handling is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nonexistent-collection.
+step:: Verify HTTP status is 404.
+step:: Verify Content-Type is application/problem+json.
+step:: Verify response body includes type and title properties.
+====

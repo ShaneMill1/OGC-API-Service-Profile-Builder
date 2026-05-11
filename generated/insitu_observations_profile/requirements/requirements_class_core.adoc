@@ -1,0 +1,17 @@
+[[req_class_insitu_observations_profile]]
+[requirements_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/insitu_observations_profile
+target-type:: In-situ Observations EDR Profile Profile Standard
+requirement:: /req/insitu_observations_profile/conformance
+requirement:: /req/insitu_observations_profile/collections-endpoint
+requirement:: /req/insitu_observations_profile/collection-crs
+requirement:: /req/insitu_observations_profile/collection-temporal-extent
+requirement:: /req/insitu_observations_profile/collection-custom-dimensions
+requirement:: /req/insitu_observations_profile/data-queries
+requirement:: /req/insitu_observations_profile/output-formats
+requirement:: /req/insitu_observations_profile/parameter-names
+requirement:: /req/insitu_observations_profile/locations-response
+requirement:: /req/insitu_observations_profile/error-handling
+====

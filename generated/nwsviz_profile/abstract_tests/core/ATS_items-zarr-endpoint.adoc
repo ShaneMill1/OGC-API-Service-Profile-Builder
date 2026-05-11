@@ -1,0 +1,16 @@
+[[ats_nwsviz_items_zarr_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwsviz/items-zarr-endpoint
+target:: /req/nwsviz/items-zarr-endpoint
+test-purpose:: Validate that items zarr endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections/{id}/items.
+step:: Verify the response includes an item with id zarr.
+step:: Verify the zarr item includes a link with rel=zarr.
+step:: Send GET request to the zarr store root (.zarr/.zmetadata or .zarr/.zattrs).
+step:: Verify the response is valid Zarr metadata JSON.
+step:: Open the zarr store using xarray.open_zarr and verify the dataset dimensions and variables are accessible.
+step:: Verify the dataset spatio-temporal extent matches the collection extent.
+====

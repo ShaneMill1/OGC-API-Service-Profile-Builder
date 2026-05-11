@@ -1,0 +1,3 @@
+== Scope
+
+This standard defines the NWSViz EDR Service Profile. It specifies requirements and conformance tests for implementations of this profile.

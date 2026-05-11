@@ -1,0 +1,12 @@
+[[ats_minimal_profile_temperature_geojson]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/minimal_profile/temperature-geojson
+target:: /req/minimal_profile/temperature-geojson
+test-purpose:: Validate that temperature geojson is correctly implemented.
+test-method::
+step:: Send GET request to /collections/temperature/items.
+step:: Verify the response Content-Type is application/geo+json.
+step:: Verify each feature contains temp property.
+====

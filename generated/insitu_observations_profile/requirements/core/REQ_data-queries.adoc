@@ -1,0 +1,11 @@
+[[req_insitu_observations_profile_data_queries]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu_observations_profile/data-queries
+statement:: The insitu-observations collection SHALL support locations, area, and radius data queries.
+part:: The collection SHALL provide a /collections/insitu-observations/locations endpoint.
+part:: The collection SHALL provide a /collections/insitu-observations/area endpoint.
+part:: The collection SHALL provide a /collections/insitu-observations/radius endpoint.
+part:: The radius query variables SHALL include within_units containing at least m.
+====

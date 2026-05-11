@@ -1,0 +1,14 @@
+[[ats_nwsviz_conformance]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwsviz/conformance
+target:: /req/nwsviz/conformance
+test-purpose:: Validate that conformance is correctly implemented.
+test-method::
+step:: Send GET request to /conformance.
+step:: Verify the conformsTo array includes http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core.
+step:: Verify the conformsTo array includes http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.
+step:: Verify the conformsTo array includes http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/conf-class-core.
+step:: Verify the conformsTo array includes http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/core.
+====

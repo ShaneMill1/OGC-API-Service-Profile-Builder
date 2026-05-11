@@ -1,0 +1,9 @@
+[[req_insitu_observations_profile_collection_temporal_extent]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu_observations_profile/collection-temporal-extent
+statement:: The insitu-observations collection SHALL declare a temporal extent using the Gregorian TRS.
+part:: The extent.temporal.trs SHALL be Gregorian.
+part:: The extent.temporal.interval SHALL contain at least one valid ISO 8601 interval.
+====

@@ -1,0 +1,12 @@
+[[req_insitu_observations_profile_parameter_names]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu_observations_profile/parameter-names
+statement:: Each parameter in parameter_names SHALL conform to the MetOcean EDR Profile parameter conventions.
+part:: Each parameter SHALL specify label, description, unit, observedProperty, and measurementType.
+part:: unit.symbol.type SHALL be a QUDT unit URI of the form https://qudt.org/vocab/unit/<unit>.
+part:: observedProperty.id SHALL be a CF standard name URI of the form https://vocab.nerc.ac.uk/standard_name/<name>.
+part:: Each parameter SHALL specify metocean:standard_name matching a value in extent.custom standard_name.
+part:: Each parameter SHALL specify metocean:level matching a value in extent.custom level.
+====

@@ -1,0 +1,14 @@
+[[ats_nwsviz_position_coveragejson]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwsviz/position-coveragejson
+target:: /req/nwsviz/position-coveragejson
+test-purpose:: Validate that position coveragejson is correctly implemented.
+test-method::
+step:: Send GET request to /collections/{id}/position?coords=POINT(lon lat) for a valid coordinate within the collection extent.
+step:: Verify the response status is 200.
+step:: Verify the response Content-Type is application/prs.coverage+json.
+step:: Verify the response body is a valid CoverageJSON Coverage object with a type field equal to Coverage.
+step:: Verify the response domain contains the requested position.
+====

@@ -1,0 +1,9 @@
+[[req_insitu_observations_profile_error_handling]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu_observations_profile/error-handling
+statement:: The service SHALL handle errors per RFC 9457.
+part:: A 4xx response SHALL include a body conforming to RFC 9457 Problem Details.
+part:: A query for data inside the extent that returns no data SHALL respond with HTTP 204.
+====

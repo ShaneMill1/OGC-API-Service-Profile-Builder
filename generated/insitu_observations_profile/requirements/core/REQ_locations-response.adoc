@@ -1,0 +1,10 @@
+[[req_insitu_observations_profile_locations_response]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu_observations_profile/locations-response
+statement:: The locations query SHALL return a GeoJSON FeatureCollection of station locations.
+part:: The response Content-Type SHALL be application/geo+json.
+part:: Each feature SHALL have an id property of type string.
+part:: Each feature SHALL have a properties.name property of type string.
+====

@@ -1,0 +1,12 @@
+[appendix,obligation=normative]
+== Abstract Test Suite
+
+include::../abstract_tests/ATS_class_core.adoc[]
+
+include::../abstract_tests/core/ATS_conformance.adoc[]
+include::../abstract_tests/core/ATS_collections-endpoint.adoc[]
+include::../abstract_tests/core/ATS_position-coveragejson.adoc[]
+include::../abstract_tests/core/ATS_items-zarr-endpoint.adoc[]
+include::../abstract_tests/core/ATS_process-zarr-difference.adoc[]
+include::../abstract_tests/core/ATS_process-zarr-difference-streaming.adoc[]
+include::../abstract_tests/core/ATS_process-zarr-wind-streaming.adoc[]

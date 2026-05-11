@@ -1,0 +1,12 @@
+[[ats_insitu_observations_profile_collection_temporal_extent]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu_observations_profile/collection-temporal-extent
+target:: /req/insitu_observations_profile/collection-temporal-extent
+test-purpose:: Validate that collection temporal extent is correctly implemented.
+test-method::
+step:: Send GET request to /collections/insitu-observations.
+step:: Verify extent.temporal.trs equals Gregorian.
+step:: Verify extent.temporal.interval contains at least one two-element array.
+====

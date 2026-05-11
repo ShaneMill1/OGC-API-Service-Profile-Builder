@@ -1,0 +1,12 @@
+[[req_nwsviz_process_zarr_difference]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwsviz/process-zarr-difference
+statement:: The service SHALL provide the edr-zarr-difference process for computing the difference between two EDR Zarr datasets.
+part:: The service SHALL expose a /processes/edr-zarr-difference endpoint.
+part:: The process SHALL accept collection_a, instance_a, collection_b, instance_b, parameter_name, zoom_level, crs, and unit as required inputs.
+part:: The process SHALL accept datetime as an optional input for valid time selection.
+part:: The process SHALL support sync-execute job control.
+part:: The process SHALL return a difference_result output containing the result of (A - B) as a virtual Zarr dataset.
+====

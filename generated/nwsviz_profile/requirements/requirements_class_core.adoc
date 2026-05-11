@@ -1,0 +1,14 @@
+[[req_class_nwsviz]]
+[requirements_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwsviz
+target-type:: NWSViz EDR Service Profile Profile Standard
+requirement:: /req/nwsviz/conformance
+requirement:: /req/nwsviz/collections-endpoint
+requirement:: /req/nwsviz/position-coveragejson
+requirement:: /req/nwsviz/items-zarr-endpoint
+requirement:: /req/nwsviz/process-zarr-difference
+requirement:: /req/nwsviz/process-zarr-difference-streaming
+requirement:: /req/nwsviz/process-zarr-wind-streaming
+====

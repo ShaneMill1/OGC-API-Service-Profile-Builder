@@ -1,0 +1,9 @@
+[[req_insitu_observations_profile_collection_custom_dimensions]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu_observations_profile/collection-custom-dimensions
+statement:: The insitu-observations collection SHALL define standard_name and level custom dimensions.
+part:: extent.custom SHALL contain an object with id standard_name and reference https://vocab.nerc.ac.uk/standard_name/.
+part:: extent.custom SHALL contain an object with id level and reference describing measurement height in meters.
+====

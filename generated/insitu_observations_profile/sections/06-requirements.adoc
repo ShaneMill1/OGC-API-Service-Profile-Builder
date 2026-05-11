@@ -1,0 +1,14 @@
+== Requirements
+
+include::../requirements/requirements_class_core.adoc[]
+
+include::../requirements/core/REQ_conformance.adoc[]
+include::../requirements/core/REQ_collections-endpoint.adoc[]
+include::../requirements/core/REQ_collection-crs.adoc[]
+include::../requirements/core/REQ_collection-temporal-extent.adoc[]
+include::../requirements/core/REQ_collection-custom-dimensions.adoc[]
+include::../requirements/core/REQ_data-queries.adoc[]
+include::../requirements/core/REQ_output-formats.adoc[]
+include::../requirements/core/REQ_parameter-names.adoc[]
+include::../requirements/core/REQ_locations-response.adoc[]
+include::../requirements/core/REQ_error-handling.adoc[]

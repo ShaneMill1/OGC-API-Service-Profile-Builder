@@ -1,0 +1,35 @@
+= NWSViz EDR Service Profile
+:doctype: draft-standard
+:docsubtype: implementation
+:edition: 1.0
+:language: en
+:committee: technical
+:docnumber: 24-nwsviz
+:copyright-year: 2026
+:published-date: 2026-01-01
+:issued-date: 2026-01-01
+:received-date: 2026-01-01
+:external-id: http://www.opengis.net/doc/dp/ogcapi-edr-nwsviz/1.0
+:fullname: Shane Mill
+:role: editor
+:keywords: ogcdoc, OGC API, EDR, Environmental Data Retrieval, NWSViz, service profile, weather
+:submitting-organizations: NOAA/NWS/MDL
+:mn-document-class: ogc
+:mn-output-extensions: xml,html,pdf
+:local-cache-only:
+
+include::sections/00-abstract.adoc[]
+
+include::sections/01-preface.adoc[]
+
+include::sections/02-scope.adoc[]
+
+include::sections/03-conformance.adoc[]
+
+include::sections/04-references.adoc[]
+
+include::sections/05-terms.adoc[]
+
+include::sections/06-requirements.adoc[]
+
+include::sections/07-abstract-tests.adoc[]

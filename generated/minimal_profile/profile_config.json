@@ -1,0 +1,125 @@
+{
+  "name": "minimal_profile",
+  "title": "Minimal EDR Profile Example",
+  "version": "1.0",
+  "server_url": null,
+  "collections": [
+    {
+      "id": "temperature",
+      "title": "Temperature Observations",
+      "description": "Real-time temperature observations",
+      "keywords": null,
+      "links": [
+        {
+          "href": "https://example.com/collections/temperature",
+          "hreflang": null,
+          "rel": "self",
+          "type": "application/json",
+          "title": null,
+          "length": null,
+          "templated": null,
+          "variables": null
+        }
+      ],
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180.0,
+              -90.0,
+              180.0,
+              90.0
+            ]
+          ],
+          "crs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+        },
+        "temporal": null,
+        "vertical": null,
+        "custom": null
+      },
+      "data_queries": null,
+      "crs": null,
+      "output_formats": null,
+      "parameter_names": {
+        "temp": {
+          "type": "Parameter",
+          "id": null,
+          "label": null,
+          "description": "Air temperature",
+          "dataType": null,
+          "unit": {
+            "id": null,
+            "label": "Celsius",
+            "symbol": {
+              "value": "°C",
+              "type": "http://www.opengis.net/def/uom/UCUM/degC"
+            }
+          },
+          "observedProperty": {
+            "id": null,
+            "label": "Air Temperature",
+            "description": null,
+            "categories": null
+          },
+          "extent": null,
+          "measurementType": null
+        }
+      },
+      "distanceunits": null
+    }
+  ],
+  "collection_examples": {},
+  "requirements": [
+    {
+      "id": "temperature-geojson",
+      "statement": "The temperature collection SHALL return GeoJSON features.",
+      "parts": [
+        "The service SHALL provide a /collections/temperature/items endpoint.",
+        "The response Content-Type SHALL be application/geo+json."
+      ]
+    }
+  ],
+  "abstract_tests": [
+    {
+      "id": "temperature-geojson",
+      "requirement_id": "temperature-geojson",
+      "steps": [
+        "Send GET request to /collections/temperature/items.",
+        "Verify the response Content-Type is application/geo+json.",
+        "Verify each feature contains temp property."
+      ]
+    }
+  ],
+  "pubsub": null,
+  "processes": [],
+  "document_metadata": null,
+  "required_conformance_classes": [
+    "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
+  ],
+  "extent_requirements": {
+    "minimum_bbox": [
+      -180.0,
+      -90.0,
+      180.0,
+      90.0
+    ],
+    "allowed_crs": [
+      "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+    ],
+    "crs_pattern": null,
+    "allowed_trs": null,
+    "trs_pattern": null,
+    "allowed_vrs": null,
+    "vrs_pattern": null
+  },
+  "output_formats": [
+    {
+      "name": "GeoJSON",
+      "media_type": "application/geo+json",
+      "schema_ref": "https://geojson.org/schema/FeatureCollection.json"
+    }
+  ],
+  "collection_id_pattern": null,
+  "parameter_name_pattern": null,
+  "parameter_schema": null
+}

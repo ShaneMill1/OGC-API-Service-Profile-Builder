@@ -1,0 +1,15 @@
+[[ats_insitu_observations_profile_parameter_names]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu_observations_profile/parameter-names
+target:: /req/insitu_observations_profile/parameter-names
+test-purpose:: Validate that parameter names is correctly implemented.
+test-method::
+step:: Send GET request to /collections/insitu-observations.
+step:: For each parameter in parameter_names, verify label, description, unit, observedProperty, and measurementType are present.
+step:: Verify unit.symbol.type starts with https://qudt.org/vocab/unit/.
+step:: Verify observedProperty.id starts with https://vocab.nerc.ac.uk/standard_name/.
+step:: Verify metocean:standard_name is present and matches a value in extent.custom standard_name.values.
+step:: Verify metocean:level is present and matches a value in extent.custom level.values.
+====

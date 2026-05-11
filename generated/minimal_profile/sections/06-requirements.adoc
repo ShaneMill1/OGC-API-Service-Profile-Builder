@@ -1,0 +1,5 @@
+== Requirements
+
+include::../requirements/requirements_class_core.adoc[]
+
+include::../requirements/core/REQ_temperature-geojson.adoc[]

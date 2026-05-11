@@ -1,0 +1,5033 @@
+openapi: 3.1.0
+info:
+  title: NWSViz EDR Service Profile
+  version: '1.0'
+  description: 'OGC API - EDR Part 3 Service Profile: NWSViz EDR Service Profile'
+  x-ogc-profile: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwsviz
+  contact:
+    name: Shane Mill
+    x-organization: NOAA/NWS/MDL
+servers:
+- url: /
+  description: Placeholder server URL. Per OGC API - EDR Part 3 REQ_publishing, this
+    profile document is implementation-independent. Implementations SHALL substitute
+    their own server URL.
+tags:
+- name: server
+  description: NWSViz EDR Service Profile
+- name: aigfs0p25_v1p0_global_latlon
+  description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in icechunk
+    format
+- name: air_quality_alaska_polar_stereographic
+  description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region stored
+    in icechunk format
+- name: air_quality_conus_lambert
+  description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+    format
+- name: air_quality_hawaii_mercator
+  description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+    format
+- name: gefs0p25_v12p3_global_latlon
+  description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+    format
+- name: gefs0p5_v12p3_global_latlon
+  description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+    format
+- name: gfs0p25_v16p3_global_latlon
+  description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+    format
+- name: gfs0p25_v17_global_latlon
+  description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+    format
+- name: nbm_v5p0_conus_lambert
+  description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk format
+- name: processed_gefs0p25_v12p3_global_latlon
+  description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored
+    in icechunk format
+- name: rtma2p5_v2p10_conus_lambert
+  description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+    format
+- name: urma2p5_v2p10_conus_lambert
+  description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+    format
+- name: petss_test
+  description: P-ETSS test data collection from local filesystem
+- name: edr-zarr-difference
+- name: edr-zarr-difference-streaming
+- name: edr-zarr-wind-streaming
+- name: jobs
+paths:
+  /:
+    get:
+      summary: Landing page
+      description: Landing page
+      operationId: getLandingPage
+      tags:
+      - server
+      parameters:
+      - &id002
+        $ref: '#/components/parameters/f'
+      - &id003
+        $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: Landing page
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - links
+                properties:
+                  links:
+                    type: array
+                    items: &id006
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    contains:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        rel:
+                          const: profile
+                        href:
+                          const: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwsviz
+        '400': &id004
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema: &id001
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500': &id005
+          description: Server error
+          content:
+            application/json:
+              schema: *id001
+  /conformance:
+    get:
+      summary: API conformance definition
+      description: API conformance definition
+      operationId: getConformanceDeclaration
+      tags:
+      - server
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Conformance classes
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - conformsTo
+                properties:
+                  conformsTo:
+                    type: array
+                    items:
+                      type: string
+                    contains:
+                      enum:
+                      - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
+                      - http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/core
+        '400': *id004
+        '500': *id005
+  /collections:
+    get:
+      summary: Collections
+      description: Collections
+      operationId: getCollections
+      tags:
+      - server
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collections list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links: &id007
+                    type: array
+                    items: *id006
+        '400': *id004
+        '500': *id005
+  /openapi:
+    get:
+      summary: OpenAPI definition
+      description: Retrieve the OpenAPI definition document for this API.
+      operationId: getOpenAPI
+      tags:
+      - server
+      parameters:
+      - *id002
+      responses:
+        '200':
+          description: OpenAPI document
+        default: &id071
+          $ref: '#/components/responses/default'
+  /collections/aigfs0p25_v1p0_global_latlon:
+    get:
+      summary: Get AIGFS 0.25 Degree Global LatLon metadata
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: DescribeAigfs0p25V1p0GlobalLatlonCollection
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id008
+                      type: string
+                      enum: &id019
+                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id008
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: &id021
+                            - http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id008
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': &id010
+          description: Not found
+          content:
+            application/json:
+              schema: *id001
+        '500': *id005
+  /collections/aigfs0p25_v1p0_global_latlon/items:
+    get:
+      summary: query aigfs0p25_v1p0_global_latlon by items
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryItemsAigfs0p25V1p0GlobalLatlon
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters: &id022
+      - &id018
+        name: bbox
+        in: query
+        description: Bounding box filter
+        schema:
+          type: string
+      - &id011
+        $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - &id012
+        $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - &id013
+        $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - *id002
+      responses: &id014
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id009
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id009
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/aigfs0p25_v1p0_global_latlon/items/{featureId}:
+    get:
+      summary: Get AIGFS 0.25 Degree Global LatLon item by id
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: GetAigfs0p25V1p0GlobalLatlonFeature
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': &id015
+          description: Feature collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    const: FeatureCollection
+                  features:
+                    type: array
+                    items:
+                      type: object
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/aigfs0p25_v1p0_global_latlon/position:
+    get:
+      summary: query aigfs0p25_v1p0_global_latlon by position
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryPositionAigfs0p25V1p0GlobalLatlon
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters: &id024
+      - &id017
+        $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id014
+  /collections/aigfs0p25_v1p0_global_latlon/instances:
+    get:
+      summary: Get pre-defined instances of aigfs0p25_v1p0_global_latlon
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: GetInstancesAigfs0p25V1p0GlobalLatlon
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/aigfs0p25_v1p0_global_latlon/instances/{instanceId}:
+    get:
+      summary: Get aigfs0p25_v1p0_global_latlon instance
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: GetInstanceAigfs0p25V1p0GlobalLatlon
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters:
+      - &id016
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-01-20T00:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/aigfs0p25_v1p0_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query aigfs0p25_v1p0_global_latlon instance by position
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryPositionInstanceAigfs0p25V1p0GlobalLatlon
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters:
+      - *id016
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id014
+  /collections/aigfs0p25_v1p0_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query aigfs0p25_v1p0_global_latlon instance by items
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryItemsInstanceAigfs0p25V1p0GlobalLatlon
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters:
+      - *id016
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id014
+  /collections/air_quality_alaska_polar_stereographic:
+    get:
+      summary: Get Air Quality Alaska Polar Stereographic metadata
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: DescribeAirQualityAlaskaPolarStereographicCollection
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id020
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id020
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id020
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/air_quality_alaska_polar_stereographic/items:
+    get:
+      summary: query air_quality_alaska_polar_stereographic by items
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: QueryItemsAirQualityAlaskaPolarStereographic
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters: *id022
+      responses: &id025
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id023
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id023
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/air_quality_alaska_polar_stereographic/items/{featureId}:
+    get:
+      summary: Get Air Quality Alaska Polar Stereographic item by id
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: GetAirQualityAlaskaPolarStereographicFeature
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/air_quality_alaska_polar_stereographic/position:
+    get:
+      summary: query air_quality_alaska_polar_stereographic by position
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: QueryPositionAirQualityAlaskaPolarStereographic
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters: *id024
+      responses: *id025
+  /collections/air_quality_alaska_polar_stereographic/instances:
+    get:
+      summary: Get pre-defined instances of air_quality_alaska_polar_stereographic
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: GetInstancesAirQualityAlaskaPolarStereographic
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/air_quality_alaska_polar_stereographic/instances/{instanceId}:
+    get:
+      summary: Get air_quality_alaska_polar_stereographic instance
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: GetInstanceAirQualityAlaskaPolarStereographic
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters:
+      - &id026
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-11-06T03:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/air_quality_alaska_polar_stereographic/instances/{instanceId}/position:
+    get:
+      summary: query air_quality_alaska_polar_stereographic instance by position
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: QueryPositionInstanceAirQualityAlaskaPolarStereographic
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters:
+      - *id026
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id025
+  /collections/air_quality_alaska_polar_stereographic/instances/{instanceId}/items:
+    get:
+      summary: query air_quality_alaska_polar_stereographic instance by items
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: QueryItemsInstanceAirQualityAlaskaPolarStereographic
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters:
+      - *id026
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id025
+  /collections/air_quality_conus_lambert:
+    get:
+      summary: Get Air Quality CONUS Lambert metadata
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: DescribeAirQualityConusLambertCollection
+      tags:
+      - air_quality_conus_lambert
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id027
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id027
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id027
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/air_quality_conus_lambert/items:
+    get:
+      summary: query air_quality_conus_lambert by items
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsAirQualityConusLambert
+      tags:
+      - air_quality_conus_lambert
+      parameters: *id022
+      responses: &id029
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id028
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id028
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/air_quality_conus_lambert/items/{featureId}:
+    get:
+      summary: Get Air Quality CONUS Lambert item by id
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetAirQualityConusLambertFeature
+      tags:
+      - air_quality_conus_lambert
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/air_quality_conus_lambert/position:
+    get:
+      summary: query air_quality_conus_lambert by position
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionAirQualityConusLambert
+      tags:
+      - air_quality_conus_lambert
+      parameters: *id024
+      responses: *id029
+  /collections/air_quality_conus_lambert/instances:
+    get:
+      summary: Get pre-defined instances of air_quality_conus_lambert
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetInstancesAirQualityConusLambert
+      tags:
+      - air_quality_conus_lambert
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/air_quality_conus_lambert/instances/{instanceId}:
+    get:
+      summary: Get air_quality_conus_lambert instance
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetInstanceAirQualityConusLambert
+      tags:
+      - air_quality_conus_lambert
+      parameters:
+      - &id030
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-11-06T12:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/air_quality_conus_lambert/instances/{instanceId}/position:
+    get:
+      summary: query air_quality_conus_lambert instance by position
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionInstanceAirQualityConusLambert
+      tags:
+      - air_quality_conus_lambert
+      parameters:
+      - *id030
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id029
+  /collections/air_quality_conus_lambert/instances/{instanceId}/items:
+    get:
+      summary: query air_quality_conus_lambert instance by items
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsInstanceAirQualityConusLambert
+      tags:
+      - air_quality_conus_lambert
+      parameters:
+      - *id030
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id029
+  /collections/air_quality_hawaii_mercator:
+    get:
+      summary: Get Air Quality Hawaii Mercator metadata
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: DescribeAirQualityHawaiiMercatorCollection
+      tags:
+      - air_quality_hawaii_mercator
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id031
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id031
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id031
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/air_quality_hawaii_mercator/items:
+    get:
+      summary: query air_quality_hawaii_mercator by items
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: QueryItemsAirQualityHawaiiMercator
+      tags:
+      - air_quality_hawaii_mercator
+      parameters: *id022
+      responses: &id033
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id032
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id032
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/air_quality_hawaii_mercator/items/{featureId}:
+    get:
+      summary: Get Air Quality Hawaii Mercator item by id
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: GetAirQualityHawaiiMercatorFeature
+      tags:
+      - air_quality_hawaii_mercator
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/air_quality_hawaii_mercator/position:
+    get:
+      summary: query air_quality_hawaii_mercator by position
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: QueryPositionAirQualityHawaiiMercator
+      tags:
+      - air_quality_hawaii_mercator
+      parameters: *id024
+      responses: *id033
+  /collections/air_quality_hawaii_mercator/instances:
+    get:
+      summary: Get pre-defined instances of air_quality_hawaii_mercator
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: GetInstancesAirQualityHawaiiMercator
+      tags:
+      - air_quality_hawaii_mercator
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/air_quality_hawaii_mercator/instances/{instanceId}:
+    get:
+      summary: Get air_quality_hawaii_mercator instance
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: GetInstanceAirQualityHawaiiMercator
+      tags:
+      - air_quality_hawaii_mercator
+      parameters:
+      - &id034
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-11-06T03:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/air_quality_hawaii_mercator/instances/{instanceId}/position:
+    get:
+      summary: query air_quality_hawaii_mercator instance by position
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: QueryPositionInstanceAirQualityHawaiiMercator
+      tags:
+      - air_quality_hawaii_mercator
+      parameters:
+      - *id034
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id033
+  /collections/air_quality_hawaii_mercator/instances/{instanceId}/items:
+    get:
+      summary: query air_quality_hawaii_mercator instance by items
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: QueryItemsInstanceAirQualityHawaiiMercator
+      tags:
+      - air_quality_hawaii_mercator
+      parameters:
+      - *id034
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id033
+  /collections/gefs0p25_v12p3_global_latlon:
+    get:
+      summary: Get GEFS 0.25 Degree Global LatLon metadata
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: DescribeGefs0p25V12p3GlobalLatlonCollection
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id035
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id035
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id035
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/gefs0p25_v12p3_global_latlon/items:
+    get:
+      summary: query gefs0p25_v12p3_global_latlon by items
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryItemsGefs0p25V12p3GlobalLatlon
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters: *id022
+      responses: &id037
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id036
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id036
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/gefs0p25_v12p3_global_latlon/items/{featureId}:
+    get:
+      summary: Get GEFS 0.25 Degree Global LatLon item by id
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: GetGefs0p25V12p3GlobalLatlonFeature
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/gefs0p25_v12p3_global_latlon/position:
+    get:
+      summary: query gefs0p25_v12p3_global_latlon by position
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryPositionGefs0p25V12p3GlobalLatlon
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters: *id024
+      responses: *id037
+  /collections/gefs0p25_v12p3_global_latlon/instances:
+    get:
+      summary: Get pre-defined instances of gefs0p25_v12p3_global_latlon
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: GetInstancesGefs0p25V12p3GlobalLatlon
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/gefs0p25_v12p3_global_latlon/instances/{instanceId}:
+    get:
+      summary: Get gefs0p25_v12p3_global_latlon instance
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: GetInstanceGefs0p25V12p3GlobalLatlon
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters:
+      - &id038
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-01-01T00:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/gefs0p25_v12p3_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query gefs0p25_v12p3_global_latlon instance by position
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryPositionInstanceGefs0p25V12p3GlobalLatlon
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters:
+      - *id038
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id037
+  /collections/gefs0p25_v12p3_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query gefs0p25_v12p3_global_latlon instance by items
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryItemsInstanceGefs0p25V12p3GlobalLatlon
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters:
+      - *id038
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id037
+  /collections/gefs0p5_v12p3_global_latlon:
+    get:
+      summary: Get GEFS 0.5 Degree Global LatLon metadata
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: DescribeGefs0p5V12p3GlobalLatlonCollection
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id039
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id039
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id039
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/gefs0p5_v12p3_global_latlon/items:
+    get:
+      summary: query gefs0p5_v12p3_global_latlon by items
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryItemsGefs0p5V12p3GlobalLatlon
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters: *id022
+      responses: &id041
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id040
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id040
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/gefs0p5_v12p3_global_latlon/items/{featureId}:
+    get:
+      summary: Get GEFS 0.5 Degree Global LatLon item by id
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: GetGefs0p5V12p3GlobalLatlonFeature
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/gefs0p5_v12p3_global_latlon/position:
+    get:
+      summary: query gefs0p5_v12p3_global_latlon by position
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionGefs0p5V12p3GlobalLatlon
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters: *id024
+      responses: *id041
+  /collections/gefs0p5_v12p3_global_latlon/instances:
+    get:
+      summary: Get pre-defined instances of gefs0p5_v12p3_global_latlon
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: GetInstancesGefs0p5V12p3GlobalLatlon
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/gefs0p5_v12p3_global_latlon/instances/{instanceId}:
+    get:
+      summary: Get gefs0p5_v12p3_global_latlon instance
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: GetInstanceGefs0p5V12p3GlobalLatlon
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters:
+      - &id042
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-01-01T00:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/gefs0p5_v12p3_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query gefs0p5_v12p3_global_latlon instance by position
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionInstanceGefs0p5V12p3GlobalLatlon
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters:
+      - *id042
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id041
+  /collections/gefs0p5_v12p3_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query gefs0p5_v12p3_global_latlon instance by items
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryItemsInstanceGefs0p5V12p3GlobalLatlon
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters:
+      - *id042
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id041
+  /collections/gfs0p25_v16p3_global_latlon:
+    get:
+      summary: Get GFS 0.25 Degree Global LatLon v16.3 metadata
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: DescribeGfs0p25V16p3GlobalLatlonCollection
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id043
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id043
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id043
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/gfs0p25_v16p3_global_latlon/items:
+    get:
+      summary: query gfs0p25_v16p3_global_latlon by items
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryItemsGfs0p25V16p3GlobalLatlon
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters: *id022
+      responses: &id045
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id044
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id044
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/gfs0p25_v16p3_global_latlon/items/{featureId}:
+    get:
+      summary: Get GFS 0.25 Degree Global LatLon v16.3 item by id
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: GetGfs0p25V16p3GlobalLatlonFeature
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/gfs0p25_v16p3_global_latlon/position:
+    get:
+      summary: query gfs0p25_v16p3_global_latlon by position
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionGfs0p25V16p3GlobalLatlon
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters: *id024
+      responses: *id045
+  /collections/gfs0p25_v16p3_global_latlon/instances:
+    get:
+      summary: Get pre-defined instances of gfs0p25_v16p3_global_latlon
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: GetInstancesGfs0p25V16p3GlobalLatlon
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/gfs0p25_v16p3_global_latlon/instances/{instanceId}:
+    get:
+      summary: Get gfs0p25_v16p3_global_latlon instance
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: GetInstanceGfs0p25V16p3GlobalLatlon
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters:
+      - &id046
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-12-18T00:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/gfs0p25_v16p3_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query gfs0p25_v16p3_global_latlon instance by position
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionInstanceGfs0p25V16p3GlobalLatlon
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters:
+      - *id046
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id045
+  /collections/gfs0p25_v16p3_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query gfs0p25_v16p3_global_latlon instance by items
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryItemsInstanceGfs0p25V16p3GlobalLatlon
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters:
+      - *id046
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id045
+  /collections/gfs0p25_v17_global_latlon:
+    get:
+      summary: Get GFS 0.25 Degree Global LatLon v17 metadata
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: DescribeGfs0p25V17GlobalLatlonCollection
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id047
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id047
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id047
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/gfs0p25_v17_global_latlon/items:
+    get:
+      summary: query gfs0p25_v17_global_latlon by items
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryItemsGfs0p25V17GlobalLatlon
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters: *id022
+      responses: &id049
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id048
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id048
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/gfs0p25_v17_global_latlon/items/{featureId}:
+    get:
+      summary: Get GFS 0.25 Degree Global LatLon v17 item by id
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: GetGfs0p25V17GlobalLatlonFeature
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/gfs0p25_v17_global_latlon/position:
+    get:
+      summary: query gfs0p25_v17_global_latlon by position
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionGfs0p25V17GlobalLatlon
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters: *id024
+      responses: *id049
+  /collections/gfs0p25_v17_global_latlon/instances:
+    get:
+      summary: Get pre-defined instances of gfs0p25_v17_global_latlon
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: GetInstancesGfs0p25V17GlobalLatlon
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/gfs0p25_v17_global_latlon/instances/{instanceId}:
+    get:
+      summary: Get gfs0p25_v17_global_latlon instance
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: GetInstanceGfs0p25V17GlobalLatlon
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters:
+      - &id050
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-12-16T00:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/gfs0p25_v17_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query gfs0p25_v17_global_latlon instance by position
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionInstanceGfs0p25V17GlobalLatlon
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters:
+      - *id050
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id049
+  /collections/gfs0p25_v17_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query gfs0p25_v17_global_latlon instance by items
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryItemsInstanceGfs0p25V17GlobalLatlon
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters:
+      - *id050
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id049
+  /collections/nbm_v5p0_conus_lambert:
+    get:
+      summary: Get National Blend of Models v5.0 CONUS Lambert metadata
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: DescribeNbmV5p0ConusLambertCollection
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id051
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id051
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id051
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/nbm_v5p0_conus_lambert/items:
+    get:
+      summary: query nbm_v5p0_conus_lambert by items
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsNbmV5p0ConusLambert
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters: *id022
+      responses: &id053
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id052
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id052
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/nbm_v5p0_conus_lambert/items/{featureId}:
+    get:
+      summary: Get National Blend of Models v5.0 CONUS Lambert item by id
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetNbmV5p0ConusLambertFeature
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/nbm_v5p0_conus_lambert/position:
+    get:
+      summary: query nbm_v5p0_conus_lambert by position
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionNbmV5p0ConusLambert
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters: *id024
+      responses: *id053
+  /collections/nbm_v5p0_conus_lambert/instances:
+    get:
+      summary: Get pre-defined instances of nbm_v5p0_conus_lambert
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetInstancesNbmV5p0ConusLambert
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/nbm_v5p0_conus_lambert/instances/{instanceId}:
+    get:
+      summary: Get nbm_v5p0_conus_lambert instance
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetInstanceNbmV5p0ConusLambert
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters:
+      - &id054
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-11-18T00:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/nbm_v5p0_conus_lambert/instances/{instanceId}/position:
+    get:
+      summary: query nbm_v5p0_conus_lambert instance by position
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionInstanceNbmV5p0ConusLambert
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters:
+      - *id054
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id053
+  /collections/nbm_v5p0_conus_lambert/instances/{instanceId}/items:
+    get:
+      summary: query nbm_v5p0_conus_lambert instance by items
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsInstanceNbmV5p0ConusLambert
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters:
+      - *id054
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id053
+  /collections/processed_gefs0p25_v12p3_global_latlon:
+    get:
+      summary: Get Processed GEFS 0.25 Degree Global LatLon metadata
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: DescribeProcessedGefs0p25V12p3GlobalLatlonCollection
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id055
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id055
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id055
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/processed_gefs0p25_v12p3_global_latlon/items:
+    get:
+      summary: query processed_gefs0p25_v12p3_global_latlon by items
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: QueryItemsProcessedGefs0p25V12p3GlobalLatlon
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters: *id022
+      responses: &id057
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id056
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id056
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/processed_gefs0p25_v12p3_global_latlon/items/{featureId}:
+    get:
+      summary: Get Processed GEFS 0.25 Degree Global LatLon item by id
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: GetProcessedGefs0p25V12p3GlobalLatlonFeature
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/processed_gefs0p25_v12p3_global_latlon/position:
+    get:
+      summary: query processed_gefs0p25_v12p3_global_latlon by position
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: QueryPositionProcessedGefs0p25V12p3GlobalLatlon
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters: *id024
+      responses: *id057
+  /collections/processed_gefs0p25_v12p3_global_latlon/instances:
+    get:
+      summary: Get pre-defined instances of processed_gefs0p25_v12p3_global_latlon
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: GetInstancesProcessedGefs0p25V12p3GlobalLatlon
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/processed_gefs0p25_v12p3_global_latlon/instances/{instanceId}:
+    get:
+      summary: Get processed_gefs0p25_v12p3_global_latlon instance
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: GetInstanceProcessedGefs0p25V12p3GlobalLatlon
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters:
+      - &id058
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2021-01-01T00:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/processed_gefs0p25_v12p3_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query processed_gefs0p25_v12p3_global_latlon instance by position
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: QueryPositionInstanceProcessedGefs0p25V12p3GlobalLatlon
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters:
+      - *id058
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id057
+  /collections/processed_gefs0p25_v12p3_global_latlon/instances/{instanceId}/items:
+    get:
+      summary: query processed_gefs0p25_v12p3_global_latlon instance by items
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: QueryItemsInstanceProcessedGefs0p25V12p3GlobalLatlon
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters:
+      - *id058
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id057
+  /collections/rtma2p5_v2p10_conus_lambert:
+    get:
+      summary: Get RTMA 2.5km CONUS Lambert metadata
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: DescribeRtma2p5V2p10ConusLambertCollection
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id059
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id059
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id059
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/rtma2p5_v2p10_conus_lambert/items:
+    get:
+      summary: query rtma2p5_v2p10_conus_lambert by items
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsRtma2p5V2p10ConusLambert
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters: *id022
+      responses: &id061
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id060
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id060
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/rtma2p5_v2p10_conus_lambert/items/{featureId}:
+    get:
+      summary: Get RTMA 2.5km CONUS Lambert item by id
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetRtma2p5V2p10ConusLambertFeature
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/rtma2p5_v2p10_conus_lambert/position:
+    get:
+      summary: query rtma2p5_v2p10_conus_lambert by position
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionRtma2p5V2p10ConusLambert
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters: *id024
+      responses: *id061
+  /collections/rtma2p5_v2p10_conus_lambert/instances:
+    get:
+      summary: Get pre-defined instances of rtma2p5_v2p10_conus_lambert
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetInstancesRtma2p5V2p10ConusLambert
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/rtma2p5_v2p10_conus_lambert/instances/{instanceId}:
+    get:
+      summary: Get rtma2p5_v2p10_conus_lambert instance
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetInstanceRtma2p5V2p10ConusLambert
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters:
+      - &id062
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2021-01-01T00:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/rtma2p5_v2p10_conus_lambert/instances/{instanceId}/position:
+    get:
+      summary: query rtma2p5_v2p10_conus_lambert instance by position
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionInstanceRtma2p5V2p10ConusLambert
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters:
+      - *id062
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id061
+  /collections/rtma2p5_v2p10_conus_lambert/instances/{instanceId}/items:
+    get:
+      summary: query rtma2p5_v2p10_conus_lambert instance by items
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsInstanceRtma2p5V2p10ConusLambert
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters:
+      - *id062
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id061
+  /collections/urma2p5_v2p10_conus_lambert:
+    get:
+      summary: Get URMA 2.5km CONUS Lambert metadata
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: DescribeUrma2p5V2p10ConusLambertCollection
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id063
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id063
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id063
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/urma2p5_v2p10_conus_lambert/items:
+    get:
+      summary: query urma2p5_v2p10_conus_lambert by items
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsUrma2p5V2p10ConusLambert
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters: *id022
+      responses: &id065
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id064
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id064
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/urma2p5_v2p10_conus_lambert/items/{featureId}:
+    get:
+      summary: Get URMA 2.5km CONUS Lambert item by id
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetUrma2p5V2p10ConusLambertFeature
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/urma2p5_v2p10_conus_lambert/position:
+    get:
+      summary: query urma2p5_v2p10_conus_lambert by position
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionUrma2p5V2p10ConusLambert
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters: *id024
+      responses: *id065
+  /collections/urma2p5_v2p10_conus_lambert/instances:
+    get:
+      summary: Get pre-defined instances of urma2p5_v2p10_conus_lambert
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetInstancesUrma2p5V2p10ConusLambert
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/urma2p5_v2p10_conus_lambert/instances/{instanceId}:
+    get:
+      summary: Get urma2p5_v2p10_conus_lambert instance
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: GetInstanceUrma2p5V2p10ConusLambert
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters:
+      - &id066
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-12-01T00:00Z
+      - *id002
+      responses:
+        '200': *id015
+  /collections/urma2p5_v2p10_conus_lambert/instances/{instanceId}/position:
+    get:
+      summary: query urma2p5_v2p10_conus_lambert instance by position
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionInstanceUrma2p5V2p10ConusLambert
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters:
+      - *id066
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id065
+  /collections/urma2p5_v2p10_conus_lambert/instances/{instanceId}/items:
+    get:
+      summary: query urma2p5_v2p10_conus_lambert instance by items
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryItemsInstanceUrma2p5V2p10ConusLambert
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters:
+      - *id066
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id065
+  /collections/petss_test:
+    get:
+      summary: Get P-ETSS Test Data metadata
+      description: P-ETSS test data collection from local filesystem
+      operationId: DescribePetssTestCollection
+      tags:
+      - petss_test
+      parameters:
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links: *id007
+                  crs:
+                    type: array
+                    items: &id067
+                      type: string
+                      enum: *id019
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GeoJSON
+                      - NetCDF
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs: *id067
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                                format: date-time
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum: *id021
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs: *id067
+                                      wkt:
+                                        type: string
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/petss_test/items:
+    get:
+      summary: query petss_test by items
+      description: P-ETSS test data collection from local filesystem
+      operationId: QueryItemsPetssTest
+      tags:
+      - petss_test
+      parameters: *id022
+      responses: &id069
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema: &id068
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema: *id068
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/petss_test/items/{featureId}:
+    get:
+      summary: Get P-ETSS Test Data item by id
+      description: P-ETSS test data collection from local filesystem
+      operationId: GetPetssTestFeature
+      tags:
+      - petss_test
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - *id002
+      - *id003
+      responses:
+        '200': *id015
+        '400': *id004
+        '404': *id010
+        '500': *id005
+  /collections/petss_test/position:
+    get:
+      summary: query petss_test by position
+      description: P-ETSS test data collection from local filesystem
+      operationId: QueryPositionPetssTest
+      tags:
+      - petss_test
+      parameters: *id024
+      responses: *id069
+  /collections/petss_test/instances:
+    get:
+      summary: Get pre-defined instances of petss_test
+      description: P-ETSS test data collection from local filesystem
+      operationId: GetInstancesPetssTest
+      tags:
+      - petss_test
+      parameters:
+      - *id002
+      responses:
+        '200': *id015
+        '400': *id004
+        '500': *id005
+  /collections/petss_test/instances/{instanceId}:
+    get:
+      summary: Get petss_test instance
+      description: P-ETSS test data collection from local filesystem
+      operationId: GetInstancePetssTest
+      tags:
+      - petss_test
+      parameters:
+      - &id070
+        name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: '2025-04-02T00:00:00Z'
+      - *id002
+      responses:
+        '200': *id015
+  /collections/petss_test/instances/{instanceId}/position:
+    get:
+      summary: query petss_test instance by position
+      description: P-ETSS test data collection from local filesystem
+      operationId: QueryPositionInstancePetssTest
+      tags:
+      - petss_test
+      parameters:
+      - *id070
+      - *id017
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id069
+  /collections/petss_test/instances/{instanceId}/items:
+    get:
+      summary: query petss_test instance by items
+      description: P-ETSS test data collection from local filesystem
+      operationId: QueryItemsInstancePetssTest
+      tags:
+      - petss_test
+      parameters:
+      - *id070
+      - *id018
+      - *id011
+      - *id012
+      - *id013
+      - *id002
+      responses: *id069
+  /processes:
+    get:
+      summary: Processes
+      description: Processes
+      operationId: getProcesses
+      tags:
+      - server
+      parameters:
+      - *id002
+      responses:
+        '200':
+          $ref: https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/responses/ProcessList.yaml
+        default: *id071
+  /jobs:
+    get:
+      summary: Retrieve jobs list
+      description: Retrieve a list of jobs
+      operationId: getJobs
+      tags:
+      - jobs
+      responses:
+        '200':
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: object
+        '404': *id010
+        default: *id071
+  /jobs/{jobId}:
+    get:
+      summary: Retrieve job details
+      description: Retrieve job details
+      operationId: getJob
+      tags:
+      - jobs
+      parameters:
+      - name: jobId
+        in: path
+        required: true
+        description: job identifier
+        schema:
+          type: string
+      - *id002
+      responses:
+        '200':
+          description: Job details
+          content:
+            application/json:
+              schema:
+                type: object
+        '404': *id010
+        default: *id071
+    delete:
+      summary: Cancel / delete job
+      description: Cancel / delete job
+      operationId: deleteJob
+      tags:
+      - jobs
+      parameters:
+      - name: jobId
+        in: path
+        required: true
+        description: job identifier
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Job deleted successfully
+        '404': *id010
+        default: *id071
+  /jobs/{jobId}/results:
+    get:
+      summary: Retrieve job results
+      description: Retrieve job results
+      operationId: getJobResults
+      tags:
+      - jobs
+      parameters:
+      - name: jobId
+        in: path
+        required: true
+        description: job identifier
+        schema:
+          type: string
+      - *id002
+      responses:
+        '200':
+          description: Job results
+          content:
+            application/json:
+              schema:
+                type: object
+        '404': *id010
+        default: *id071
+  /processes/edr-zarr-difference:
+    get:
+      summary: Get process metadata
+      description: Retrieves two Zarr datasets from an OGC API - EDR and calculates
+        their difference.
+      operationId: DescribeEdrZarrDifferenceProcess
+      tags:
+      - edr-zarr-difference
+      parameters:
+      - *id002
+      responses:
+        '200':
+          description: EDR Zarr Dataset Difference process metadata
+          content:
+            application/json:
+              schema:
+                type: object
+        default: *id071
+  /processes/edr-zarr-difference/execution:
+    post:
+      summary: Process EDR Zarr Dataset Difference execution
+      description: Retrieves two Zarr datasets from an OGC API - EDR and calculates
+        their difference.
+      operationId: ExecuteEdrZarrDifferenceJob
+      tags:
+      - edr-zarr-difference
+      parameters:
+      - name: Prefer
+        in: header
+        required: false
+        description: Indicates client preferences, including whether the client is
+          capable of asynchronous processing.
+        schema:
+          type: string
+          enum:
+          - respond-async
+      requestBody:
+        required: true
+        description: Mandatory execute request JSON
+        content:
+          application/json:
+            schema:
+              $ref: https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/execute.yaml
+      responses:
+        '200':
+          description: Process output schema
+          content:
+            application/zip:
+              schema:
+                type: object
+        '201':
+          $ref: https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/responses/ExecuteAsync.yaml
+        '404': *id010
+        '500': *id005
+        default: *id071
+  /processes/edr-zarr-difference-streaming:
+    get:
+      summary: Get process metadata
+      description: Retrieves two Zarr datasets from an OGC API - EDR and streams their
+        difference via a virtual Zarr endpoint.
+      operationId: DescribeEdrZarrDifferenceStreamingProcess
+      tags:
+      - edr-zarr-difference-streaming
+      parameters:
+      - *id002
+      responses:
+        '200':
+          description: EDR Zarr Dataset Difference Streaming process metadata
+          content:
+            application/json:
+              schema:
+                type: object
+        default: *id071
+  /processes/edr-zarr-difference-streaming/execution:
+    post:
+      summary: Process EDR Zarr Dataset Difference Streaming execution
+      description: Retrieves two Zarr datasets from an OGC API - EDR and streams their
+        difference via a virtual Zarr endpoint.
+      operationId: ExecuteEdrZarrDifferenceStreamingJob
+      tags:
+      - edr-zarr-difference-streaming
+      parameters:
+      - name: Prefer
+        in: header
+        required: false
+        description: Indicates client preferences, including whether the client is
+          capable of asynchronous processing.
+        schema:
+          type: string
+          enum:
+          - respond-async
+      requestBody:
+        required: true
+        description: Mandatory execute request JSON
+        content:
+          application/json:
+            schema:
+              $ref: https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/execute.yaml
+      responses:
+        '200':
+          description: Process output schema
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  zarr_endpoint:
+                    type: string
+        '201':
+          $ref: https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/responses/ExecuteAsync.yaml
+        '404': *id010
+        '500': *id005
+        default: *id071
+  /processes/edr-zarr-wind-streaming:
+    get:
+      summary: Get process metadata
+      description: Derives wind speed and direction from u/v component Zarr datasets
+        and streams the result via a virtual Zarr endpoint.
+      operationId: DescribeEdrZarrWindStreamingProcess
+      tags:
+      - edr-zarr-wind-streaming
+      parameters:
+      - *id002
+      responses:
+        '200':
+          description: EDR Zarr Wind Streaming process metadata
+          content:
+            application/json:
+              schema:
+                type: object
+        default: *id071
+  /processes/edr-zarr-wind-streaming/execution:
+    post:
+      summary: Process EDR Zarr Wind Streaming execution
+      description: Derives wind speed and direction from u/v component Zarr datasets
+        and streams the result via a virtual Zarr endpoint.
+      operationId: ExecuteEdrZarrWindStreamingJob
+      tags:
+      - edr-zarr-wind-streaming
+      parameters:
+      - name: Prefer
+        in: header
+        required: false
+        description: Indicates client preferences, including whether the client is
+          capable of asynchronous processing.
+        schema:
+          type: string
+          enum:
+          - respond-async
+      requestBody:
+        required: true
+        description: Mandatory execute request JSON
+        content:
+          application/json:
+            schema:
+              $ref: https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/execute.yaml
+      responses:
+        '200':
+          description: Process output schema
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  zarr_endpoint:
+                    type: string
+        '201':
+          $ref: https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/responses/ExecuteAsync.yaml
+        '404': *id010
+        '500': *id005
+        default: *id071
+components:
+  parameters:
+    f:
+      name: f
+      in: query
+      required: false
+      description: The optional f parameter indicates the output format which the
+        server shall provide as part of the response document.
+      schema:
+        type: string
+        enum:
+        - json
+        - html
+        - application/prs.coverage+json
+        - application/geo+json
+        - application/netcdf
+      style: form
+      explode: false
+    lang:
+      name: lang
+      in: query
+      required: false
+      description: The optional lang parameter instructs the server return a response
+        in a certain language, if supported.
+      schema:
+        type: string
+        default: en-US
+        enum:
+        - en-US
+  responses:
+    default:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            type: object

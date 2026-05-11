@@ -1,0 +1,12 @@
+[[ats_insitu_observations_profile_collection_crs]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu_observations_profile/collection-crs
+target:: /req/insitu_observations_profile/collection-crs
+test-purpose:: Validate that collection crs is correctly implemented.
+test-method::
+step:: Send GET request to /collections/insitu-observations.
+step:: Verify extent.spatial.crs equals http://www.opengis.net/def/crs/OGC/1.3/CRS84.
+step:: Verify the crs array includes http://www.opengis.net/def/crs/OGC/1.3/CRS84.
+====

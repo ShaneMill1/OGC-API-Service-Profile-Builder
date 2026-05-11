@@ -1,0 +1,14 @@
+[[ats_insitu_observations_profile_conformance]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu_observations_profile/conformance
+target:: /req/insitu_observations_profile/conformance
+test-purpose:: Validate that conformance is correctly implemented.
+test-method::
+step:: Send GET request to /conformance.
+step:: Verify HTTP status is 200.
+step:: Verify conformsTo includes http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.
+step:: Verify conformsTo includes https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/core.
+step:: Verify conformsTo includes https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/insitu-observations.
+====

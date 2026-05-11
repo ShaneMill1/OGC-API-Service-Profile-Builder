@@ -1,0 +1,15 @@
+[appendix,obligation=normative]
+== Abstract Test Suite
+
+include::../abstract_tests/ATS_class_core.adoc[]
+
+include::../abstract_tests/core/ATS_conformance.adoc[]
+include::../abstract_tests/core/ATS_collections-endpoint.adoc[]
+include::../abstract_tests/core/ATS_collection-crs.adoc[]
+include::../abstract_tests/core/ATS_collection-temporal-extent.adoc[]
+include::../abstract_tests/core/ATS_collection-custom-dimensions.adoc[]
+include::../abstract_tests/core/ATS_data-queries.adoc[]
+include::../abstract_tests/core/ATS_output-formats.adoc[]
+include::../abstract_tests/core/ATS_parameter-names.adoc[]
+include::../abstract_tests/core/ATS_locations-response.adoc[]
+include::../abstract_tests/core/ATS_error-handling.adoc[]

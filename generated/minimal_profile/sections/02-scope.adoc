@@ -1,0 +1,3 @@
+== Scope
+
+This standard defines the Minimal EDR Profile Example. It specifies requirements and conformance tests for implementations of this profile.

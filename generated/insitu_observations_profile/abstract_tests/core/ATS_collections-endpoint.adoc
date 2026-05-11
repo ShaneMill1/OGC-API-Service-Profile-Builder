@@ -1,0 +1,13 @@
+[[ats_insitu_observations_profile_collections_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu_observations_profile/collections-endpoint
+target:: /req/insitu_observations_profile/collections-endpoint
+test-purpose:: Validate that collections endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections.
+step:: Verify HTTP status is 200.
+step:: Verify the collections array contains an object with id insitu-observations.
+step:: Verify the collection includes extent, data_queries, output_formats, and parameter_names.
+====

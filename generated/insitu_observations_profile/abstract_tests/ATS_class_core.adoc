@@ -1,0 +1,17 @@
+[[ats_class_insitu_observations_profile]]
+[conformance_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/insitu_observations_profile
+target:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/insitu_observations_profile
+abstract-test:: /conf/insitu_observations_profile/conformance
+abstract-test:: /conf/insitu_observations_profile/collections-endpoint
+abstract-test:: /conf/insitu_observations_profile/collection-crs
+abstract-test:: /conf/insitu_observations_profile/collection-temporal-extent
+abstract-test:: /conf/insitu_observations_profile/collection-custom-dimensions
+abstract-test:: /conf/insitu_observations_profile/data-queries
+abstract-test:: /conf/insitu_observations_profile/output-formats
+abstract-test:: /conf/insitu_observations_profile/parameter-names
+abstract-test:: /conf/insitu_observations_profile/locations-response
+abstract-test:: /conf/insitu_observations_profile/error-handling
+====

@@ -1,0 +1,9 @@
+[[req_insitu_observations_profile_output_formats]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu_observations_profile/output-formats
+statement:: All data queries SHALL support CoverageJSON as a response format.
+part:: All data queries SHALL support application/vnd.cov+json.
+part:: The locations query SHALL additionally support application/geo+json.
+====

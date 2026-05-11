@@ -1,0 +1,8 @@
+[[ats_class_minimal_profile]]
+[conformance_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/minimal_profile
+target:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/minimal_profile
+abstract-test:: /conf/minimal_profile/temperature-geojson
+====

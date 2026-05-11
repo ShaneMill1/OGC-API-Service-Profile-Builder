@@ -1,0 +1,14 @@
+[[ats_insitu_observations_profile_locations_response]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu_observations_profile/locations-response
+target:: /req/insitu_observations_profile/locations-response
+test-purpose:: Validate that locations response is correctly implemented.
+test-method::
+step:: Send GET request to /collections/insitu-observations/locations.
+step:: Verify HTTP status is 200.
+step:: Verify Content-Type is application/geo+json.
+step:: Verify response type is FeatureCollection.
+step:: Verify each feature has id and properties.name.
+====

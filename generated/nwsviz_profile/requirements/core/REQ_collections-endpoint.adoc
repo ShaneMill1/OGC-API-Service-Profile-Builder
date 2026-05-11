@@ -1,0 +1,9 @@
+[[req_nwsviz_collections_endpoint]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwsviz/collections-endpoint
+statement:: The service SHALL provide a /collections endpoint listing all NWSViz collections.
+part:: The /collections endpoint SHALL return metadata for all 13 NWSViz collections.
+part:: Each collection SHALL include extent, data_queries, and output_formats.
+====

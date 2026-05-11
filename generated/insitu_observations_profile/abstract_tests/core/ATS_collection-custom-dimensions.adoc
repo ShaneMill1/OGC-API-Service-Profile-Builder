@@ -1,0 +1,13 @@
+[[ats_insitu_observations_profile_collection_custom_dimensions]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu_observations_profile/collection-custom-dimensions
+target:: /req/insitu_observations_profile/collection-custom-dimensions
+test-purpose:: Validate that collection custom dimensions is correctly implemented.
+test-method::
+step:: Send GET request to /collections/insitu-observations.
+step:: Verify extent.custom contains an object with id standard_name.
+step:: Verify that object has reference https://vocab.nerc.ac.uk/standard_name/.
+step:: Verify extent.custom contains an object with id level.
+====
