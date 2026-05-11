@@ -43,6 +43,19 @@ from edr_pydantic.collections import Collection
 from oapi_profile_builder.models import ServiceProfile
 
 
+class _NoAliasDumper(yaml.Dumper):
+    """YAML Dumper that never emits anchors/aliases (&id002 / *id002).
+
+    PyYAML reuses Python object identity to emit anchors when the same dict
+    appears in multiple places. This produces valid YAML but confuses many
+    OpenAPI tools (Swagger UI, Redoc, validators). Overriding ignore_aliases
+    forces every node to be written out in full.
+    """
+
+    def ignore_aliases(self, data: object) -> bool:
+        return True
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -1190,8 +1203,14 @@ def generate(profile: ServiceProfile, output_dir: Path) -> None:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
 
-    # OpenAPI
-    safe_write("openapi.yaml", yaml.dump(build_openapi(profile), sort_keys=False, allow_unicode=True))
+    # OpenAPI — use Dumper with anchor suppression so the output is plain YAML
+    # without &id002 / *id002 aliases that confuse some OpenAPI tooling.
+    safe_write("openapi.yaml", yaml.dump(
+        build_openapi(profile),
+        sort_keys=False,
+        allow_unicode=True,
+        Dumper=_NoAliasDumper,
+    ))
 
     # AsyncAPI (optional)
     if profile.pubsub:
