@@ -298,6 +298,11 @@ profile_output/
 └── sections/             # Boilerplate document sections
 ```
 
+**Downloading the artifacts:**
+1. Go to your repo → **Actions** tab
+2. Click the workflow run
+3. Scroll to the bottom — the **Artifacts** section has a downloadable zip for each profile
+
 ### Action inputs
 
 | Input | Required | Default | Description |
@@ -492,6 +497,7 @@ This means schemathesis, CITE tests, and client SDKs can validate server respons
 | `output_formats` | `list` | no | Profile-level output format definitions with schema references (see below) |
 | `collection_id_pattern` | `string` | no | Regex pattern that all collection IDs must match (validated at build time) |
 | `parameter_name_pattern` | `string` | no | Regex pattern that all `parameter_names` keys must match (validated at build time) |
+| `parameter_schema` | `object` | no | JSON Schema fragment used as the `additionalProperties` definition for `parameter_names` in the generated OpenAPI — lets you express required fields, patterns (QUDT units, CF standard names), and custom extension properties (see below) |
 
 ---
 
@@ -525,6 +531,21 @@ data_queries:
         query_type: position
         output_formats:
           - CoverageJSON
+  area:
+    link:
+      href: https://example.com/collections/water_gauge/area
+      rel: data
+      variables:
+        query_type: area
+        output_formats:
+          - CoverageJSON
+        # crs_details lists the CRS values this specific query supports.
+        # These are validated against extent_requirements.allowed_crs / crs_pattern
+        # at build time and reflected in the generated OpenAPI schema.
+        crs_details:
+          - crs: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+            wkt: "GEOGCS[...]"
+          - crs: "http://www.opengis.net/def/crs/EPSG/0/4326"
   items:
     link:
       href: https://example.com/collections/water_gauge/items
@@ -592,6 +613,79 @@ extent_requirements:
 ```
 
 Both approaches can coexist — if both `allowed_crs` and `crs_pattern` are specified, a collection's CRS must satisfy **both** constraints.
+
+---
+
+### `parameter_schema`
+
+A JSON Schema fragment that replaces the default `additionalProperties` definition for `parameter_names` in the generated OpenAPI. Use this to express field-level constraints that go beyond what `parameter_name_pattern` can do — required fields, QUDT unit URI patterns, CF standard name URI patterns, ISO 8601 duration patterns, and custom extension properties like `metocean:standard_name`.
+
+When `parameter_schema` is set it becomes the schema for every parameter object in every collection in the profile.
+
+```yaml
+parameter_schema:
+  type: object
+  required:
+    - type
+    - observedProperty
+    - measurementType
+    - label
+    - description
+    - unit
+    - "metocean:standard_name"   # custom extension field
+    - "metocean:level"           # custom extension field
+  properties:
+    type:
+      type: string
+      enum: [Parameter]
+    label:
+      type: string
+    description:
+      type: string
+    unit:
+      type: object
+      required: [symbol]
+      properties:
+        symbol:
+          type: object
+          required: [type, value]
+          properties:
+            type:
+              type: string
+              # Unit URI must use QUDT vocabulary
+              pattern: "^https://qudt\\.org/vocab/unit/.*$"
+            value:
+              type: string
+    observedProperty:
+      type: object
+      required: [id, label]
+      properties:
+        id:
+          type: string
+          # observedProperty.id must be a CF standard name URI
+          pattern: "^https://vocab\\.nerc\\.ac\\.uk/standard_name/.*$"
+        label:
+          type: string
+    measurementType:
+      type: object
+      required: [method, duration]
+      properties:
+        method:
+          type: string
+        duration:
+          type: string
+          # ISO 8601 duration
+          pattern: "^P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?$"
+    "metocean:standard_name":
+      type: string
+      description: CF-convention standard name
+    "metocean:level":
+      type: number
+      description: Height of measurement above ground in meters
+  additionalProperties: true
+```
+
+See [`examples/insitu_observations_profile.yaml`](examples/insitu_observations_profile.yaml) for a complete working example.
 
 ---
 
@@ -820,7 +914,7 @@ generate(profile, Path("./output"))
 - OGC API - EDR Part 2: PubSub
 - OGC API - EDR Part 3: Service Profiles (draft)
 - OGC API - Processes Part 1
-- OpenAPI 3.0 / AsyncAPI 3.0
+- OpenAPI 3.1.0 / AsyncAPI 3.0
 - Metanorma/AsciiDoc documentation format
 
 ## License
