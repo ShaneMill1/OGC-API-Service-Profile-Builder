@@ -2,6 +2,8 @@
   "name": "insitu_observations_profile",
   "title": "In-situ Observations EDR Profile",
   "version": "1.0",
+  "description": null,
+  "keywords": [],
   "server_url": null,
   "collections": [
     {
@@ -391,7 +393,8 @@
           "metocean:level": 2
         }
       },
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     }
   ],
   "collection_examples": {},
@@ -626,6 +629,7 @@
       "schema_ref": "https://geojson.org/schema/FeatureCollection.json"
     }
   ],
+  "allow_post_queries": false,
   "collection_id_pattern": null,
   "parameter_name_pattern": "^[a-z][a-z0-9\\-]*$",
   "parameter_schema": {

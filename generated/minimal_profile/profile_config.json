@@ -2,6 +2,8 @@
   "name": "minimal_profile",
   "title": "Minimal EDR Profile Example",
   "version": "1.0",
+  "description": null,
+  "keywords": [],
   "server_url": null,
   "collections": [
     {

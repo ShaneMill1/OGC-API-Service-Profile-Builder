@@ -4,6 +4,7 @@ info:
   version: '1.0'
   description: 'OGC API - EDR Part 3 Service Profile: In-situ Observations EDR Profile'
   x-ogc-profile: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/insitu_observations_profile
+  x-keywords: []
   contact:
     name: In-situ Observations EDR Profile
 servers:
@@ -27,10 +28,8 @@ paths:
       tags:
       - server
       parameters:
-      - &id002
-        $ref: '#/components/parameters/f'
-      - &id003
-        $ref: '#/components/parameters/lang'
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
         '200':
           description: Landing page
@@ -43,7 +42,7 @@ paths:
                 properties:
                   links:
                     type: array
-                    items: &id006
+                    items:
                       type: object
                       required:
                       - href
@@ -67,22 +66,31 @@ paths:
                           const: profile
                         href:
                           const: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/insitu_observations_profile
-        '400': &id004
+                  title:
+                    type: string
+                    const: In-situ Observations EDR Profile
+        '400':
           description: Invalid or missing parameter
           content:
             application/json:
-              schema: &id001
+              schema:
                 type: object
                 properties:
                   code:
                     type: string
                   description:
                     type: string
-        '500': &id005
+        '500':
           description: Server error
           content:
             application/json:
-              schema: *id001
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
   /conformance:
     get:
       summary: API conformance definition
@@ -91,8 +99,8 @@ paths:
       tags:
       - server
       parameters:
-      - *id002
-      - *id003
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
         '200':
           description: Conformance classes
@@ -112,8 +120,28 @@ paths:
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
                       - https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/core
                       - https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/insitu-observations
-        '400': *id004
-        '500': *id005
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
   /collections:
     get:
       summary: Collections
@@ -122,8 +150,8 @@ paths:
       tags:
       - server
       parameters:
-      - *id002
-      - *id003
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
         '200':
           description: Collections list
@@ -132,11 +160,44 @@ paths:
               schema:
                 type: object
                 properties:
-                  links: &id007
+                  links:
                     type: array
-                    items: *id006
-        '400': *id004
-        '500': *id005
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
   /openapi:
     get:
       summary: OpenAPI definition
@@ -145,7 +206,7 @@ paths:
       tags:
       - server
       parameters:
-      - *id002
+      - $ref: '#/components/parameters/f'
       responses:
         '200':
           description: OpenAPI document
@@ -161,8 +222,8 @@ paths:
       tags:
       - insitu-observations
       parameters:
-      - *id002
-      - *id003
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
         '200':
           description: Collection metadata
@@ -185,7 +246,22 @@ paths:
                     type: array
                     items:
                       type: string
-                  links: *id007
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
                   crs:
                     type: array
                     items:
@@ -298,7 +374,7 @@ paths:
                                 type: number
                               minItems: 4
                               maxItems: 6
-                          crs: &id008
+                          crs:
                             type: string
                             enum:
                             - http://www.opengis.net/def/crs/OGC/1.3/CRS84
@@ -310,8 +386,10 @@ paths:
                             items:
                               type: array
                               items:
-                                type: string
-                                format: date-time
+                                oneOf:
+                                - type: string
+                                  format: date-time
+                                - type: 'null'
                               minItems: 2
                               maxItems: 2
                           values:
@@ -388,16 +466,45 @@ paths:
                                     required:
                                     - crs
                                     properties:
-                                      crs: *id008
+                                      crs:
+                                        type: string
+                                        enum:
+                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
-        '400': *id004
-        '404': &id009
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '404':
           description: Not found
           content:
             application/json:
-              schema: *id001
-        '500': *id005
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
   /collections/insitu-observations/items:
     get:
       summary: Get In-situ meteorological observations items
@@ -408,10 +515,10 @@ paths:
       tags:
       - insitu-observations
       parameters:
-      - *id002
-      - *id003
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
-        '200': &id010
+        '200':
           description: Feature collection
           content:
             application/json:
@@ -425,9 +532,39 @@ paths:
                     type: array
                     items:
                       type: object
-        '400': *id004
-        '404': *id009
-        '500': *id005
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
   /collections/insitu-observations/items/{featureId}:
     get:
       summary: Get In-situ meteorological observations item by id
@@ -444,13 +581,161 @@ paths:
         description: Feature identifier
         schema:
           type: string
-      - *id002
-      - *id003
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
-        '200': *id010
-        '400': *id004
-        '404': *id009
-        '500': *id005
+        '200':
+          description: Feature collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    const: FeatureCollection
+                  features:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+  /collections/insitu-observations/locations:
+    get:
+      summary: Get pre-defined locations of insitu-observations
+      description: Real-time in-situ meteorological observations from surface stations.
+        Provides air temperature, wind, humidity, pressure, precipitation, and dew
+        point at standard measurement heights.
+      operationId: GetLocationsInsituObservations
+      tags:
+      - insitu-observations
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/bbox.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Feature collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    const: FeatureCollection
+                  features:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+  /collections/insitu-observations/locations/{locId}:
+    get:
+      summary: query insitu-observations by location
+      description: Real-time in-situ meteorological observations from surface stations.
+        Provides air temperature, wind, humidity, pressure, precipitation, and dew
+        point at standard measurement heights.
+      operationId: GetLocationInsituObservations
+      tags:
+      - insitu-observations
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/locationId.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+  /collections/insitu-observations/area:
+    get:
+      summary: query insitu-observations by area
+      description: Real-time in-situ meteorological observations from surface stations.
+        Provides air temperature, wind, humidity, pressure, precipitation, and dew
+        point at standard measurement heights.
+      operationId: QueryAreaInsituObservations
+      tags:
+      - insitu-observations
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/areaCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
   /collections/insitu-observations/radius:
     get:
       summary: query insitu-observations by radius
@@ -469,73 +754,23 @@ paths:
         description: Units for the within parameter e.g. km
         schema:
           type: string
-      - &id012
-        $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - &id013
-        $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - &id015
-        $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - *id002
-      responses: &id014
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
         '200':
           description: Coverage data response
           content:
             application/prs.coverage+json:
-              schema: &id011
+              schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/vnd.cov+json:
-              schema: *id011
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/geo+json:
               schema:
                 $ref: https://geojson.org/schema/FeatureCollection.json
-  /collections/insitu-observations/locations:
-    get:
-      summary: Get pre-defined locations of insitu-observations
-      description: Real-time in-situ meteorological observations from surface stations.
-        Provides air temperature, wind, humidity, pressure, precipitation, and dew
-        point at standard measurement heights.
-      operationId: GetLocationsInsituObservations
-      tags:
-      - insitu-observations
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/bbox.yaml
-      - *id012
-      - *id002
-      responses:
-        '200': *id010
-        '400': *id004
-        '500': *id005
-  /collections/insitu-observations/locations/{locId}:
-    get:
-      summary: query insitu-observations by location
-      description: Real-time in-situ meteorological observations from surface stations.
-        Provides air temperature, wind, humidity, pressure, precipitation, and dew
-        point at standard measurement heights.
-      operationId: GetLocationInsituObservations
-      tags:
-      - insitu-observations
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/locationId.yaml
-      - *id012
-      - *id013
-      - *id002
-      responses: *id014
-  /collections/insitu-observations/area:
-    get:
-      summary: query insitu-observations by area
-      description: Real-time in-situ meteorological observations from surface stations.
-        Provides air temperature, wind, humidity, pressure, precipitation, and dew
-        point at standard measurement heights.
-      operationId: QueryAreaInsituObservations
-      tags:
-      - insitu-observations
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/areaCoords.yaml
-      - *id012
-      - *id013
-      - *id015
-      - *id002
-      responses: *id014
 components:
   parameters:
     f:

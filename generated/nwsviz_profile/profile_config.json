@@ -2,6 +2,8 @@
   "name": "nwsviz",
   "title": "NWSViz EDR Service Profile",
   "version": "1.0",
+  "description": null,
+  "keywords": [],
   "server_url": "https://edr-api-desi-c.mdl.nws.noaa.gov",
   "collections": [
     {
@@ -123,7 +125,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "air_quality_alaska_polar_stereographic",
@@ -244,7 +247,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "air_quality_conus_lambert",
@@ -365,7 +369,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "air_quality_hawaii_mercator",
@@ -486,7 +491,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "gefs0p25_v12p3_global_latlon",
@@ -607,7 +613,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "gefs0p5_v12p3_global_latlon",
@@ -728,7 +735,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "gfs0p25_v16p3_global_latlon",
@@ -849,7 +857,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "gfs0p25_v17_global_latlon",
@@ -970,7 +979,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "nbm_v5p0_conus_lambert",
@@ -1091,7 +1101,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "processed_gefs0p25_v12p3_global_latlon",
@@ -1212,7 +1223,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "rtma2p5_v2p10_conus_lambert",
@@ -1333,7 +1345,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "urma2p5_v2p10_conus_lambert",
@@ -1454,7 +1467,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     },
     {
       "id": "petss_test",
@@ -1564,7 +1578,8 @@
         "NetCDF"
       ],
       "parameter_names": {},
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     }
   ],
   "collection_examples": {
@@ -1875,6 +1890,7 @@
       "schema_ref": null
     }
   ],
+  "allow_post_queries": false,
   "collection_id_pattern": null,
   "parameter_name_pattern": null,
   "parameter_schema": null
