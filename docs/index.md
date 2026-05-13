@@ -189,7 +189,10 @@ The skipped tests are optional features not implemented by the server.
 | `name` | `string` | yes | Lowercase identifier using only `a-z`, `0-9`, `_`. Used in OGC URIs and OpenAPI `operationId`s. e.g. `water_gauge` |
 | `title` | `string` | yes | Human-readable profile title |
 | `version` | `string` | no | Profile version. Defaults to `1.0` |
+| `description` | `string` | no | Human-readable description of the service profile. Surfaces in the OpenAPI `info.description` and the landing page response schema |
+| `keywords` | `list[string]` | no | Service-level keywords describing what this profile provides (e.g. query types, parameter names, domain terms). Surfaces in `info.x-keywords` and the landing page response schema. Distinct from `document_metadata.keywords`, which are for the OGC PDF header |
 | `server_url` | `string` | no | Base URL of the live server. Populates the OpenAPI `servers` block |
+| `allow_post_queries` | `bool` | no | When `true`, generates `POST` alongside `GET` for all EDR data query endpoints. Can be overridden per-collection via `post_queries`. Defaults to `false` |
 | `collections` | `list` | yes | One or more EDR collections (see below) |
 | `processes` | `list` | no | OGC API Processes to include in the OpenAPI (see below) |
 | `requirements` | `list` | no | Normative requirements (see below) |

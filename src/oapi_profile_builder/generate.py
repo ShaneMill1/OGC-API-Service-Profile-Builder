@@ -89,7 +89,32 @@ _LINK_SCHEMA = {
 _LINKS_ARRAY = {"type": "array", "items": _LINK_SCHEMA}
 
 # Landing page response with required profile link per REQ_publishing
-def _landing_page_schema(profile_uri: str) -> dict:
+def _landing_page_schema(profile_uri: str, title: str = "", description: str = "", keywords: list | None = None) -> dict:
+    schema_props: dict = {
+        "links": {
+            "type": "array",
+            "items": _LINK_SCHEMA,
+            "contains": {
+                "type": "object",
+                "required": ["href", "rel"],
+                "properties": {
+                    "rel": {"const": "profile"},
+                    "href": {"const": profile_uri},
+                },
+            },
+        },
+    }
+    if title:
+        schema_props["title"] = {"type": "string", "const": title}
+    if description:
+        schema_props["description"] = {"type": "string"}
+    if keywords:
+        schema_props["keywords"] = {
+            "type": "array",
+            "items": {"type": "string"},
+            "contains": {"enum": keywords},
+        }
+
     return {
         "description": "Landing page",
         "content": {
@@ -97,23 +122,10 @@ def _landing_page_schema(profile_uri: str) -> dict:
                 "schema": {
                     "type": "object",
                     "required": ["links"],
-                    "properties": {
-                        "links": {
-                            "type": "array",
-                            "items": _LINK_SCHEMA,
-                            "contains": {
-                                "type": "object",
-                                "required": ["href", "rel"],
-                                "properties": {
-                                    "rel": {"const": "profile"},
-                                    "href": {"const": profile_uri}
-                                }
-                            }
-                        }
-                    }
+                    "properties": schema_props,
                 }
             }
-        }
+        },
     }
 
 _R200_CONFORMANCE = {
@@ -201,6 +213,138 @@ def _coverage_response(coll: Collection, profile: "ServiceProfile | None") -> di
         }
 
     return {"200": {"description": "Coverage data response", "content": content}}
+
+# ---------------------------------------------------------------------------
+# POST request body schemas — one per EDR query type.
+# POST mirrors the GET query parameters as a JSON object body, allowing
+# clients to submit large geometries or complex filters that would exceed
+# URL length limits with GET.  This is consistent with how OGC API - EDR
+# implementations (e.g. ECMWF, NWS) handle POST for data queries.
+# ---------------------------------------------------------------------------
+_POST_BODY_SCHEMAS: dict[str, dict] = {
+    "position": {
+        "type": "object",
+        "required": ["coords"],
+        "properties": {
+            "coords": {"type": "string", "description": "WKT Point geometry (e.g. POINT(0 51.5))"},
+            "datetime": {"type": "string", "description": "RFC 3339 datetime or interval (e.g. 2026-01-01T00:00:00Z/2026-12-31T23:59:59Z)"},
+            "parameter-name": {"type": "string", "description": "Comma-separated list of parameter names to return"},
+            "z": {"type": "string", "description": "Vertical level(s)"},
+            "f": {"type": "string", "description": "Response format"},
+        },
+    },
+    "area": {
+        "type": "object",
+        "required": ["coords"],
+        "properties": {
+            "coords": {"type": "string", "description": "WKT Polygon geometry"},
+            "datetime": {"type": "string", "description": "RFC 3339 datetime or interval"},
+            "parameter-name": {"type": "string", "description": "Comma-separated list of parameter names to return"},
+            "z": {"type": "string", "description": "Vertical level(s)"},
+            "f": {"type": "string", "description": "Response format"},
+        },
+    },
+    "radius": {
+        "type": "object",
+        "required": ["coords", "within", "within-units"],
+        "properties": {
+            "coords": {"type": "string", "description": "WKT Point geometry"},
+            "within": {"type": "number", "description": "Radius distance"},
+            "within-units": {"type": "string", "description": "Units for the within parameter (e.g. km)"},
+            "datetime": {"type": "string", "description": "RFC 3339 datetime or interval"},
+            "parameter-name": {"type": "string", "description": "Comma-separated list of parameter names to return"},
+            "z": {"type": "string", "description": "Vertical level(s)"},
+            "f": {"type": "string", "description": "Response format"},
+        },
+    },
+    "cube": {
+        "type": "object",
+        "required": ["bbox"],
+        "properties": {
+            "bbox": {
+                "type": "array",
+                "description": "Bounding box [minLon, minLat, maxLon, maxLat]",
+                "items": {"type": "number"},
+                "minItems": 4,
+                "maxItems": 6,
+            },
+            "datetime": {"type": "string", "description": "RFC 3339 datetime or interval"},
+            "parameter-name": {"type": "string", "description": "Comma-separated list of parameter names to return"},
+            "z": {"type": "string", "description": "Vertical level(s)"},
+            "f": {"type": "string", "description": "Response format"},
+        },
+    },
+    "trajectory": {
+        "type": "object",
+        "required": ["coords"],
+        "properties": {
+            "coords": {"type": "string", "description": "WKT LineString geometry"},
+            "datetime": {"type": "string", "description": "RFC 3339 datetime or interval"},
+            "parameter-name": {"type": "string", "description": "Comma-separated list of parameter names to return"},
+            "z": {"type": "string", "description": "Vertical level(s)"},
+            "f": {"type": "string", "description": "Response format"},
+        },
+    },
+    "corridor": {
+        "type": "object",
+        "required": ["coords", "corridor-width"],
+        "properties": {
+            "coords": {"type": "string", "description": "WKT LineString geometry"},
+            "corridor-width": {"type": "number", "description": "Width of the corridor"},
+            "corridor-height": {"type": "number", "description": "Height of the corridor"},
+            "datetime": {"type": "string", "description": "RFC 3339 datetime or interval"},
+            "parameter-name": {"type": "string", "description": "Comma-separated list of parameter names to return"},
+            "z": {"type": "string", "description": "Vertical level(s)"},
+            "f": {"type": "string", "description": "Response format"},
+        },
+    },
+    "items": {
+        "type": "object",
+        "properties": {
+            "bbox": {"type": "string", "description": "Bounding box filter"},
+            "datetime": {"type": "string", "description": "RFC 3339 datetime or interval"},
+            "parameter-name": {"type": "string", "description": "Comma-separated list of parameter names to return"},
+            "z": {"type": "string", "description": "Vertical level(s)"},
+            "f": {"type": "string", "description": "Response format"},
+        },
+    },
+    "locations": {
+        "type": "object",
+        "properties": {
+            "bbox": {
+                "type": "array",
+                "description": "Bounding box [minLon, minLat, maxLon, maxLat]",
+                "items": {"type": "number"},
+                "minItems": 4,
+                "maxItems": 6,
+            },
+            "datetime": {"type": "string", "description": "RFC 3339 datetime or interval"},
+            "f": {"type": "string", "description": "Response format"},
+        },
+    },
+}
+
+
+def _post_operation(get_op: dict, query_type: str, coll_id: str, responses: dict) -> dict:
+    """Build a POST operation mirroring a GET EDR data query operation."""
+    body_schema = _POST_BODY_SCHEMAS.get(query_type, {"type": "object"})
+    return {
+        "summary": get_op["summary"].replace("query", "query (POST)"),
+        "description": get_op.get("description", ""),
+        "operationId": get_op["operationId"].replace("Query", "QueryPost").replace("Get", "PostGet"),
+        "tags": get_op["tags"],
+        "requestBody": {
+            "required": True,
+            "description": f"Query parameters for {query_type} request",
+            "content": {
+                "application/json": {
+                    "schema": body_schema,
+                },
+            },
+        },
+        "responses": responses,
+    }
+
 
 # Parameters keyed by EDR query type
 _QUERY_PARAMS: dict[str, list[dict]] = {
@@ -360,7 +504,12 @@ def _collection_response_schema(coll: Collection,
                                 "type": "array",
                                 "items": {
                                     "type": "array",
-                                    "items": {"type": "string", "format": "date-time"},
+                                    "items": {
+                                        "oneOf": [
+                                            {"type": "string", "format": "date-time"},
+                                            {"type": "null"},
+                                        ]
+                                    },
                                     "minItems": 2,
                                     "maxItems": 2,
                                 },
@@ -518,6 +667,11 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
     tag = coll.id
     desc = getattr(coll, "description", None) or coll.id
 
+    # Resolve effective POST flag: collection-level overrides profile-level default.
+    # Collection.post_queries is None → inherit; True/False → explicit override.
+    profile_default = profile.allow_post_queries if profile else False
+    include_post = coll.post_queries if coll.post_queries is not None else profile_default
+
     # Build a collection-specific response schema that includes CRS and
     # parameter-name constraints from the profile's extent_requirements
     # and parameter_name_pattern.
@@ -600,30 +754,38 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
                 "parameters": [instance_id_param, _F],
                 "responses": {"200": _R200_FEATURES},
             }}
-            # instance-level query sub-paths
+            # instance-level query sub-paths — GET + optional POST
             for sub_qt in (active - {"instances"}):
                 sub_params = _QUERY_PARAMS.get(sub_qt, [])
-                paths[f"{base}/instances/{{instanceId}}/{sub_qt}"] = {"get": {
+                get_op = {
                     "summary": f"query {coll.id} instance by {sub_qt}",
                     "description": desc,
                     "operationId": _operation_id("query", sub_qt, "Instance", coll.id),
                     "tags": [tag],
                     "parameters": [instance_id_param, *sub_params],
                     "responses": cov_resp,
-                }}
+                }
+                path_ops = {"get": get_op}
+                if include_post:
+                    path_ops["post"] = _post_operation(get_op, sub_qt, coll.id, cov_resp)
+                paths[f"{base}/instances/{{instanceId}}/{sub_qt}"] = path_ops
 
         elif qt == "items":
-            paths[f"{base}/items"] = {"get": {
+            get_op = {
                 "summary": f"query {coll.id} by items",
                 "description": desc,
                 "operationId": _operation_id("queryItems", coll.id),
                 "tags": [tag],
                 "parameters": params,
                 "responses": cov_resp,
-            }}
+            }
+            path_ops = {"get": get_op}
+            if include_post:
+                path_ops["post"] = _post_operation(get_op, "items", coll.id, cov_resp)
+            paths[f"{base}/items"] = path_ops
 
         elif qt == "locations":
-            paths[f"{base}/locations"] = {"get": {
+            get_locations_op = {
                 "summary": f"Get pre-defined locations of {coll.id}",
                 "description": desc,
                 "operationId": _operation_id("getLocations", coll.id),
@@ -633,8 +795,13 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
                     "200": _R200_FEATURES,
                     "400": _ERR_400, "500": _ERR_500,
                 },
-            }}
-            paths[f"{base}/locations/{{locId}}"] = {"get": {
+            }
+            path_ops = {"get": get_locations_op}
+            if include_post:
+                path_ops["post"] = _post_operation(get_locations_op, "locations", coll.id, {"200": _R200_FEATURES, "400": _ERR_400, "500": _ERR_500})
+            paths[f"{base}/locations"] = path_ops
+
+            get_location_op = {
                 "summary": f"query {coll.id} by location",
                 "description": desc,
                 "operationId": _operation_id("getLocation", coll.id),
@@ -644,23 +811,36 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
                     _DATETIME, _PARAM_NAME, _F,
                 ],
                 "responses": cov_resp,
-            }}
+            }
+            loc_path_ops = {"get": get_location_op}
+            if include_post:
+                loc_path_ops["post"] = _post_operation(get_location_op, "locations", coll.id, cov_resp)
+            paths[f"{base}/locations/{{locId}}"] = loc_path_ops
 
         else:
-            paths[f"{base}/{qt}"] = {"get": {
+            get_op = {
                 "summary": f"query {coll.id} by {qt}",
                 "description": desc,
                 "operationId": _operation_id("query", qt, coll.id),
                 "tags": [tag],
                 "parameters": params,
                 "responses": cov_resp,
-            }}
+            }
+            path_ops = {"get": get_op}
+            if include_post:
+                path_ops["post"] = _post_operation(get_op, qt, coll.id, cov_resp)
+            paths[f"{base}/{qt}"] = path_ops
 
     return paths
 
 
 def _core_paths(profile: ServiceProfile) -> dict:
-    landing_response = _landing_page_schema(profile.req_uri)
+    landing_response = _landing_page_schema(
+        profile.req_uri,
+        title=profile.title,
+        description=profile.description or "",
+        keywords=profile.keywords or None,
+    )
     
     # Conformance response with required conformance classes
     conformance_response = _R200_CONFORMANCE.copy()
@@ -853,8 +1033,9 @@ def build_openapi(profile: ServiceProfile) -> dict:
         "info": {
             "title": profile.title,
             "version": profile.version,
-            "description": f"OGC API - EDR Part 3 Service Profile: {profile.title}",
+            "description": profile.description or f"OGC API - EDR Part 3 Service Profile: {profile.title}",
             "x-ogc-profile": profile.req_uri,
+            "x-keywords": profile.keywords if profile.keywords else [],
             "contact": contact,
         },
         # Per OGC API - EDR Part 3 REQ_publishing: this profile is implementation-independent.

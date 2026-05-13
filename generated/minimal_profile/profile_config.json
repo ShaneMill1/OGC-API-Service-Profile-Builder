@@ -65,7 +65,8 @@
           "measurementType": null
         }
       },
-      "distanceunits": null
+      "distanceunits": null,
+      "post_queries": null
     }
   ],
   "collection_examples": {},
@@ -119,6 +120,7 @@
       "schema_ref": "https://geojson.org/schema/FeatureCollection.json"
     }
   ],
+  "allow_post_queries": false,
   "collection_id_pattern": null,
   "parameter_name_pattern": null,
   "parameter_schema": null

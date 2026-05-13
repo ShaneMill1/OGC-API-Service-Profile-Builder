@@ -1,5 +1,59 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [2.4.0] - 2026-05-13
+
+### Added
+
+- **Service-level `description` and `keywords` fields** (`models.py`, `generate.py`):
+  - New `ServiceProfile.description: str | None` — a human-readable description of the service profile. Surfaces in the OpenAPI `info.description` (replacing the hardcoded string) and as a property in the landing page response schema.
+  - New `ServiceProfile.keywords: list[str]` — service-level keywords describing what the profile provides (query types, parameter names, domain terms). Surfaces in `info.x-keywords` and as a `keywords` property in the landing page response schema, with a `contains` constraint so conformance tools can verify the keywords are present.
+  - These are distinct from `document_metadata.keywords`, which are for the OGC PDF/AsciiDoc header.
+  - `_landing_page_schema()` updated to accept and embed `title`, `description`, and `keywords`.
+
+### Usage
+
+```yaml
+name: my_profile
+title: My EDR Profile
+description: Brief description of what this service profile provides.
+keywords:
+  - lightning
+  - cube
+  - radius
+```
+
+---
+
+
+
+### Fixed
+
+- **Null temporal interval bounds** (`models.py`): edr-pydantic 0.7.x rejected `null` as a temporal interval bound, but OGC API - EDR explicitly allows open-ended intervals (e.g. `["2020-01-01T00:00:00Z", null]` meaning "from 2020 to present"). Fixed by overriding `Temporal` and `Extent` from edr-pydantic with `TemporalWithNullBounds` and `ExtentWithNullBounds`, and wrapping `EDRCollection` in our own `Collection` subclass that uses the null-aware extent. The upstream fix has been flagged for edr-pydantic.
+- **OpenAPI temporal interval schema** (`generate.py`): Updated the generated OpenAPI schema for `temporal.interval` items to use `oneOf: [date-time string, null]` to correctly reflect that null bounds are valid.
+
+### Added
+
+- **Configurable POST support for EDR data query endpoints** (`models.py`, `generate.py`):
+  - New `ServiceProfile.allow_post_queries: bool` field (default `False`). When `True`, generates `POST` operations alongside `GET` for all EDR data query endpoints (`position`, `area`, `radius`, `cube`, `trajectory`, `corridor`, `items`, `locations`). The POST request body mirrors the GET query parameters as a JSON object, allowing clients to submit large geometries that would exceed URL length limits.
+  - New `Collection.post_queries: bool | None` field for per-collection override. `None` inherits the profile-level default; `True`/`False` overrides explicitly.
+  - New `_POST_BODY_SCHEMAS` dict and `_post_operation()` helper in `generate.py`.
+
+### Usage
+
+```yaml
+# Enable POST for all collections in the profile
+allow_post_queries: true
+
+# Or override per-collection
+collections:
+  - id: large_geometry_collection
+    post_queries: true
+  - id: simple_collection
+    post_queries: false
+```
+
+---
+
 ## [Unreleased] - 2025-01-30
 
 ### Added - OGC API - EDR Part 3 Compliance

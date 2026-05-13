@@ -184,6 +184,10 @@ A profile config is a YAML file. The full JSON Schema is at [`profile.schema.jso
 name: my_profile          # lowercase, a-z 0-9 _ only
 title: My EDR Profile
 version: "1.0"
+description: Brief description of what this service profile provides.
+keywords:
+  - my-parameter
+  - my-domain
 
 required_conformance_classes:
   - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
@@ -224,7 +228,10 @@ collections:
 | `name` | string | yes | Lowercase `a-z 0-9 _`. Drives OGC URIs and OpenAPI `operationId`s |
 | `title` | string | yes | Human-readable profile title |
 | `version` | string | no | Defaults to `"1.0"` |
+| `description` | string | no | Human-readable description of the service profile. Surfaces in the OpenAPI `info.description` and the landing page response schema |
+| `keywords` | list | no | Service-level keywords (e.g. query types, parameter names, domain terms). Surfaces in `info.x-keywords` and the landing page response schema. Distinct from `document_metadata.keywords`, which are for the OGC PDF header |
 | `server_url` | string | no | Documentation only — not written to the profile OpenAPI |
+| `allow_post_queries` | bool | no | When `true`, generates `POST` alongside `GET` for all EDR data query endpoints. Defaults to `false` |
 | `collections` | list | yes | One or more EDR collections (see below) |
 | `required_conformance_classes` | list | no | Conformance classes implementations must declare. Defaults to EDR Core |
 | `extent_requirements` | object | no | Profile-level CRS/TRS/VRS constraints (see below) |

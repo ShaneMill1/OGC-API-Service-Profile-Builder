@@ -25,10 +25,8 @@ paths:
       tags:
       - server
       parameters:
-      - &id002
-        $ref: '#/components/parameters/f'
-      - &id003
-        $ref: '#/components/parameters/lang'
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
         '200':
           description: Landing page
@@ -41,7 +39,7 @@ paths:
                 properties:
                   links:
                     type: array
-                    items: &id006
+                    items:
                       type: object
                       required:
                       - href
@@ -65,22 +63,28 @@ paths:
                           const: profile
                         href:
                           const: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/minimal_profile
-        '400': &id004
+        '400':
           description: Invalid or missing parameter
           content:
             application/json:
-              schema: &id001
+              schema:
                 type: object
                 properties:
                   code:
                     type: string
                   description:
                     type: string
-        '500': &id005
+        '500':
           description: Server error
           content:
             application/json:
-              schema: *id001
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
   /conformance:
     get:
       summary: API conformance definition
@@ -89,8 +93,8 @@ paths:
       tags:
       - server
       parameters:
-      - *id002
-      - *id003
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
         '200':
           description: Conformance classes
@@ -108,8 +112,28 @@ paths:
                     contains:
                       enum:
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
-        '400': *id004
-        '500': *id005
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
   /collections:
     get:
       summary: Collections
@@ -118,8 +142,8 @@ paths:
       tags:
       - server
       parameters:
-      - *id002
-      - *id003
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
         '200':
           description: Collections list
@@ -128,11 +152,44 @@ paths:
               schema:
                 type: object
                 properties:
-                  links: &id007
+                  links:
                     type: array
-                    items: *id006
-        '400': *id004
-        '500': *id005
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
   /openapi:
     get:
       summary: OpenAPI definition
@@ -141,7 +198,7 @@ paths:
       tags:
       - server
       parameters:
-      - *id002
+      - $ref: '#/components/parameters/f'
       responses:
         '200':
           description: OpenAPI document
@@ -155,8 +212,8 @@ paths:
       tags:
       - temperature
       parameters:
-      - *id002
-      - *id003
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
         '200':
           description: Collection metadata
@@ -179,10 +236,25 @@ paths:
                     type: array
                     items:
                       type: string
-                  links: *id007
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
                   crs:
                     type: array
-                    items: &id008
+                    items:
                       type: string
                       enum:
                       - http://www.opengis.net/def/crs/OGC/1.3/CRS84
@@ -275,7 +347,10 @@ paths:
                                 type: number
                               minItems: 4
                               maxItems: 6
-                          crs: *id008
+                          crs:
+                            type: string
+                            enum:
+                            - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                       temporal:
                         type: object
                         properties:
@@ -284,8 +359,10 @@ paths:
                             items:
                               type: array
                               items:
-                                type: string
-                                format: date-time
+                                oneOf:
+                                - type: string
+                                  format: date-time
+                                - type: 'null'
                               minItems: 2
                               maxItems: 2
                           values:
@@ -360,16 +437,45 @@ paths:
                                     required:
                                     - crs
                                     properties:
-                                      crs: *id008
+                                      crs:
+                                        type: string
+                                        enum:
+                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
-        '400': *id004
-        '404': &id009
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '404':
           description: Not found
           content:
             application/json:
-              schema: *id001
-        '500': *id005
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
   /collections/temperature/items:
     get:
       summary: Get Temperature Observations items
@@ -378,10 +484,10 @@ paths:
       tags:
       - temperature
       parameters:
-      - *id002
-      - *id003
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
-        '200': &id010
+        '200':
           description: Feature collection
           content:
             application/json:
@@ -395,9 +501,39 @@ paths:
                     type: array
                     items:
                       type: object
-        '400': *id004
-        '404': *id009
-        '500': *id005
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
   /collections/temperature/items/{featureId}:
     get:
       summary: Get Temperature Observations item by id
@@ -412,13 +548,56 @@ paths:
         description: Feature identifier
         schema:
           type: string
-      - *id002
-      - *id003
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
       responses:
-        '200': *id010
-        '400': *id004
-        '404': *id009
-        '500': *id005
+        '200':
+          description: Feature collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    const: FeatureCollection
+                  features:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
 components:
   parameters:
     f:

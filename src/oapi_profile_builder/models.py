@@ -39,11 +39,68 @@ so that EDR data model types are authoritative and shared with the broader ecosy
 from __future__ import annotations
 
 import re
+from datetime import datetime
 from enum import Enum
-from typing import Annotated, Literal
+from typing import Annotated, List, Literal, Optional
 
+from annotated_types import Len
 from edr_pydantic.collections import Collection as EDRCollection
-from pydantic import BaseModel, Field, field_validator, model_validator
+from edr_pydantic.extent import Custom, Extent as EDRExtent, Spatial, Vertical
+from pydantic import AwareDatetime, BaseModel, Field, field_validator, model_validator
+
+
+# ---------------------------------------------------------------------------
+# edr-pydantic overrides — null-aware temporal interval
+#
+# OGC API - EDR allows open-ended temporal intervals where either bound is
+# null (e.g. ["2020-01-01T00:00:00Z", null] means "from 2020 to present").
+# edr-pydantic 0.7.x types both bounds as AwareDatetime, rejecting null.
+# We override Temporal and Extent here so the profile builder accepts the
+# spec-compliant form.  The fix should be upstreamed to edr-pydantic.
+# ---------------------------------------------------------------------------
+
+from edr_pydantic.base_model import EdrBaseModel  # noqa: E402 — after stdlib imports
+
+
+class TemporalWithNullBounds(EdrBaseModel):
+    """Temporal extent that allows null start/end bounds per OGC API - EDR."""
+
+    interval: List[
+        Annotated[List[Optional[AwareDatetime]], Len(min_length=2, max_length=2)]
+    ]
+    values: List[str]
+    trs: str
+
+
+class ExtentWithNullBounds(EDRExtent):
+    """Extent that uses TemporalWithNullBounds instead of the upstream Temporal."""
+
+    temporal: Optional[TemporalWithNullBounds] = None
+
+
+class Collection(EDRCollection):
+    """
+    EDR Collection with a null-aware temporal extent.
+
+    Identical to edr_pydantic.collections.Collection except that
+    extent uses ExtentWithNullBounds so open-ended intervals like
+    ["2020-01-01T00:00:00Z", null] are accepted.
+
+    post_queries controls whether POST operations are generated for this
+    collection's data query endpoints.  None means inherit the profile-level
+    allow_post_queries default.  Set to True or False to override per-collection.
+    """
+
+    extent: Optional[ExtentWithNullBounds] = None  # type: ignore[assignment]
+    post_queries: Optional[bool] = Field(
+        default=None,
+        description=(
+            "Override the profile-level allow_post_queries setting for this collection. "
+            "True generates POST alongside GET for all data query endpoints. "
+            "False suppresses POST even if allow_post_queries is True at profile level. "
+            "Omit (null) to inherit the profile-level default."
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -116,12 +173,6 @@ class OutputFormat(BaseModel):
     schema_ref: str | None = Field(default=None, description="URL to schema definition")
 
 
-# Collection IS the edr-pydantic Collection — no wrapper needed.
-# edr_pydantic.collections.Collection models id, extent, data_queries,
-# output_formats, parameter_names, links — all authoritative EDR fields.
-Collection = EDRCollection
-
-
 class DocumentMetadata(BaseModel):
     """Metanorma/OGC document header metadata for PDF compilation."""
     doc_number: str
@@ -174,6 +225,22 @@ class ServiceProfile(BaseModel):
     name: Annotated[str, Field(pattern=r"^[a-z0-9_]+$")]
     title: str
     version: str = "1.0"
+    description: str | None = Field(
+        default=None,
+        description=(
+            "Human-readable description of the service profile. Surfaces in the "
+            "OpenAPI info block and the landing page response."
+        ),
+    )
+    keywords: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Service-level keywords describing what this profile provides. "
+            "Surfaces in the OpenAPI info block (as x-keywords) and the landing "
+            "page response. Distinct from document_metadata.keywords, which are "
+            "for the OGC PDF header."
+        ),
+    )
     server_url: str | None = Field(default=None, description="Base URL for implementation (not used in profile OpenAPI per standard)")
     collections: list[Collection] = Field(min_length=1)
     collection_examples: dict[str, dict] = Field(default_factory=dict)
@@ -197,6 +264,16 @@ class ServiceProfile(BaseModel):
     output_formats: list[OutputFormat] = Field(
         default_factory=list,
         description="Profile-level output format definitions with schema references"
+    )
+    allow_post_queries: bool = Field(
+        default=False,
+        description=(
+            "When True, generate POST operations alongside GET for all EDR data query "
+            "endpoints (position, area, radius, cube, trajectory, corridor, items, locations). "
+            "The POST body mirrors the GET query parameters as a JSON object, allowing clients "
+            "to submit large geometries that would exceed URL length limits. "
+            "Can be overridden per-collection via the collection's post_queries field."
+        ),
     )
     collection_id_pattern: str | None = Field(
         default=None,
