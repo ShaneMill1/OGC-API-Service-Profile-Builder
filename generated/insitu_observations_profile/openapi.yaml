@@ -708,34 +708,6 @@ paths:
             application/geo+json:
               schema:
                 $ref: https://geojson.org/schema/FeatureCollection.json
-  /collections/insitu-observations/area:
-    get:
-      summary: query insitu-observations by area
-      description: Real-time in-situ meteorological observations from surface stations.
-        Provides air temperature, wind, humidity, pressure, precipitation, and dew
-        point at standard measurement heights.
-      operationId: QueryAreaInsituObservations
-      tags:
-      - insitu-observations
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/areaCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
   /collections/insitu-observations/radius:
     get:
       summary: query insitu-observations by radius
@@ -754,6 +726,34 @@ paths:
         description: Units for the within parameter e.g. km
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+  /collections/insitu-observations/area:
+    get:
+      summary: query insitu-observations by area
+      description: Real-time in-situ meteorological observations from surface stations.
+        Provides air temperature, wind, humidity, pressure, precipitation, and dew
+        point at standard measurement heights.
+      operationId: QueryAreaInsituObservations
+      tags:
+      - insitu-observations
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/areaCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
