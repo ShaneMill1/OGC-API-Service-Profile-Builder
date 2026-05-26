@@ -1,0 +1,10 @@
+[[ats_class_nwp_earth_observations_lightning]]
+[conformance_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/nwp_earth_observations_lightning
+target:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_earth_observations_lightning
+abstract-test:: /conf/nwp_earth_observations_lightning/items-endpoint
+abstract-test:: /conf/nwp_earth_observations_lightning/cube-endpoint
+abstract-test:: /conf/nwp_earth_observations_lightning/radius-endpoint
+====

@@ -1,0 +1,31 @@
+= DGIWG NWP Earth Observations Lightning Profile
+:doctype: draft-standard
+:docsubtype: implementation
+:edition: 1.0
+:language: en
+:committee: technical
+:docnumber: DGIWG-NWP-LIGHTNING-001
+:copyright-year: 2026
+:published-date: 2026-01-01
+:issued-date: 2026-01-01
+:received-date: 2026-01-01
+:keywords: cube, radius, items, datetime, frequency_of_lightning_flashes_per_unit_area, lightning flashes, lightning
+:mn-document-class: ogc
+:mn-output-extensions: xml,html,pdf
+:local-cache-only:
+
+include::sections/00-abstract.adoc[]
+
+include::sections/01-preface.adoc[]
+
+include::sections/02-scope.adoc[]
+
+include::sections/03-conformance.adoc[]
+
+include::sections/04-references.adoc[]
+
+include::sections/05-terms.adoc[]
+
+include::sections/06-requirements.adoc[]
+
+include::sections/07-abstract-tests.adoc[]

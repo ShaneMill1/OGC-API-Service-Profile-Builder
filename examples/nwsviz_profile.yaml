@@ -3,7 +3,10 @@ title: NWSViz EDR Service Profile
 version: "1.0"
 server_url: https://edr-api-desi-c.mdl.nws.noaa.gov
 
-# OGC API - EDR Part 3 compliance fields
+# ── Profile-level constraints ─────────────────────────────────────────────
+# Define what any conforming implementation MUST support.
+# Validated at build time and embedded in the generated OpenAPI as
+# enum/pattern constraints so runtime tools (schemathesis, CITE) can enforce them.
 required_conformance_classes:
   - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
   - "http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/core"
@@ -102,6 +105,10 @@ processes:
             zarr_endpoint:
               type: string
 
+# ── Reference metadata ────────────────────────────────────────────────────
+# Describes the structure of collections a conforming service should expose.
+# For dynamic fields (extent intervals, custom dimension values), use the
+# full possible range — not a snapshot of current live data.
 collections:
 
   - id: aigfs0p25_v1p0_global_latlon
@@ -657,6 +664,8 @@ collections:
     output_formats: [CoverageJSON, GeoJSON, NetCDF]
     parameter_names: {}
 
+# ── Normative requirements and abstract tests ─────────────────────────────
+# Drive the AsciiDoc/PDF output. Tests must reference a valid requirement id.
 requirements:
   - id: conformance
     statement: The service SHALL declare conformance to OGC API Common, EDR, EDR Part 3, and OGC API Processes.
@@ -721,6 +730,7 @@ requirements:
       - The process SHALL support sync-execute job control.
       - The process SHALL return a zarr_endpoint output containing a URL to stream wind data chunks on-demand.
 
+# ── Abstract Test Suite ───────────────────────────────────────────────────
 abstract_tests:
   - id: conformance
     requirement_id: conformance

@@ -1,0 +1,10 @@
+[[req_nwp_earth_observations_lightning_cube_endpoint]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_earth_observations_lightning/cube-endpoint
+statement:: The service SHALL provide a /collections/earth_observations_lightning/cube endpoint.
+part:: The service SHALL return CoverageJSON FeatureCollection.
+part:: Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.
+part:: Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.
+====

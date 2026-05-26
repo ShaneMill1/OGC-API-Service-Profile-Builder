@@ -17,9 +17,10 @@ name: insitu_observations_profile
 title: In-situ Observations EDR Profile
 version: "1.0"
 
-# ---------------------------------------------------------------------------
-# OGC API - EDR Part 3 compliance
-# ---------------------------------------------------------------------------
+# ── Profile-level constraints ─────────────────────────────────────────────
+# Define what any conforming implementation MUST support.
+# Validated at build time and embedded in the generated OpenAPI as
+# enum/pattern constraints so runtime tools (schemathesis, CITE) can enforce them.
 required_conformance_classes:
   - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
   - "https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/core"
@@ -147,9 +148,10 @@ output_formats:
     media_type: application/geo+json
     schema_ref: https://geojson.org/schema/FeatureCollection.json
 
-# ---------------------------------------------------------------------------
-# Collections
-# ---------------------------------------------------------------------------
+# ── Reference metadata ────────────────────────────────────────────────────
+# Describes the structure of collections a conforming service should expose.
+# For dynamic fields (extent intervals, custom dimension values), use the
+# full possible range — not a snapshot of current live data.
 collections:
   - id: insitu-observations
     title: In-situ meteorological observations
@@ -435,9 +437,8 @@ collections:
         metocean:standard_name: dew_point_temperature
         metocean:level: 2
 
-# ---------------------------------------------------------------------------
-# Normative requirements
-# ---------------------------------------------------------------------------
+# ── Normative requirements and abstract tests ─────────────────────────────
+# Drive the AsciiDoc/PDF output. Tests must reference a valid requirement id.
 requirements:
   - id: conformance
     statement: The service SHALL declare conformance to OGC API EDR Core and the MetOcean EDR Profile.
@@ -506,9 +507,7 @@ requirements:
       - A 4xx response SHALL include a body conforming to RFC 9457 Problem Details.
       - A query for data inside the extent that returns no data SHALL respond with HTTP 204.
 
-# ---------------------------------------------------------------------------
-# Abstract Test Suite
-# ---------------------------------------------------------------------------
+# ── Abstract Test Suite ───────────────────────────────────────────────────
 abstract_tests:
   - id: conformance
     requirement_id: conformance

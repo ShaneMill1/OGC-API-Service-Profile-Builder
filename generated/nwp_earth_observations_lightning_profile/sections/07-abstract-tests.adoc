@@ -1,0 +1,8 @@
+[appendix,obligation=normative]
+== Abstract Test Suite
+
+include::../abstract_tests/ATS_class_core.adoc[]
+
+include::../abstract_tests/core/ATS_items-endpoint.adoc[]
+include::../abstract_tests/core/ATS_cube-endpoint.adoc[]
+include::../abstract_tests/core/ATS_radius-endpoint.adoc[]

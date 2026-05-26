@@ -2,7 +2,10 @@ name: minimal_profile
 title: Minimal EDR Profile Example
 version: "1.0"
 
-# OGC API - EDR Part 3 compliance fields (NEW)
+# ── Profile-level constraints ─────────────────────────────────────────────
+# Define what any conforming implementation MUST support.
+# Validated at build time and embedded in the generated OpenAPI as
+# enum/pattern constraints so runtime tools can enforce them.
 required_conformance_classes:
   - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
 
@@ -16,6 +19,10 @@ output_formats:
     media_type: application/geo+json
     schema_ref: https://geojson.org/schema/FeatureCollection.json
 
+# ── Reference metadata ────────────────────────────────────────────────────
+# Describes the structure of collections a conforming service should expose.
+# For dynamic fields (extent intervals, custom dimension values), use the
+# full possible range — not a snapshot of current live data.
 collections:
   - id: temperature
     title: Temperature Observations
@@ -41,6 +48,8 @@ collections:
             value: "°C"
             type: "http://www.opengis.net/def/uom/UCUM/degC"
 
+# ── Normative requirements and abstract tests ─────────────────────────────
+# Drive the AsciiDoc/PDF output. Tests must reference a valid requirement id.
 requirements:
   - id: temperature-geojson
     statement: The temperature collection SHALL return GeoJSON features.

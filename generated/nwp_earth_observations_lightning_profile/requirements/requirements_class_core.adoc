@@ -1,0 +1,10 @@
+[[req_class_nwp_earth_observations_lightning]]
+[requirements_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_earth_observations_lightning
+target-type:: DGIWG NWP Earth Observations Lightning Profile Profile Standard
+requirement:: /req/nwp_earth_observations_lightning/items-endpoint
+requirement:: /req/nwp_earth_observations_lightning/cube-endpoint
+requirement:: /req/nwp_earth_observations_lightning/radius-endpoint
+====

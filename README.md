@@ -189,6 +189,10 @@ keywords:
   - my-parameter
   - my-domain
 
+# ── Profile-level constraints ─────────────────────────────────────────────
+# Define what any conforming implementation MUST support.
+# Validated at build time and embedded in the generated OpenAPI as
+# enum/pattern constraints so runtime tools can enforce them.
 required_conformance_classes:
   - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
 
@@ -201,6 +205,10 @@ output_formats:
   - name: GeoJSON
     media_type: application/geo+json
 
+# ── Reference metadata ────────────────────────────────────────────────────
+# Describes the structure of collections a conforming service should expose.
+# For dynamic fields (extent intervals, custom dimension values), use the
+# full possible range — not a snapshot of current live data.
 collections:
   - id: my_collection
     links:
@@ -219,6 +227,11 @@ collections:
         unit:
           label: Celsius
           symbol: "°C"
+
+# ── Normative requirements and abstract tests ─────────────────────────────
+# Drive the AsciiDoc/PDF output. Tests must reference a valid requirement id.
+requirements: []
+abstract_tests: []
 ```
 
 ### Top-level fields
@@ -251,6 +264,16 @@ collections:
 ### `collections[]`
 
 Uses the [edr-pydantic](https://github.com/KNMI/edr-pydantic) `Collection` model — the same schema an EDR server returns at `/collections/{id}`.
+
+> **Service-level vs collection-level fields**
+>
+> The profile has two distinct levels that serve different purposes — they don't merge or override each other:
+>
+> - **Service-level fields** (`extent_requirements`, `parameter_schema`, `parameter_name_pattern`, `collection_id_pattern`) define *constraints* that any conforming implementation must satisfy. They are validated at build time and embedded in the generated OpenAPI as schema constraints (enums, patterns) so runtime tools can enforce them against a live server.
+>
+> - **`collections[]`** provides *reference metadata* — the structure and representative values of collections a conforming service should expose. This mirrors what an EDR server returns at `/collections/{id}` and drives the generated OpenAPI paths and response schemas.
+>
+> For fields that are inherently dynamic (e.g. `extent.temporal.interval`, `extent.custom[].values`), use representative values that describe the *full possible range*, not a snapshot of current live data. For example, use an open-ended temporal interval `["2020-01-01T00:00:00Z", null]` rather than a specific end date, and list all valid custom dimension values rather than only those currently in the dataset. The `validate-server` command tests API structure and response schema conformance — it does not assert that specific data values in responses match the profile config exactly.
 
 | Field | Required | Description |
 |---|---|---|
@@ -318,7 +341,9 @@ parameter_names:
 
 ### `extent_requirements`
 
-Constrains CRS, TRS, and VRS values across all collections. Validated at build time and embedded in the generated OpenAPI.
+Constrains CRS, TRS, and VRS values across all collections. Validated at build time and embedded in the generated OpenAPI as `enum` or `pattern` constraints on the collection response schema.
+
+These are **profile-level constraints** — they define what any conforming implementation must support, independent of the specific values a live service happens to have at a given moment.
 
 ```yaml
 extent_requirements:

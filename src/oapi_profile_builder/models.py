@@ -60,6 +60,7 @@ from pydantic import AwareDatetime, BaseModel, Field, field_validator, model_val
 # ---------------------------------------------------------------------------
 
 from edr_pydantic.base_model import EdrBaseModel  # noqa: E402 — after stdlib imports
+from edr_pydantic.parameter import Parameters  # noqa: E402
 
 
 class TemporalWithNullBounds(EdrBaseModel):
@@ -80,18 +81,32 @@ class ExtentWithNullBounds(EDRExtent):
 
 class Collection(EDRCollection):
     """
-    EDR Collection with a null-aware temporal extent.
+    EDR Collection with a null-aware temporal extent and optional parameter_names.
 
-    Identical to edr_pydantic.collections.Collection except that
-    extent uses ExtentWithNullBounds so open-ended intervals like
-    ["2020-01-01T00:00:00Z", null] are accepted.
+    Differences from edr_pydantic.collections.Collection:
 
-    post_queries controls whether POST operations are generated for this
-    collection's data query endpoints.  None means inherit the profile-level
-    allow_post_queries default.  Set to True or False to override per-collection.
+    - extent uses ExtentWithNullBounds so open-ended intervals like
+      ["2020-01-01T00:00:00Z", null] are accepted (spec-compliant).
+
+    - parameter_names is Optional (default None). edr-pydantic marks it as
+      required, but OGC API - EDR Part 3 allows a profile to define the
+      *schema* for parameter objects via parameter_schema without mandating
+      any specific parameter names in the profile document itself.
+
+    - post_queries controls whether POST operations are generated for this
+      collection's data query endpoints. None means inherit the profile-level
+      allow_post_queries default. Set to True or False to override per-collection.
     """
 
     extent: Optional[ExtentWithNullBounds] = None  # type: ignore[assignment]
+    parameter_names: Optional[Parameters] = Field(  # type: ignore[assignment]
+        default=None,
+        description=(
+            "Map of parameter id → Parameter object. "
+            "Optional — omit when using parameter_schema to describe the structure "
+            "without mandating specific parameter names."
+        ),
+    )
     post_queries: Optional[bool] = Field(
         default=None,
         description=(
@@ -327,13 +342,11 @@ class ServiceProfile(BaseModel):
             if not coll.parameter_names:
                 continue
             for param_name, param in coll.parameter_names.root.items():
-                # Check if unit is specified
                 if not hasattr(param, 'unit') or param.unit is None:
                     raise ValueError(
                         f"Parameter '{param_name}' in collection '{coll.id}' must specify unit "
                         f"(required by OGC API - EDR Part 3 REQ_parameter-names)"
                     )
-                # Check if observedProperty is specified (already required by edr-pydantic)
                 if not hasattr(param, 'observedProperty') or param.observedProperty is None:
                     raise ValueError(
                         f"Parameter '{param_name}' in collection '{coll.id}' must specify observedProperty"

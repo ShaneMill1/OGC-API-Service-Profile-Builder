@@ -1,0 +1,14 @@
+[[ats_nwp_earth_observations_lightning_cube_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_earth_observations_lightning/cube-endpoint
+target:: /req/nwp_earth_observations_lightning/cube-endpoint
+test-purpose:: Validate that cube endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections/earth_observations_lightning/cube with a valid coordinate in crs_4326 and a radius of 1km.
+step:: Verify response Content-Type is application/json.
+step:: Verify each feature contains frequency_of_lightning_flashes_per_unit_area property.
+step:: Verify each feature contains datetime property.
+step:: Verify each feature is in projection crs_4326.
+====

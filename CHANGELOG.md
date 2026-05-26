@@ -1,6 +1,34 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
-## [2.4.0] - 2026-05-13
+## [2.5.0] - 2026-05-13
+
+### Fixed
+
+- **`parameter_names` is now optional** (`models.py`): edr-pydantic marks `parameter_names` as a required field on `Collection`, but OGC API - EDR Part 3 allows a profile to define the *schema* for parameter objects via `parameter_schema` without mandating any specific parameter names in the profile document itself. The `Collection` override in `models.py` now types `parameter_names` as `Optional[Parameters]` (default `None`), so omitting it is valid. All existing profiles with `parameter_names` defined continue to work unchanged.
+
+### Usage
+
+```yaml
+# Define the schema for parameters without listing any specific ones
+parameter_schema:
+  type: object
+  required: [observedProperty, unit]
+  properties:
+    observedProperty:
+      type: object
+    unit:
+      type: object
+
+collections:
+  - id: my_collection
+    # parameter_names omitted — valid when parameter_schema is set
+    links: ...
+    extent: ...
+```
+
+---
+
+
 
 ### Added
 

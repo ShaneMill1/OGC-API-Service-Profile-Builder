@@ -1,0 +1,163 @@
+= DGIWG NWP Earth Observations Lightning Profile
+:doctype: draft-standard
+:docsubtype: implementation
+:edition: 1.0
+:language: en
+:committee: technical
+:docnumber: DGIWG-NWP-LIGHTNING-001
+:copyright-year: 2026
+:published-date: 2026-01-01
+:issued-date: 2026-01-01
+:received-date: 2026-01-01
+:keywords: cube, radius, items, datetime, frequency_of_lightning_flashes_per_unit_area, lightning flashes, lightning
+:mn-document-class: ogc
+:mn-output-extensions: xml,html,pdf
+:local-cache-only:
+
+[abstract]
+== Abstract
+
+This document defines the DGIWG NWP Earth Observations Lightning Profile, an OGC API - Environmental Data Retrieval (EDR) Part 3 Service Profile. It specifies normative requirements and conformance tests for server implementations conforming to this profile.
+
+[.preface]
+== Submitters
+
+All questions regarding this document should be directed to the editor or the submitters:
+
+[%unnumbered]
+.Submitters
+|===
+h|Name h|Affiliation
+
+| Unknown _(editor)_ |Unknown
+|===
+
+[.preface]
+== Preface
+
+This document was prepared by the submitting organizations.
+
+== Scope
+
+This standard defines the DGIWG NWP Earth Observations Lightning Profile. It specifies requirements and conformance tests for implementations of this profile.
+
+== Conformance
+
+Conformance with this standard shall be checked using the Abstract Test Suite in Annex A.
+
+The following conformance classes are defined:
+
+* link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/nwp_earth_observations_lightning++[]
+
+[bibliography]
+== References
+
+* [[[OGC-EDR-1,OGC 19-086r6]]], OGC API - Environmental Data Retrieval Standard
+* [[[OGC-EDR-3,nofetch(OGC ogcapi-edr-3)]]], OGC API - EDR Part 3: Service Profiles (draft)
+
+== Terms, Definitions and Abbreviated Terms
+
+This document uses the terms defined in link:++https://portal.ogc.org/public_ogc/directives/directives.php++[OGC Policy Directive 49], which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of International Standards. In particular, the word "shall" (not "must") is the verb form used to indicate a requirement to be strictly followed to conform to this standard.
+
+This document also uses terms defined in OGC API - EDR Part 1: Core.
+
+== Requirements
+
+[[req_class_nwp_earth_observations_lightning]]
+[requirements_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_earth_observations_lightning++[]
+target-type:: DGIWG NWP Earth Observations Lightning Profile Profile Standard
+requirement:: /req/nwp_earth_observations_lightning/items-endpoint
+requirement:: /req/nwp_earth_observations_lightning/cube-endpoint
+requirement:: /req/nwp_earth_observations_lightning/radius-endpoint
+====
+
+[[req_nwp_earth_observations_lightning_items_endpoint]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_earth_observations_lightning/items-endpoint
+statement:: The service SHALL provide a /collections/earth_observations_lightning/items endpoint.
+part:: The service SHALL return GeoJSON FeatureCollection.
+part:: Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.
+part:: Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.
+====
+[[req_nwp_earth_observations_lightning_cube_endpoint]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_earth_observations_lightning/cube-endpoint
+statement:: The service SHALL provide a /collections/earth_observations_lightning/cube endpoint.
+part:: The service SHALL return CoverageJSON FeatureCollection.
+part:: Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.
+part:: Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.
+====
+[[req_nwp_earth_observations_lightning_radius_endpoint]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_earth_observations_lightning/radius-endpoint
+statement:: The service SHALL provide a /collections/earth_observations_lightning/radius endpoint.
+part:: The service SHALL return CoverageJSON FeatureCollection.
+part:: Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.
+part:: Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.
+====
+
+[appendix,obligation=normative]
+== Abstract Test Suite
+
+[[ats_class_nwp_earth_observations_lightning]]
+[conformance_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/nwp_earth_observations_lightning++[]
+target:: link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_earth_observations_lightning++[]
+abstract-test:: /conf/nwp_earth_observations_lightning/items-endpoint
+abstract-test:: /conf/nwp_earth_observations_lightning/cube-endpoint
+abstract-test:: /conf/nwp_earth_observations_lightning/radius-endpoint
+====
+
+[[ats_nwp_earth_observations_lightning_items_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_earth_observations_lightning/items-endpoint
+target:: /req/nwp_earth_observations_lightning/items-endpoint
+test-purpose:: Validate that items endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections/earth_observations_lightning/items.
+step:: Verify response Content-Type is application/json.
+step:: Verify each feature contains frequency_of_lightning_flashes_per_unit_area property.
+step:: Verify each feature contains datetime property.
+====
+[[ats_nwp_earth_observations_lightning_cube_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_earth_observations_lightning/cube-endpoint
+target:: /req/nwp_earth_observations_lightning/cube-endpoint
+test-purpose:: Validate that cube endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections/earth_observations_lightning/cube with a valid coordinate in crs_4326 and a radius of 1km.
+step:: Verify response Content-Type is application/json.
+step:: Verify each feature contains frequency_of_lightning_flashes_per_unit_area property.
+step:: Verify each feature contains datetime property.
+step:: Verify each feature is in projection crs_4326.
+====
+[[ats_nwp_earth_observations_lightning_radius_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_earth_observations_lightning/radius-endpoint
+target:: /req/nwp_earth_observations_lightning/radius-endpoint
+test-purpose:: Validate that radius endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections/earth_observations_lightning/radius with a valid coordinate in crs_4326.
+step:: Verify response Content-Type is application/json.
+step:: Verify each feature contains frequency_of_lightning_flashes_per_unit_area property.
+step:: Verify each feature contains datetime property.
+step:: Verify each feature is in projection crs_4326.
+step:: Verify each feature is returned within the radius area.
+====

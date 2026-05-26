@@ -1,0 +1,7 @@
+== Requirements
+
+include::../requirements/requirements_class_core.adoc[]
+
+include::../requirements/core/REQ_items-endpoint.adoc[]
+include::../requirements/core/REQ_cube-endpoint.adoc[]
+include::../requirements/core/REQ_radius-endpoint.adoc[]
