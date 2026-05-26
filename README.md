@@ -198,8 +198,9 @@ required_conformance_classes:
 
 extent_requirements:
   minimum_bbox: [-180, -90, 180, 90]
-  allowed_crs:
-    - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+  extent_crs:
+    allowed:
+      - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
 
 output_formats:
   - name: GeoJSON
@@ -345,23 +346,37 @@ Constrains CRS, TRS, and VRS values across all collections. Validated at build t
 
 These are **profile-level constraints** — they define what any conforming implementation must support, independent of the specific values a live service happens to have at a given moment.
 
+CRS/TRS/VRS constraints are split into two distinct concerns:
+
+- `extent_crs` / `extent_trs` / `extent_vrs` — constrain the **single value** used to express the extent (`extent.spatial.crs`, `extent.temporal.trs`, `extent.vertical.vrs`). Typically just CRS84 / Gregorian.
+- `supported_crs` / `supported_trs` / `supported_vrs` — constrain the **list of values** the service supports for queries (the top-level `crs` array and `data_queries.*.variables.crs_details`). Usually broader than the extent constraint.
+
+Each constraint uses either `allowed` (exact list) or `pattern` (regex) — not both.
+
 ```yaml
 extent_requirements:
   minimum_bbox: [-180, -90, 180, 90]
 
-  # Option A: exact list
-  allowed_crs:
-    - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-    - "http://www.opengis.net/def/crs/EPSG/0/4326"
+  # Extent is always expressed in CRS84
+  extent_crs:
+    allowed:
+      - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
 
-  # Option B: regex (accepts any OGC or EPSG CRS)
-  # crs_pattern: "^http://www\\.opengis\\.net/def/crs/(OGC|EPSG)/.*$"
+  # Service supports CRS84 plus any EPSG CRS for queries
+  supported_crs:
+    pattern: "^(http://www\\.opengis\\.net/def/crs/OGC/1\\.3/CRS84|http://www\\.opengis\\.net/def/crs/EPSG/.*)$"
+  # or an explicit list:
+  # supported_crs:
+  #   allowed:
+  #     - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+  #     - "http://www.opengis.net/def/crs/EPSG/0/4326"
 
-  allowed_trs:
-    - "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+  extent_trs:
+    allowed:
+      - "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
 ```
 
-Either `allowed_crs` or `crs_pattern` is required. The same enum/regex approach applies to `allowed_trs`/`trs_pattern` and `allowed_vrs`/`vrs_pattern`.
+At least one of `extent_crs` or `supported_crs` is required. The same applies to TRS and VRS — all are optional individually but at least one CRS constraint must be present.
 
 ---
 

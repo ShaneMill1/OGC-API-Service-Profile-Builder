@@ -34,14 +34,19 @@ required_conformance_classes:
 # ---------------------------------------------------------------------------
 extent_requirements:
   minimum_bbox: [-180, -90, 180, 90]
-  # Enumerated list: only these exact CRS values are accepted
-  allowed_crs:
-    - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-  # Regex alternative: accept any EPSG CRS in addition to the above
-  # (comment out allowed_crs and uncomment this to use regex instead)
-  # crs_pattern: "^(http://www\\.opengis\\.net/def/crs/OGC/1\\.3/CRS84|http://www\\.opengis\\.net/def/crs/EPSG/.*)$"
-  allowed_trs:
-    - "Gregorian"
+  # extent_crs constrains extent.spatial.crs — the CRS the extent is expressed in.
+  # Typically just CRS84.
+  extent_crs:
+    allowed:
+      - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+  # supported_crs constrains the top-level crs array and crs_details —
+  # what the service supports for data queries. Can be broader than extent_crs.
+  # Use 'allowed' for an explicit list or 'pattern' for a regex.
+  # supported_crs:
+  #   pattern: "^(http://www\\.opengis\\.net/def/crs/OGC/1\\.3/CRS84|http://www\\.opengis\\.net/def/crs/EPSG/.*)$"
+  extent_trs:
+    allowed:
+      - "Gregorian"
 
 # ---------------------------------------------------------------------------
 # Parameter name convention

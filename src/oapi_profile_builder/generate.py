@@ -416,24 +416,26 @@ def _collection_response_schema(coll: Collection,
     - Full parameter_names objects with all fields
     - parameter_name_pattern as propertyNames constraint
     """
-    crs_schema: dict = {"type": "string"}
-    trs_schema: dict = {"type": "string"}
-    vrs_schema: dict = {"type": "string"}
+    crs_schema: dict = {"type": "string"}       # extent.spatial.crs
+    trs_schema: dict = {"type": "string"}       # extent.temporal.trs
+    vrs_schema: dict = {"type": "string"}       # extent.vertical.vrs
+    supported_crs_schema: dict = {"type": "string"}  # crs[] and crs_details[].crs
 
     if profile and profile.extent_requirements:
         er = profile.extent_requirements
-        if er.allowed_crs:
-            crs_schema["enum"] = er.allowed_crs
-        elif er.crs_pattern:
-            crs_schema["pattern"] = er.crs_pattern
-        if er.allowed_trs:
-            trs_schema["enum"] = er.allowed_trs
-        elif er.trs_pattern:
-            trs_schema["pattern"] = er.trs_pattern
-        if er.allowed_vrs:
-            vrs_schema["enum"] = er.allowed_vrs
-        elif er.vrs_pattern:
-            vrs_schema["pattern"] = er.vrs_pattern
+
+        def _apply(schema: dict, constraint: "object | None") -> None:
+            if constraint is None:
+                return
+            if getattr(constraint, "allowed", None):
+                schema["enum"] = constraint.allowed
+            elif getattr(constraint, "pattern", None):
+                schema["pattern"] = constraint.pattern
+
+        _apply(crs_schema, er.extent_crs)
+        _apply(trs_schema, er.extent_trs)
+        _apply(vrs_schema, er.extent_vrs)
+        _apply(supported_crs_schema, er.supported_crs)
 
     # Build parameter_names schema — use profile-supplied schema if present,
     # otherwise fall back to the default EDR Parameter schema.
@@ -459,11 +461,14 @@ def _collection_response_schema(coll: Collection,
     if coll.output_formats:
         output_formats_schema["items"] = {"type": "string", "enum": list(coll.output_formats)}
 
-    # Build crs array schema — use collection-level crs list if present
-    crs_array_schema: dict = {"type": "array", "items": crs_schema}
+    # Build crs array schema — use collection-level crs list if present,
+    # otherwise apply supported_crs constraint from extent_requirements.
+    # supported_crs is distinct from extent_crs: it constrains what the
+    # service supports for queries, not how the extent itself is expressed.
     if coll.crs:
-        # Collection declares its supported CRS list explicitly
-        crs_array_schema["items"] = {"type": "string", "enum": list(coll.crs)}
+        crs_array_schema: dict = {"type": "array", "items": {"type": "string", "enum": list(coll.crs)}}
+    else:
+        crs_array_schema = {"type": "array", "items": supported_crs_schema}
 
     schema: dict = {
         "type": "object",
@@ -585,7 +590,7 @@ def _collection_response_schema(coll: Collection,
                                                 "type": "object",
                                                 "required": ["crs"],
                                                 "properties": {
-                                                    "crs": crs_schema,
+                                                    "crs": supported_crs_schema,
                                                     "wkt": {"type": "string"},
                                                 },
                                             },

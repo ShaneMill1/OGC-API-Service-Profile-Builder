@@ -164,20 +164,87 @@ class SubscriptionFilter(BaseModel):
     type: FilterType = FilterType.string
 
 
+class CrsConstraint(BaseModel):
+    """An enum or regex constraint on a CRS/TRS/VRS value or list.
+
+    Exactly one of `allowed` or `pattern` must be set.
+    """
+    allowed: list[str] | None = Field(
+        default=None,
+        description="Enumerated list of accepted values",
+    )
+    pattern: str | None = Field(
+        default=None,
+        description="Regular expression that accepted values must match",
+    )
+
+    @model_validator(mode="after")
+    def exactly_one(self) -> CrsConstraint:
+        if self.allowed is None and self.pattern is None:
+            raise ValueError("Either 'allowed' or 'pattern' must be specified")
+        if self.allowed is not None and self.pattern is not None:
+            raise ValueError("Only one of 'allowed' or 'pattern' may be specified, not both")
+        return self
+
+
 class ExtentRequirements(BaseModel):
-    """Profile-level extent restrictions per OGC API - EDR Part 3."""
-    minimum_bbox: list[float] = Field(min_length=4, max_length=4, description="Minimum spatial bounds [minLon, minLat, maxLon, maxLat]")
-    allowed_crs: list[str] | None = Field(default=None, description="Enumerated list of valid CRS values")
-    crs_pattern: str | None = Field(default=None, description="Regular expression defining valid CRS string patterns")
-    allowed_trs: list[str] | None = Field(default=None, description="Enumerated list of valid TRS values")
-    trs_pattern: str | None = Field(default=None, description="Regular expression defining valid TRS string patterns")
-    allowed_vrs: list[str] | None = Field(default=None, description="Enumerated list of valid VRS values")
-    vrs_pattern: str | None = Field(default=None, description="Regular expression defining valid VRS string patterns")
+    """Profile-level extent restrictions per OGC API - EDR Part 3.
+
+    CRS/TRS/VRS constraints are split into two distinct concerns:
+
+    - ``extent_crs`` / ``extent_trs`` / ``extent_vrs`` — constrain the single
+      CRS/TRS/VRS value used to *express* the extent (``extent.spatial.crs``,
+      ``extent.temporal.trs``, ``extent.vertical.vrs``).  Typically this is
+      just CRS84 / Gregorian.
+
+    - ``supported_crs`` / ``supported_trs`` / ``supported_vrs`` — constrain
+      the list of CRS/TRS/VRS values the service *supports* for queries
+      (the top-level ``crs`` array and ``data_queries.*.variables.crs_details``).
+      This is usually broader than the extent CRS.
+    """
+    minimum_bbox: list[float] = Field(
+        min_length=4, max_length=4,
+        description="Minimum spatial bounds [minLon, minLat, maxLon, maxLat]",
+    )
+
+    # --- Extent CRS/TRS/VRS (single value on extent object) ---
+    extent_crs: CrsConstraint | None = Field(
+        default=None,
+        description="Constraint on extent.spatial.crs — the CRS the extent is expressed in",
+    )
+    extent_trs: CrsConstraint | None = Field(
+        default=None,
+        description="Constraint on extent.temporal.trs — the TRS the temporal extent is expressed in",
+    )
+    extent_vrs: CrsConstraint | None = Field(
+        default=None,
+        description="Constraint on extent.vertical.vrs — the VRS the vertical extent is expressed in",
+    )
+
+    # --- Supported CRS/TRS/VRS (lists — what the service supports for queries) ---
+    supported_crs: CrsConstraint | None = Field(
+        default=None,
+        description=(
+            "Constraint on the top-level crs array and crs_details — "
+            "the CRS values the service supports for data queries. "
+            "Typically broader than extent_crs."
+        ),
+    )
+    supported_trs: CrsConstraint | None = Field(
+        default=None,
+        description="Constraint on supported TRS values for data queries",
+    )
+    supported_vrs: CrsConstraint | None = Field(
+        default=None,
+        description="Constraint on supported VRS values for data queries",
+    )
 
     @model_validator(mode="after")
     def validate_crs_specification(self) -> ExtentRequirements:
-        if self.allowed_crs is None and self.crs_pattern is None:
-            raise ValueError("Either allowed_crs or crs_pattern must be specified")
+        if self.extent_crs is None and self.supported_crs is None:
+            raise ValueError(
+                "At least one of 'extent_crs' or 'supported_crs' must be specified"
+            )
         return self
 
 
@@ -395,69 +462,49 @@ class ServiceProfile(BaseModel):
 
     @model_validator(mode="after")
     def validate_collection_extent_patterns(self) -> ServiceProfile:
-        """Validate collection CRS/TRS/VRS values against extent_requirements patterns and enums."""
+        """Validate collection CRS/TRS/VRS values against extent_requirements constraints."""
         if not self.extent_requirements:
             return self
         er = self.extent_requirements
 
-        # Compile patterns once, validating regex syntax
-        crs_pat = _compile_optional_pattern("crs_pattern", er.crs_pattern)
-        trs_pat = _compile_optional_pattern("trs_pattern", er.trs_pattern)
-        vrs_pat = _compile_optional_pattern("vrs_pattern", er.vrs_pattern)
+        # Helper: check a single value against a CrsConstraint
+        def _check(label: str, value: str, constraint: "CrsConstraint | None") -> None:
+            if constraint is None:
+                return
+            if constraint.allowed is not None and value not in constraint.allowed:
+                raise ValueError(
+                    f"{label} '{value}' is not in allowed list {constraint.allowed}"
+                )
+            if constraint.pattern is not None:
+                pat = _compile_optional_pattern(label, constraint.pattern)
+                if pat and not pat.fullmatch(value):
+                    raise ValueError(
+                        f"{label} '{value}' does not match pattern '{constraint.pattern}'"
+                    )
 
         for coll in self.collections:
-            # --- CRS ---
+            # --- extent.spatial.crs → extent_crs ---
             crs = coll.extent.spatial.crs if coll.extent and coll.extent.spatial else None
             if crs:
-                if er.allowed_crs and crs not in er.allowed_crs:
-                    raise ValueError(
-                        f"Collection '{coll.id}' CRS '{crs}' is not in allowed_crs "
-                        f"{er.allowed_crs}"
-                    )
-                if crs_pat and not crs_pat.fullmatch(crs):
-                    raise ValueError(
-                        f"Collection '{coll.id}' CRS '{crs}' does not match "
-                        f"crs_pattern '{er.crs_pattern}'"
-                    )
+                _check(f"Collection '{coll.id}' extent.spatial.crs", crs, er.extent_crs)
 
-            # --- TRS ---
-            trs = (
-                coll.extent.temporal.trs
-                if coll.extent and coll.extent.temporal else None
-            )
+            # --- extent.temporal.trs → extent_trs ---
+            trs = coll.extent.temporal.trs if coll.extent and coll.extent.temporal else None
             if trs:
-                if er.allowed_trs and trs not in er.allowed_trs:
-                    raise ValueError(
-                        f"Collection '{coll.id}' TRS '{trs}' is not in allowed_trs "
-                        f"{er.allowed_trs}"
-                    )
-                if trs_pat and not trs_pat.fullmatch(trs):
-                    raise ValueError(
-                        f"Collection '{coll.id}' TRS '{trs}' does not match "
-                        f"trs_pattern '{er.trs_pattern}'"
-                    )
+                _check(f"Collection '{coll.id}' extent.temporal.trs", trs, er.extent_trs)
 
-            # --- VRS ---
-            vrs = (
-                coll.extent.vertical.vrs
-                if coll.extent and coll.extent.vertical else None
-            )
+            # --- extent.vertical.vrs → extent_vrs ---
+            vrs = coll.extent.vertical.vrs if coll.extent and coll.extent.vertical else None
             if vrs:
-                if er.allowed_vrs and vrs not in er.allowed_vrs:
-                    raise ValueError(
-                        f"Collection '{coll.id}' VRS '{vrs}' is not in allowed_vrs "
-                        f"{er.allowed_vrs}"
-                    )
-                if vrs_pat and not vrs_pat.fullmatch(vrs):
-                    raise ValueError(
-                        f"Collection '{coll.id}' VRS '{vrs}' does not match "
-                        f"vrs_pattern '{er.vrs_pattern}'"
-                    )
+                _check(f"Collection '{coll.id}' extent.vertical.vrs", vrs, er.extent_vrs)
 
-            # --- crs_details in data_queries ---
-            # Each data query may declare crs_details with per-query CRS support.
-            # Validate those CRS values against the same allowed_crs / crs_pattern.
-            if coll.data_queries and (er.allowed_crs or crs_pat):
+            # --- top-level crs array → supported_crs ---
+            if coll.crs and er.supported_crs:
+                for crs_val in coll.crs:
+                    _check(f"Collection '{coll.id}' crs[]", crs_val, er.supported_crs)
+
+            # --- crs_details in data_queries → supported_crs ---
+            if coll.data_queries and er.supported_crs:
                 for qt_name, qt_val in coll.data_queries:
                     if qt_val is None:
                         continue
@@ -468,19 +515,11 @@ class ServiceProfile(BaseModel):
                     )
                     for entry in (crs_details or []):
                         dq_crs = entry.get("crs") if isinstance(entry, dict) else None
-                        if not dq_crs:
-                            continue
-                        if er.allowed_crs and dq_crs not in er.allowed_crs:
-                            raise ValueError(
-                                f"Collection '{coll.id}' data query '{qt_name}' "
-                                f"crs_details CRS '{dq_crs}' is not in allowed_crs "
-                                f"{er.allowed_crs}"
-                            )
-                        if crs_pat and not crs_pat.fullmatch(dq_crs):
-                            raise ValueError(
-                                f"Collection '{coll.id}' data query '{qt_name}' "
-                                f"crs_details CRS '{dq_crs}' does not match "
-                                f"crs_pattern '{er.crs_pattern}'"
+                        if dq_crs:
+                            _check(
+                                f"Collection '{coll.id}' data_queries.{qt_name}.crs_details",
+                                dq_crs,
+                                er.supported_crs,
                             )
         return self
 

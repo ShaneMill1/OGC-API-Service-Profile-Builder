@@ -1,6 +1,46 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
-## [2.5.0] - 2026-05-13
+## [3.0.0] - 2026-05-13
+
+### Breaking Change — `extent_requirements` CRS/TRS/VRS fields restructured
+
+The flat `allowed_crs`, `crs_pattern`, `allowed_trs`, `trs_pattern`, `allowed_vrs`, `vrs_pattern` fields on `ExtentRequirements` have been replaced with a cleaner two-level structure that separates two distinct concerns:
+
+- **`extent_crs` / `extent_trs` / `extent_vrs`** — constrain the single CRS/TRS/VRS value used to *express* the extent (`extent.spatial.crs`, `extent.temporal.trs`, `extent.vertical.vrs`). Typically just CRS84 / Gregorian.
+- **`supported_crs` / `supported_trs` / `supported_vrs`** — constrain the list of CRS/TRS/VRS values the service *supports* for queries (the top-level `crs` array and `data_queries.*.variables.crs_details`). Usually broader than the extent constraint.
+
+Each constraint is a `CrsConstraint` object with either `allowed: list[str]` (exact enum) or `pattern: str` (regex) — not both.
+
+This directly resolves the ambiguity raised in [issue #7](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/issues/7) where `crs_pattern` was only available within `extent` and there was no way to apply a regex to the top-level `crs` array or `crs_details` independently.
+
+**Migration:**
+
+```yaml
+# Before (2.x)
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  allowed_crs:
+    - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+  allowed_trs:
+    - "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+
+# After (3.0)
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  extent_crs:
+    allowed:
+      - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+  extent_trs:
+    allowed:
+      - "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+  # Optionally add supported_crs for query CRS constraints:
+  # supported_crs:
+  #   pattern: "^(http://www\\.opengis\\.net/def/crs/OGC/1\\.3/CRS84|http://www\\.opengis\\.net/def/crs/EPSG/.*)$"
+```
+
+---
+
+
 
 ### Fixed
 
