@@ -169,7 +169,7 @@ def main() -> None:
 
 def _run_validate_server(args) -> None:
     import re
-    from ogc_edr_profile.server_validation import validate_server
+    from oapi_profile_builder.server_validation import validate_server
 
     if args.openapi:
         import yaml

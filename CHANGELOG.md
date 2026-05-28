@@ -1,6 +1,14 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
-## [3.0.0] - 2026-05-13
+## [3.0.1] - 2026-05-13
+
+### Fixed
+
+- **Stale import in `cli.py`**: `validate-server` command crashed with `ModuleNotFoundError: No module named 'ogc_edr_profile'` due to a leftover import from the old package name. Fixed to `oapi_profile_builder.server_validation`.
+
+---
+
+
 
 ### Breaking Change — `extent_requirements` CRS/TRS/VRS fields restructured
 
