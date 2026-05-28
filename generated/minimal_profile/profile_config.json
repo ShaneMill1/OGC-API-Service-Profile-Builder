@@ -106,14 +106,17 @@
       180.0,
       90.0
     ],
-    "allowed_crs": [
-      "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-    ],
-    "crs_pattern": null,
-    "allowed_trs": null,
-    "trs_pattern": null,
-    "allowed_vrs": null,
-    "vrs_pattern": null
+    "extent_crs": {
+      "allowed": [
+        "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+      ],
+      "pattern": null
+    },
+    "extent_trs": null,
+    "extent_vrs": null,
+    "supported_crs": null,
+    "supported_trs": null,
+    "supported_vrs": null
   },
   "output_formats": [
     {

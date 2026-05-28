@@ -468,8 +468,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -631,6 +629,41 @@ paths:
                     type: string
                   description:
                     type: string
+  /collections/insitu-observations/radius:
+    get:
+      summary: query insitu-observations by radius
+      description: Real-time in-situ meteorological observations from surface stations.
+        Provides air temperature, wind, humidity, pressure, precipitation, and dew
+        point at standard measurement heights.
+      operationId: QueryRadiusInsituObservations
+      tags:
+      - insitu-observations
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/within.yaml
+      - name: within-units
+        in: query
+        required: true
+        description: Units for the within parameter e.g. km
+        schema:
+          type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
   /collections/insitu-observations/locations:
     get:
       summary: Get pre-defined locations of insitu-observations
@@ -694,41 +727,6 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/locationId.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-  /collections/insitu-observations/radius:
-    get:
-      summary: query insitu-observations by radius
-      description: Real-time in-situ meteorological observations from surface stations.
-        Provides air temperature, wind, humidity, pressure, precipitation, and dew
-        point at standard measurement heights.
-      operationId: QueryRadiusInsituObservations
-      tags:
-      - insitu-observations
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/within.yaml
-      - name: within-units
-        in: query
-        required: true
-        description: Units for the within parameter e.g. km
-        schema:
-          type: string
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
       responses:
         '200':
