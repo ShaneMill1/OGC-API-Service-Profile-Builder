@@ -431,16 +431,6 @@ paths:
                                   type: array
                                   items:
                                     type: string
-                                default_output_format:
-                                  type: string
-                                  description: Default output format for this data
-                                    query when f is omitted
-                                crs:
-                                  type: array
-                                  description: CRS values supported by this data query
-                                    (shorthand for crs_details)
-                                  items:
-                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query

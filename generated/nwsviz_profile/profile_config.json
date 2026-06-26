@@ -5,11 +5,6 @@
   "description": null,
   "keywords": [],
   "server_url": "https://edr-api-desi-c.mdl.nws.noaa.gov",
-  "provider": null,
-  "classification": null,
-  "metadata_date": null,
-  "resource_service_publish_date": null,
-  "resource_default_locale": null,
   "collections": [
     {
       "id": "aigfs0p25_v1p0_global_latlon",
@@ -131,12 +126,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "air_quality_alaska_polar_stereographic",
@@ -258,12 +248,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "air_quality_conus_lambert",
@@ -385,12 +370,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "air_quality_hawaii_mercator",
@@ -512,12 +492,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "gefs0p25_v12p3_global_latlon",
@@ -639,12 +614,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "gefs0p5_v12p3_global_latlon",
@@ -766,12 +736,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "gfs0p25_v16p3_global_latlon",
@@ -893,12 +858,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "gfs0p25_v17_global_latlon",
@@ -1020,12 +980,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "nbm_v5p0_conus_lambert",
@@ -1147,12 +1102,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "processed_gefs0p25_v12p3_global_latlon",
@@ -1274,12 +1224,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "rtma2p5_v2p10_conus_lambert",
@@ -1401,12 +1346,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "urma2p5_v2p10_conus_lambert",
@@ -1528,12 +1468,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     },
     {
       "id": "petss_test",
@@ -1644,12 +1579,7 @@
       ],
       "parameter_names": {},
       "distanceunits": null,
-      "post_queries": null,
-      "classification": null,
-      "provider": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "post_queries": null
     }
   ],
   "collection_examples": {
@@ -1902,16 +1832,13 @@
   ],
   "document_metadata": {
     "doc_number": "24-nwsviz",
-    "doc_type": "draft-standard",
     "doc_subtype": "implementation",
-    "status": null,
     "editors": [
       "Shane Mill"
     ],
     "submitting_orgs": [
       "NOAA/NWS/MDL"
     ],
-    "submitters": [],
     "keywords": [
       "ogcdoc",
       "OGC API",
@@ -1922,11 +1849,6 @@
       "weather"
     ],
     "copyright_year": 2026,
-    "submission_date": null,
-    "approval_date": null,
-    "publication_date": null,
-    "notice": null,
-    "normative_references": [],
     "external_id": "http://www.opengis.net/doc/dp/ogcapi-edr-nwsviz/1.0"
   },
   "required_conformance_classes": [
@@ -1976,7 +1898,6 @@
   ],
   "allow_post_queries": false,
   "collection_id_pattern": null,
-  "spec_uri_base": "http://www.opengis.net/spec/ogcapi-edr-3/1.0",
   "parameter_name_pattern": null,
   "parameter_schema": null
 }
