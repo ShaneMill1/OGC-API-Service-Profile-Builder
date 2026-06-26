@@ -5,3 +5,8 @@ dist/
 build/
 cite_features_results/
 cite_results/
+
+# Local-only: private correspondence / scratch (never publish to the public repo)
+email_to_guy.txt
+tmp/
+docs/dgiwg-feedback-status.md
