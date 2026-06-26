@@ -1,0 +1,18 @@
+[[ats_class_nws_connect]]
+[conformance_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/nws_connect
+target:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nws_connect
+abstract-test:: /conf/nws_connect/conformance
+abstract-test:: /conf/nws_connect/collections-endpoint
+abstract-test:: /conf/nws_connect/water-gauge-collection
+abstract-test:: /conf/nws_connect/wwa-collection
+abstract-test:: /conf/nws_connect/cwa-collection
+abstract-test:: /conf/nws_connect/states-collection
+abstract-test:: /conf/nws_connect/items-by-id
+abstract-test:: /conf/nws_connect/pubsub-amqp
+abstract-test:: /conf/nws_connect/pubsub-websocket
+abstract-test:: /conf/nws_connect/pubsub-filters-water-gauge
+abstract-test:: /conf/nws_connect/pubsub-filters-wwa
+====

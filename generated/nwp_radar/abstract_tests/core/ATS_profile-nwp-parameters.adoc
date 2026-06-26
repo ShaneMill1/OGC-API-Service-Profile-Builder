@@ -1,0 +1,13 @@
+[[ats_nwp_radar_profile_nwp_parameters]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-nwp-parameters
+target:: /req/nwp_radar/profile-nwp-parameters
+test-purpose:: Validate that profile nwp parameters is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation/
+step:: Verify that datetime is formatted in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.
+step:: Verify that the datetime format is aligned to RFC 3339.
+step:: Verify that precipitation_amount uses kg m-2 units.
+====

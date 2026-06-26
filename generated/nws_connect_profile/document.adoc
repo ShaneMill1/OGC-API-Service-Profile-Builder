@@ -1,0 +1,35 @@
+= NWS Connect Service Profile
+:doctype: draft-standard
+:docsubtype: implementation
+:edition: 1.0
+:language: en
+:committee: technical
+:docnumber: 25-nwsconnect
+:copyright-year: 2025
+:published-date: 2025-01-01
+:issued-date: 2025-01-01
+:received-date: 2025-01-01
+:external-id: http://www.opengis.net/doc/dp/ogcapi-features-nwsconnect/1.0
+:fullname: Shane Mill
+:role: editor
+:keywords: ogcdoc, OGC API, Features, NWS Connect, water gauge, real-time, pub/sub, service profile
+:submitting-organizations: NOAA/NWS/MDL
+:mn-document-class: ogc
+:mn-output-extensions: xml,html,pdf
+:local-cache-only:
+
+include::sections/00-abstract.adoc[]
+
+include::sections/01-preface.adoc[]
+
+include::sections/02-scope.adoc[]
+
+include::sections/03-conformance.adoc[]
+
+include::sections/04-references.adoc[]
+
+include::sections/05-terms.adoc[]
+
+include::sections/06-requirements.adoc[]
+
+include::sections/07-abstract-tests.adoc[]

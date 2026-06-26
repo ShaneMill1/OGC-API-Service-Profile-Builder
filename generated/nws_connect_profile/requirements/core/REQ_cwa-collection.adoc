@@ -1,0 +1,12 @@
+[[req_nws_connect_cwa_collection]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/cwa-collection
+statement:: The cwa collection SHALL provide GeoJSON features for NWS County Warning Areas.
+part:: The service SHALL provide a /collections/cwa endpoint.
+part:: The service SHALL provide a /collections/cwa/items endpoint.
+part:: The response Content-Type SHALL be application/geo+json.
+part:: Each feature SHALL include a CWA identifier property.
+part:: Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon.
+====

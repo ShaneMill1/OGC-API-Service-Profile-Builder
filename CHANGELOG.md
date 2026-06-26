@@ -1,5 +1,25 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.1.0] - 2026-06-26
+
+### Added
+
+- **`provider`** (profile-level, optional per-collection): structured service provider / responsible party (name, url, and a contact block with email/phone/hours/instructions/address/postalcode/city/country). Surfaces in the OpenAPI `info.contact` (name/url/email plus `x-` extensions) and as a "Point of Contact" section in the generated document.
+- **`classification`** (profile-level, optional per-collection): security classification (`level` + `system`, e.g. NATO RESTRICTED). Surfaces as a banner in the document Abstract and as `info.x-classification` in the OpenAPI.
+- **`metadata_date` / `resource_service_publish_date` / `resource_default_locale`** (profile-level, optional per-collection): provenance metadata, surfaced as `info.x-metadata-date` / `info.x-resource-publish-date` / `info.x-default-locale`.
+- **`spec_uri_base`** (profile-level): configurable base URI for the requirements and conformance class identifiers. Defaults to the OGC API - EDR Part 3 namespace; set it to publish under a different SDO namespace (e.g. DGIWG). Drives the OpenAPI `x-ogc-profile` link, the requirements/conformance AsciiDoc identifiers, and the conformance section.
+- **`default_output_format`** (per data query): when set, the generated OpenAPI `f` parameter for that query carries the corresponding media type as its `default` (GET parameter and POST request body). Validated to be one of the query's `output_formats`.
+- **`crs` shorthand** (per data query): a plain list of CRS URIs under `variables`, accepted as an alternative to `crs_details` and validated against `extent_requirements.supported_crs`.
+- **`document_metadata` expansion**: `doc_type`, `status` (Metanorma `:status:`/`:docstage:`), `submission_date`/`approval_date`/`publication_date` (mapped to `:received-date:`/`:issued-date:`/`:published-date:`), `notice` (front-matter notice paragraph), structured `submitters` (name + affiliation + role for the page iv table), and `normative_references` (appended to the References section). `doc_subtype` now also accepts `profile`.
+
+### Fixed
+
+- Regenerated `profile.schema.json` from the current models — it was stale and still documented the removed `allowed_crs`/`crs_pattern` fields.
+- Migrated `examples/nws_connect_profile.yaml` to the current `extent_crs`/`extent_trs` format (it still used the removed flat `allowed_crs`/`allowed_trs` keys and failed validation).
+- README validation-rules table updated to reference the current `extent_crs`/`supported_crs` fields instead of the removed flat keys.
+
+---
+
 ## [3.0.1] - 2026-05-13
 
 ### Fixed

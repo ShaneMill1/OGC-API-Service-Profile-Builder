@@ -1,0 +1,439 @@
+= NWP Radar Profile
+:doctype: draft-standard
+:docsubtype: implementation
+:edition: 1.0
+:language: en
+:committee: technical
+:docnumber: DGIWG-NWP-RADAR-001
+:copyright-year: 2026
+:published-date: 2026-01-01
+:issued-date: 2026-01-01
+:received-date: 2026-01-01
+:keywords: NWP, earth observations, cube, radius, items, datetime, precipitation_amount, radar
+:mn-document-class: ogc
+:mn-output-extensions: xml,html,pdf
+:local-cache-only:
+
+[abstract]
+== Abstract
+
+*SECURITY CLASSIFICATION: NATO RESTRICTED (NR) (NATO)*
+
+This document defines the NWP Radar Profile, an OGC API - Environmental Data Retrieval (EDR) Part 3 Service Profile. It specifies normative requirements and conformance tests for server implementations conforming to this profile.
+
+[.preface]
+== Submitters
+
+All questions regarding this document should be directed to the editor or the submitters:
+
+[%unnumbered]
+.Submitters
+|===
+h|Name h|Affiliation
+
+| Unknown _(editor)_ |
+|===
+
+[.preface]
+== Preface
+
+This document was prepared by the submitting organizations.
+
+[.preface]
+== Point of Contact
+
+This service is provided by Austrian Military (link:++https://www.bmlv.gv.at/english/forces/organisation.shtml++[]). Email: presse@bmlvs.gv.at +
+Address: Ministry of Defence, Kommunikation, Rossauer Lände 1, A-1090, Vienna, Austria +
+Hours: Monday to Friday 08:00 - 17:00 +
+Contact instructions: During hours of Service
+
+== Scope
+
+This standard defines the NWP Radar Profile. It specifies requirements and conformance tests for implementations of this profile.
+
+== Conformance
+
+Conformance with this standard shall be checked using the Abstract Test Suite in Annex A.
+
+The following conformance classes are defined:
+
+* link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/nwp_radar++[]
+
+[bibliography]
+== References
+
+* [[[OGC-EDR-1,OGC 19-086r6]]], OGC API - Environmental Data Retrieval Standard
+* [[[OGC-EDR-3,nofetch(OGC ogcapi-edr-3)]]], OGC API - EDR Part 3: Service Profiles (draft)
+
+== Terms, Definitions and Abbreviated Terms
+
+This document uses the terms defined in link:++https://portal.ogc.org/public_ogc/directives/directives.php++[OGC Policy Directive 49], which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of International Standards. In particular, the word "shall" (not "must") is the verb form used to indicate a requirement to be strictly followed to conform to this standard.
+
+This document also uses terms defined in OGC API - EDR Part 1: Core.
+
+== Requirements
+
+[[req_class_nwp_radar]]
+[requirements_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar++[]
+target-type:: NWP Radar Profile Profile Standard
+requirement:: /req/nwp_radar/spatial-extents-crs
+requirement:: /req/nwp_radar/profile-bbox-coordinates
+requirement:: /req/nwp_radar/profile-trs-values
+requirement:: /req/nwp_radar/profile-vrs-values
+requirement:: /req/nwp_radar/profile-keywords
+requirement:: /req/nwp_radar/profile-links
+requirement:: /req/nwp_radar/profile-query-types
+requirement:: /req/nwp_radar/items-endpoint
+requirement:: /req/nwp_radar/cube-endpoint
+requirement:: /req/nwp_radar/radius-endpoint
+requirement:: /req/nwp_radar/profile-nwp-parameters
+requirement:: /req/nwp_radar/http-methods
+====
+
+[[req_nwp_radar_spatial_extents_crs]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/spatial-extents-crs
+statement:: The coordinates for the bounding box SHALL be defined in the CRS EPSG:4326 (WGS84) with geographical latitude, then longitude, in decimal degrees.
+part:: The service bbox SHALL have a geometry defined in WGS84.
+part:: The service bounding box coordinates SHALL be returned with geographical latitude, then longitude.
+part:: The service bounding box coordinates SHALL be returned in decimal degrees.
+====
+[[req_nwp_radar_profile_bbox_coordinates]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-bbox-coordinates
+statement:: The coordinates for the 2D bounding box SHALL be defined in the CRS84 EPSG:4326 (WGS84) for the extent [-180, -90, 180, 90].
+part:: The 2D bounding box boundary SHALL be for the extent [-180, -90, 180, 90].
+part:: The coordinate reference system for the bounding box SHALL be EPSG:4326 (WGS84).
+====
+[[req_nwp_radar_profile_trs_values]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-trs-values
+statement:: Temporal Reference System (trs) values SHALL be presented in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second according to the time format specified in RFC 3339.
+part:: The service trs SHALL be in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.
+part:: The service trs SHALL be the time format specified in RFC 3339.
+====
+[[req_nwp_radar_profile_vrs_values]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-vrs-values
+statement:: Vertical Reference System (vrs) values SHALL be height in metres.
+part:: The service vrs SHALL be in height metres.
+part:: The service vrs SHALL be EPSG:3855.
+part:: The service vrs SHALL use the vertical datum EGM2008 geoid as the zero-height reference (orthometric height relative to mean sea level).
+====
+[[req_nwp_radar_profile_keywords]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-keywords
+statement:: The following keywords SHALL be included in the collection response: "cube", "radius", "items", "precipitation_amount", "radar".
+part:: The collection keywords array SHALL include "cube", "radius", and "items".
+part:: The collection keywords array SHALL include "precipitation_amount" and "radar".
+====
+[[req_nwp_radar_profile_links]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-links
+statement:: All links objects SHALL have href, rel, title and type attributes.
+part:: Each link object SHALL include a non-empty href attribute.
+part:: Each link object SHALL include rel, title and type attributes.
+====
+[[req_nwp_radar_profile_query_types]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-query-types
+statement:: The following data queries SHALL be supported: "cube", "items", "radius".
+part:: The collection SHALL advertise cube, items and radius data queries.
+====
+[[req_nwp_radar_items_endpoint]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/items-endpoint
+statement:: The service SHALL provide a /collections/nwp_radar_precipitation/items endpoint.
+part:: The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
+part:: The service SHALL return a default file format of GeoTIFF.
+part:: Each feature SHALL include precipitation_amount property.
+part:: Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.
+part:: The items data queries SHALL return CoverageJSON that complies with the OGC CoverageJSON standard - link:++https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca++[]
+part:: The items data queries SHALL return GeoTIFF which complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.
+part:: The items data queries SHALL return GRIB2 which complies with the WMO Manual On Codes - link:++https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes++[].
+part:: The items data queries SHALL return HDF5 which complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+part:: The items data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+====
+[[req_nwp_radar_cube_endpoint]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/cube-endpoint
+statement:: The service SHALL provide a /collections/nwp_radar_precipitation/cube endpoint.
+part:: The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
+part:: The service SHALL return a default file format of GeoTIFF.
+part:: Each feature SHALL include precipitation_amount property.
+part:: Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.
+part:: The cube data queries SHALL return CoverageJSON that complies with the OGC CoverageJSON standard - link:++https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca++[]
+part:: The cube data queries SHALL return GeoTIFF which complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.
+part:: The cube data queries SHALL return GRIB2 which complies with the WMO Manual On Codes - link:++https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes++[].
+part:: The cube data queries SHALL return HDF5 which complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+part:: The cube data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+====
+[[req_nwp_radar_radius_endpoint]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/radius-endpoint
+statement:: The service SHALL provide a /collections/nwp_radar_precipitation/radius endpoint.
+part:: The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
+part:: The service SHALL return a default file format of GeoTIFF.
+part:: Each feature SHALL include precipitation_amount property.
+part:: Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.
+part:: The radius data queries SHALL return CoverageJSON that complies with the OGC CoverageJSON standard - link:++https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca++[]
+part:: The radius data queries SHALL return GeoTIFF which complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.
+part:: The radius data queries SHALL return GRIB2 which complies with the WMO Manual On Codes - link:++https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes++[].
+part:: The radius data queries SHALL return HDF5 which complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+part:: The radius data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+====
+[[req_nwp_radar_profile_nwp_parameters]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-nwp-parameters
+statement:: The following parameters SHALL be supported: datetime, precipitation_amount.
+part:: The parameter datetime SHALL be in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.
+part:: The parameter datetime SHALL be the time format specified in RFC 3339.
+part:: The parameter precipitation_amount SHALL return values in kg m-2 units.
+====
+[[req_nwp_radar_http_methods]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/http-methods
+statement:: The service SHALL be configured to return data for both GET and POST HTTP Method Requests.
+part:: The service SHALL support both GET and POST HTTP Methods for queries.
+====
+
+[appendix,obligation=normative]
+== Abstract Test Suite
+
+[[ats_class_nwp_radar]]
+[conformance_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/nwp_radar++[]
+target:: link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar++[]
+abstract-test:: /conf/nwp_radar/spatial-extents-crs
+abstract-test:: /conf/nwp_radar/profile-bbox-coordinates
+abstract-test:: /conf/nwp_radar/profile-trs-values
+abstract-test:: /conf/nwp_radar/profile-vrs-values
+abstract-test:: /conf/nwp_radar/profile-keywords
+abstract-test:: /conf/nwp_radar/profile-links
+abstract-test:: /conf/nwp_radar/profile-query-types
+abstract-test:: /conf/nwp_radar/items-endpoint
+abstract-test:: /conf/nwp_radar/cube-endpoint
+abstract-test:: /conf/nwp_radar/radius-endpoint
+abstract-test:: /conf/nwp_radar/profile-nwp-parameters
+abstract-test:: /conf/nwp_radar/http-methods
+====
+
+[[ats_nwp_radar_spatial_extents_crs]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/spatial-extents-crs
+target:: /req/nwp_radar/spatial-extents-crs
+test-purpose:: Validate that spatial extents crs is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the bbox geometry is defined in WGS84.
+step:: Verify that the bounding box coordinates are presented as geographical latitude, then longitude.
+step:: Verify that the bounding box coordinates are returned in decimal degrees.
+====
+[[ats_nwp_radar_profile_bbox_coordinates]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-bbox-coordinates
+target:: /req/nwp_radar/profile-bbox-coordinates
+test-purpose:: Validate that profile bbox coordinates is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the box boundary is for the extent [-180, -90, 180, 90].
+step:: Verify that the bounding box coordinate reference system is EPSG:4326 (WGS84).
+====
+[[ats_nwp_radar_profile_trs_values]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-trs-values
+target:: /req/nwp_radar/profile-trs-values
+test-purpose:: Validate that profile trs values is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the trs is in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.
+step:: Verify that the trs is in the time format specified in RFC 3339 e.g. 2026-04-12T21:20:50.52Z.
+====
+[[ats_nwp_radar_profile_vrs_values]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-vrs-values
+target:: /req/nwp_radar/profile-vrs-values
+test-purpose:: Validate that profile vrs values is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the vrs is defined in height metres.
+step:: Verify that the vrs is defined as WKT2 EPSG:3855.
+step:: Verify that the vrs has the vertical datum EGM2008 geoid as the zero-height reference.
+====
+[[ats_nwp_radar_profile_keywords]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-keywords
+target:: /req/nwp_radar/profile-keywords
+test-purpose:: Validate that profile keywords is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the collection keywords list includes the following keywords - "cube", "radius", "items", "precipitation_amount", "radar".
+====
+[[ats_nwp_radar_profile_links]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-links
+target:: /req/nwp_radar/profile-links
+test-purpose:: Validate that profile links is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the links object consists of href, rel, title and type elements and that they are filled in with appropriate values.
+step:: Send GET request to the root URL /
+step:: Verify that the links object consists of href, rel, title and type elements and that they are filled in with appropriate values.
+====
+[[ats_nwp_radar_profile_query_types]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-query-types
+target:: /req/nwp_radar/profile-query-types
+test-purpose:: Validate that profile query types is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the following data queries are listed - "cube", "items", "radius".
+====
+[[ats_nwp_radar_items_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/items-endpoint
+target:: /req/nwp_radar/items-endpoint
+test-purpose:: Validate that items endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation/items.
+step:: Verify response Content-Type is application/json.
+step:: Verify each feature contains precipitation_amount property.
+step:: Verify each feature contains datetime property.
+step:: Verify that the datetime is in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z
+step:: Verify that the default file format is GeoTIFF.
+step:: Verify that the endpoint supports CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
+step:: Send GET request to /collections/nwp_radar_precipitation/items for a CoverageJSON file type.
+step:: Verify that the CoverageJSON file format returned complies with the OGC CoverageJSON standard - link:++https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca++[]
+step:: Send GET request to /collections/nwp_radar_precipitation/items for a GeoTIFF file type.
+step:: Verify that the GeoTIFF file format returned complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.
+step:: Send GET request to /collections/nwp_radar_precipitation/items for a GRIB file type.
+step:: Verify that the GRIB2 file format returned complies with the WMO Manual On Codes - link:++https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes++[].
+step:: Send GET request to /collections/nwp_radar_precipitation/items for a HDF5 file type.
+step:: Verify that the HDF5 file format returned complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+step:: Send GET request to /collections/nwp_radar_precipitation/items for a NetCDF4 file type.
+step:: Verify that the NetCDF4 file format returned complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+====
+[[ats_nwp_radar_cube_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/cube-endpoint
+target:: /req/nwp_radar/cube-endpoint
+test-purpose:: Validate that cube endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation/cube with a valid coordinate in CRS EPSG:4326.
+step:: Verify response Content-Type is application/json.
+step:: Verify each feature contains precipitation_amount property.
+step:: Verify each feature contains datetime property.
+step:: Verify each feature has height in metres based upon the EGM2008 gravity model.
+step:: Verify that the datetime is in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z
+step:: Verify that the default file format is GeoTIFF.
+step:: Verify that the endpoint supports CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
+step:: Send GET request to /collections/nwp_radar_precipitation/cube for a CoverageJSON file type.
+step:: Verify that the CoverageJSON file format returned complies with the OGC CoverageJSON standard - link:++https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca++[]
+step:: Send GET request to /collections/nwp_radar_precipitation/cube for a GeoTIFF file type.
+step:: Verify that the GeoTIFF file format returned complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.
+step:: Send GET request to /collections/nwp_radar_precipitation/cube for a GRIB file type.
+step:: Verify that the GRIB2 file format returned complies with the WMO Manual On Codes - link:++https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes++[].
+step:: Send GET request to /collections/nwp_radar_precipitation/cube for a HDF5 file type.
+step:: Verify that the HDF5 file format returned complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+step:: Send GET request to /collections/nwp_radar_precipitation/cube for a NetCDF4 file type.
+step:: Verify that the NetCDF4 file format returned complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+====
+[[ats_nwp_radar_radius_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/radius-endpoint
+target:: /req/nwp_radar/radius-endpoint
+test-purpose:: Validate that radius endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation/radius with a valid coordinate in EPSG:4326 and a radius of 1km.
+step:: Verify response Content-Type is application/json.
+step:: Verify each feature contains precipitation_amount property.
+step:: Verify each feature contains datetime property.
+step:: Verify each feature has height in metres based upon the EGM2008 gravity model.
+step:: Verify that the datetime is in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z
+step:: Verify that the default file format is GeoTIFF.
+step:: Verify that the endpoint supports CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
+step:: Send GET request to /collections/nwp_radar_precipitation/radius for a CoverageJSON file type.
+step:: Verify that the CoverageJSON file format returned complies with the OGC CoverageJSON standard - link:++https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca++[]
+step:: Send GET request to /collections/nwp_radar_precipitation/radius for a GeoTIFF file type.
+step:: Verify that the GeoTIFF file format returned complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.
+step:: Send GET request to /collections/nwp_radar_precipitation/radius for a GRIB file type.
+step:: Verify that the GRIB2 file format returned complies with the WMO Manual On Codes - link:++https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes++[].
+step:: Send GET request to /collections/nwp_radar_precipitation/radius for a HDF5 file type.
+step:: Verify that the HDF5 file format returned complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+step:: Send GET request to /collections/nwp_radar_precipitation/radius for a NetCDF4 file type.
+step:: Verify that the NetCDF4 file format returned complies with the CF-NetCDF v1.13 conventions - link:++https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html++[].
+====
+[[ats_nwp_radar_profile_nwp_parameters]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-nwp-parameters
+target:: /req/nwp_radar/profile-nwp-parameters
+test-purpose:: Validate that profile nwp parameters is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation/
+step:: Verify that datetime is formatted in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.
+step:: Verify that the datetime format is aligned to RFC 3339.
+step:: Verify that precipitation_amount uses kg m-2 units.
+====
+[[ats_nwp_radar_http_methods]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/http-methods
+target:: /req/nwp_radar/http-methods
+test-purpose:: Validate that http methods is correctly implemented.
+test-method::
+step:: Send GET request to the root URL /
+step:: Verify that the service is set up to support both POST and GET HTTP Method requests.
+step:: Verify that POST and GET Methods are supported for the query types of "cube", "radius", and "items".
+====

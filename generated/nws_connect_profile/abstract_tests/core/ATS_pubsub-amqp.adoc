@@ -1,0 +1,14 @@
+[[ats_nws_connect_pubsub_amqp]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/pubsub-amqp
+target:: /req/nws_connect/pubsub-amqp
+test-purpose:: Validate that pubsub amqp is correctly implemented.
+test-method::
+step:: Connect to AMQP broker at edr-api-desi-c.mdl.nws.noaa.gov:5672.
+step:: Subscribe to collections/water_gauge/items/# channel.
+step:: Verify notifications are received as GeoJSON features.
+step:: Subscribe to collections/wwa/items/# channel.
+step:: Verify notifications are received as GeoJSON features.
+====

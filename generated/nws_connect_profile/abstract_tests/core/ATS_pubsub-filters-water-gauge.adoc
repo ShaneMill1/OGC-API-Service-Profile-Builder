@@ -1,0 +1,15 @@
+[[ats_nws_connect_pubsub_filters_water_gauge]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/pubsub-filters-water-gauge
+target:: /req/nws_connect/pubsub-filters-water-gauge
+test-purpose:: Validate that pubsub filters water gauge is correctly implemented.
+test-method::
+step:: Subscribe to collections/water_gauge/items/# with flood_stages filter set to ["major", "moderate"].
+step:: Verify only notifications matching the specified flood stages are received.
+step:: Subscribe with stations filter set to specific station IDs.
+step:: Verify only notifications for those stations are received.
+step:: Subscribe with wfo filter set to a specific office code.
+step:: Verify only notifications for that WFO are received.
+====

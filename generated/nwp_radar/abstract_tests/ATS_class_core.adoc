@@ -1,0 +1,19 @@
+[[ats_class_nwp_radar]]
+[conformance_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/nwp_radar
+target:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar
+abstract-test:: /conf/nwp_radar/spatial-extents-crs
+abstract-test:: /conf/nwp_radar/profile-bbox-coordinates
+abstract-test:: /conf/nwp_radar/profile-trs-values
+abstract-test:: /conf/nwp_radar/profile-vrs-values
+abstract-test:: /conf/nwp_radar/profile-keywords
+abstract-test:: /conf/nwp_radar/profile-links
+abstract-test:: /conf/nwp_radar/profile-query-types
+abstract-test:: /conf/nwp_radar/items-endpoint
+abstract-test:: /conf/nwp_radar/cube-endpoint
+abstract-test:: /conf/nwp_radar/radius-endpoint
+abstract-test:: /conf/nwp_radar/profile-nwp-parameters
+abstract-test:: /conf/nwp_radar/http-methods
+====

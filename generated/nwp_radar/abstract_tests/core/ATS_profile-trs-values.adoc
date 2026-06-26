@@ -1,0 +1,12 @@
+[[ats_nwp_radar_profile_trs_values]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-trs-values
+target:: /req/nwp_radar/profile-trs-values
+test-purpose:: Validate that profile trs values is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the trs is in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.
+step:: Verify that the trs is in the time format specified in RFC 3339 e.g. 2026-04-12T21:20:50.52Z.
+====

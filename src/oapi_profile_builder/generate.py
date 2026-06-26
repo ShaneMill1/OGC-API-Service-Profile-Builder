@@ -328,6 +328,17 @@ _POST_BODY_SCHEMAS: dict[str, dict] = {
 def _post_operation(get_op: dict, query_type: str, coll_id: str, responses: dict) -> dict:
     """Build a POST operation mirroring a GET EDR data query operation."""
     body_schema = _POST_BODY_SCHEMAS.get(query_type, {"type": "object"})
+    # Carry over a default output format from the GET operation's `f` parameter
+    # so the POST body documents the same default.
+    default_f = None
+    for p in get_op.get("parameters", []):
+        if isinstance(p, dict) and p.get("name") == "f":
+            default_f = p.get("schema", {}).get("default")
+            break
+    if default_f and "properties" in body_schema and "f" in body_schema["properties"]:
+        import copy
+        body_schema = copy.deepcopy(body_schema)
+        body_schema["properties"]["f"]["default"] = default_f
     return {
         "summary": get_op["summary"].replace("query", "query (POST)"),
         "description": get_op.get("description", ""),
@@ -583,6 +594,15 @@ def _collection_response_schema(coll: Collection,
                                             "type": "array",
                                             "items": {"type": "string"},
                                         },
+                                        "default_output_format": {
+                                            "type": "string",
+                                            "description": "Default output format for this data query when f is omitted",
+                                        },
+                                        "crs": {
+                                            "type": "array",
+                                            "description": "CRS values supported by this data query (shorthand for crs_details)",
+                                            "items": {"type": "string"},
+                                        },
                                         "crs_details": {
                                             "type": "array",
                                             "description": "CRS values supported by this data query",
@@ -665,12 +685,79 @@ def _parameter_schema() -> dict:
     }
 
 
+def _f_enum(profile: "ServiceProfile | None") -> list[str]:
+    """Allowed values for the `f` (output format) parameter: media types."""
+    enum = ["json", "html"]
+    if profile:
+        for fmt in profile.output_formats:
+            if fmt.media_type not in enum:
+                enum.append(fmt.media_type)
+    return enum
+
+
+def _format_media_type(profile: "ServiceProfile | None", format_name: str) -> str:
+    """Resolve a format name (e.g. 'GeoTIFF') to its media type, falling back to the name."""
+    if profile:
+        for fmt in profile.output_formats:
+            if fmt.name == format_name:
+                return fmt.media_type
+    return format_name
+
+
+def _query_default_format(variables: object) -> str | None:
+    """Read default_output_format from an EDR query's variables.
+
+    edr-pydantic's Variables defines default_output_format as a real field;
+    fall back to model_extra for forward compatibility.
+    """
+    val = getattr(variables, "default_output_format", None)
+    if val is None:
+        extra = getattr(variables, "model_extra", None) or {}
+        val = extra.get("default_output_format")
+    return val
+
+
+def _f_param(profile: "ServiceProfile | None", variables: object | None) -> dict:
+    """Return the `f` parameter for a query.
+
+    When the query's variables declare a default_output_format, an inline `f`
+    parameter is returned carrying that media type as its `default`. Otherwise
+    the shared component reference is used.
+    """
+    default_fmt = _query_default_format(variables) if variables is not None else None
+    if not default_fmt:
+        return _F
+    return {
+        "name": "f", "in": "query", "required": False,
+        "description": (
+            "The optional f parameter indicates the output format which the server "
+            "shall provide as part of the response document. Defaults to "
+            f"{default_fmt} for this query."
+        ),
+        "schema": {
+            "type": "string",
+            "enum": _f_enum(profile),
+            "default": _format_media_type(profile, default_fmt),
+        },
+        "style": "form", "explode": False,
+    }
+
+
+def _params_with_default_f(params: list[dict], profile: "ServiceProfile | None",
+                           variables: object | None) -> list[dict]:
+    """Replace the shared `_F` reference in a params list with a query-specific default."""
+    f_param = _f_param(profile, variables)
+    if f_param is _F:
+        return params
+    return [f_param if p is _F else p for p in params]
+
+
 def _collection_paths(coll: Collection, examples: dict | None = None,
                       profile: ServiceProfile | None = None) -> dict:
     paths: dict = {}
-    base = f"/collections/{coll.id}"
     tag = coll.id
     desc = getattr(coll, "description", None) or coll.id
+    base = f"/collections/{coll.id}"
 
     # Resolve effective POST flag: collection-level overrides profile-level default.
     # Collection.post_queries is None → inherit; True/False → explicit override.
@@ -726,10 +813,15 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
     if not coll.data_queries:
         return paths
 
-    active = {name for name, val in coll.data_queries if val is not None}
+    dq_map = {name: val for name, val in coll.data_queries if val is not None}
+    active = set(dq_map)
+
+    def _vars(query_type: str) -> object | None:
+        qv = dq_map.get(query_type)
+        return qv.link.variables if qv is not None and qv.link else None
 
     for qt in active:
-        params = _QUERY_PARAMS.get(qt, [])
+        params = _params_with_default_f(_QUERY_PARAMS.get(qt, []), profile, _vars(qt))
 
         if qt == "instances":
             paths[f"{base}/instances"] = {"get": {
@@ -761,7 +853,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
             }}
             # instance-level query sub-paths — GET + optional POST
             for sub_qt in (active - {"instances"}):
-                sub_params = _QUERY_PARAMS.get(sub_qt, [])
+                sub_params = _params_with_default_f(_QUERY_PARAMS.get(sub_qt, []), profile, _vars(sub_qt))
                 get_op = {
                     "summary": f"query {coll.id} instance by {sub_qt}",
                     "description": desc,
@@ -813,7 +905,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
                 "tags": [tag],
                 "parameters": [
                     {"$ref": f"{_EDR}/parameters/locationId.yaml"},
-                    _DATETIME, _PARAM_NAME, _F,
+                    _DATETIME, _PARAM_NAME, _f_param(profile, _vars("locations")),
                 ],
                 "responses": cov_resp,
             }
@@ -1017,32 +1109,60 @@ def build_openapi(profile: ServiceProfile) -> dict:
         tags += [{"name": "jobs"}]
 
     # Build f parameter enum from profile output formats + standard formats
-    f_enum = ["json", "html"]
-    for fmt in profile.output_formats:
-        if fmt.media_type not in f_enum:
-            f_enum.append(fmt.media_type)
+    f_enum = _f_enum(profile)
 
-    # Build contact from document_metadata if available
+    # Build the info.contact block. A profile-level `provider` takes precedence;
+    # otherwise fall back to document_metadata editors/orgs.
     m = profile.document_metadata
     contact: dict = {}
-    if m and m.editors:
+    if profile.provider:
+        p = profile.provider
+        contact["name"] = p.name
+        if p.url:
+            contact["url"] = p.url
+        if p.contact:
+            c = p.contact
+            if c.email:
+                contact["email"] = c.email
+            # OpenAPI contact only models name/url/email — carry the rest as x- extensions.
+            for key in ("phone", "hours", "instructions", "address", "postalcode", "city", "country"):
+                val = getattr(c, key, None)
+                if val:
+                    contact[f"x-{key}"] = val
+    if "name" not in contact and m and m.editors:
         contact["name"] = m.editors[0]
-    if m and m.submitting_orgs:
+    if "x-organization" not in contact and m and m.submitting_orgs:
         contact["x-organization"] = m.submitting_orgs[0]
     # Fall back to a generic contact if nothing is specified
     if not contact:
         contact["name"] = profile.title
 
+    # Assemble the info block, adding optional x- metadata extensions.
+    info: dict = {
+        "title": profile.title,
+        "version": profile.version,
+        "description": profile.description or f"OGC API - EDR Part 3 Service Profile: {profile.title}",
+        "x-ogc-profile": profile.req_uri,
+        "x-keywords": profile.keywords if profile.keywords else [],
+        "contact": contact,
+    }
+    if profile.classification:
+        info["x-classification"] = {
+            k: v for k, v in (
+                ("level", profile.classification.level),
+                ("system", profile.classification.system),
+            ) if v
+        }
+    if profile.metadata_date:
+        info["x-metadata-date"] = profile.metadata_date
+    if profile.resource_service_publish_date:
+        info["x-resource-publish-date"] = profile.resource_service_publish_date
+    if profile.resource_default_locale:
+        info["x-default-locale"] = profile.resource_default_locale
+
     return {
         "openapi": "3.1.0",
-        "info": {
-            "title": profile.title,
-            "version": profile.version,
-            "description": profile.description or f"OGC API - EDR Part 3 Service Profile: {profile.title}",
-            "x-ogc-profile": profile.req_uri,
-            "x-keywords": profile.keywords if profile.keywords else [],
-            "contact": contact,
-        },
+        "info": info,
         # Per OGC API - EDR Part 3 REQ_publishing: this profile is implementation-independent.
         # The placeholder server URL "/" is required by OpenAPI validators but implementations
         # SHALL substitute their own server URL when deploying this profile.
@@ -1248,10 +1368,12 @@ def _individual_test_adoc(profile: ServiceProfile, test_id: str) -> str:
 def _build_document_adoc(profile: ServiceProfile) -> str:
     m = profile.document_metadata
     year = m.copyright_year if m else 2026
-    # draft-standard is the correct OGC doctype for in-progress profiles
-    doctype = "draft-standard"
-    # profile is not a valid OGC subtype; implementation is the closest for a service profile
-    docsubtype = "implementation" if not m or m.doc_subtype == "profile" else m.doc_subtype
+    default_date = f"{year}-01-01"
+    # doctype: configurable; draft-standard is the default for in-progress profiles
+    doctype = (m.doc_type if m and m.doc_type else "draft-standard")
+    # docsubtype: 'profile' is the natural subtype for a service profile, but when
+    # doctype is draft-standard/standard OGC expects implementation/profile etc.
+    docsubtype = m.doc_subtype if m else "implementation"
     lines = [
         f"= {profile.title}",
         f":doctype: {doctype}",
@@ -1261,10 +1383,12 @@ def _build_document_adoc(profile: ServiceProfile) -> str:
         ":committee: technical",
         f":docnumber: {m.doc_number if m else profile.name}",
         f":copyright-year: {year}",
-        f":published-date: {year}-01-01",
-        f":issued-date: {year}-01-01",
-        f":received-date: {year}-01-01",
+        f":published-date: {(m.publication_date if m and m.publication_date else default_date)}",
+        f":issued-date: {(m.approval_date if m and m.approval_date else default_date)}",
+        f":received-date: {(m.submission_date if m and m.submission_date else default_date)}",
     ]
+    if m and m.status:
+        lines.append(f":status: {m.status}")
     if m and m.external_id:
         lines.append(f":external-id: {m.external_id}")
     if m and m.editors:
@@ -1303,18 +1427,91 @@ def _build_document_adoc(profile: ServiceProfile) -> str:
 def _build_sections(profile: ServiceProfile) -> dict[str, str]:
     """Return the minimal boilerplate sections required by Metanorma OGC."""
     m = profile.document_metadata
-    conf_uris = [f"http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/{profile.name}"]
-    submitters = m.submitting_orgs if m and m.submitting_orgs else ["Unknown"]
+    conf_uris = [profile.conf_uri]
     req_includes = "\n".join(
         f"include::../requirements/core/REQ_{r.id}.adoc[]" for r in profile.requirements
     )
     ats_includes = "\n".join(
         f"include::../abstract_tests/core/ATS_{t.id}.adoc[]" for t in profile.abstract_tests
     )
+
+    # --- Submitters table rows (page iv) ---
+    # Prefer the structured `submitters` list (each with its own affiliation).
+    # Fall back to pairing editors with the first submitting org.
+    if m and m.submitters:
+        submitter_rows = "\n".join(
+            f"| {s.name}{f' _({s.role})_' if s.role else ''} |{s.affiliation or ''}"
+            for s in m.submitters
+        )
+    else:
+        fallback_org = (m.submitting_orgs[0] if m and m.submitting_orgs else "")
+        submitter_rows = "\n".join(
+            f"| {editor} _(editor)_ |{fallback_org}"
+            for editor in (m.editors if m and m.editors else ["Unknown"])
+        )
+
+    # --- Notice paragraph (front matter) ---
+    notice_block = ""
+    if m and m.notice:
+        notice_block = (
+            "\n[NOTE]\n"
+            "====\n"
+            f"{m.notice}\n"
+            "====\n"
+        )
+
+    # --- References: base OGC refs + any profile-supplied normative references ---
+    reference_lines = [
+        "* [[[OGC-EDR-1,OGC 19-086r6]]], OGC API - Environmental Data Retrieval Standard",
+        "* [[[OGC-EDR-3,nofetch(OGC ogcapi-edr-3)]]], OGC API - EDR Part 3: Service Profiles (draft)",
+    ]
+    if m and m.normative_references:
+        for ref in m.normative_references:
+            reference_lines.append(f"* [[[{ref.anchor},{ref.citation}]]], {ref.title}")
+
+    # --- Classification banner (e.g. NATO RESTRICTED) ---
+    classification_banner = ""
+    if profile.classification:
+        cl = profile.classification
+        label = cl.level + (f" ({cl.system})" if cl.system else "")
+        classification_banner = f"*SECURITY CLASSIFICATION: {label}*\n\n"
+
+    # --- Point of contact paragraph (from provider) ---
+    contact_block = ""
+    if profile.provider:
+        pv = profile.provider
+        parts_ = [f"This service is provided by {pv.name}"]
+        if pv.url:
+            parts_.append(f" ({pv.url})")
+        parts_.append(".")
+        if pv.contact:
+            c = pv.contact
+            details = []
+            if c.email:
+                details.append(f"Email: {c.email}")
+            if c.phone:
+                details.append(f"Phone: {c.phone}")
+            addr = ", ".join(
+                x for x in (c.address, c.postalcode, c.city, c.country) if x
+            )
+            if addr:
+                details.append(f"Address: {addr}")
+            if c.hours:
+                details.append(f"Hours: {c.hours}")
+            if c.instructions:
+                details.append(f"Contact instructions: {c.instructions}")
+            if details:
+                parts_.append(" " + " +\n".join(details))
+        contact_block = (
+            "\n[.preface]\n== Point of Contact\n\n"
+            + "".join(parts_) + "\n"
+        )
+
     return {
         "sections/00-abstract.adoc": (
             "[abstract]\n== Abstract\n\n"
-            f"This document defines the {profile.title}, "
+            + classification_banner
+            + f"This document defines the {profile.title}, "
             "an OGC API - Environmental Data Retrieval (EDR) Part 3 Service Profile. "
             "It specifies normative requirements and conformance tests for server implementations "
             f"conforming to this profile.\n"
@@ -1325,15 +1522,14 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
             ".Submitters\n"
             "|===\n"
             "h|Name h|Affiliation\n\n"
-            + "\n".join(
-                f"| {editor} _(editor)_ |{submitters[0] if submitters else ''}"
-                for editor in (m.editors if m and m.editors else ["Unknown"])
-            )
+            + submitter_rows
             + "\n|===\n"
         ),
         "sections/01-preface.adoc": (
             "[.preface]\n== Preface\n\n"
             f"This document was prepared by {', '.join(m.submitting_orgs) if m and m.submitting_orgs else 'the submitting organizations'}.\n"
+            + notice_block
+            + contact_block
         ),
         "sections/02-scope.adoc": (
             "== Scope\n\n"
@@ -1348,8 +1544,7 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
         ),
         "sections/04-references.adoc": (
             "[bibliography]\n== References\n\n"
-            "* [[[OGC-EDR-1,OGC 19-086r6]]], OGC API - Environmental Data Retrieval Standard\n"
-            "* [[[OGC-EDR-3,nofetch(OGC ogcapi-edr-3)]]], OGC API - EDR Part 3: Service Profiles (draft)\n"
+            + "\n".join(reference_lines) + "\n"
         ),
         "sections/05-terms.adoc": (
             "== Terms, Definitions and Abbreviated Terms\n\n"

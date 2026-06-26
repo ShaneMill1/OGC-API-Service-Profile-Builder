@@ -1,4 +1,4 @@
 [.preface]
 == Preface
 
-This document was prepared by the submitting organizations.
+This document was prepared by Met Office, DGIWG.

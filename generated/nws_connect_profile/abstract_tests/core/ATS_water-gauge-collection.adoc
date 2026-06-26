@@ -1,0 +1,15 @@
+[[ats_nws_connect_water_gauge_collection]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/water-gauge-collection
+target:: /req/nws_connect/water-gauge-collection
+test-purpose:: Validate that water gauge collection is correctly implemented.
+test-method::
+step:: Send GET request to /collections/water_gauge.
+step:: Verify response contains collection metadata.
+step:: Send GET request to /collections/water_gauge/items?limit=10.
+step:: Verify response Content-Type is application/geo+json.
+step:: Verify each feature contains flood_stage, feet_above_stage, and value properties.
+step:: Verify each feature geometry type is Point.
+====

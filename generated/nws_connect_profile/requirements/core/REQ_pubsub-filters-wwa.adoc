@@ -1,0 +1,11 @@
+[[req_nws_connect_pubsub_filters_wwa]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/pubsub-filters-wwa
+statement:: The wwa collection pub/sub SHALL support filtering by event types, state, and CWA.
+part:: Subscriptions SHALL accept event_types filter (array of weather event types).
+part:: Subscriptions SHALL accept state filter (state code or blank for all).
+part:: Subscriptions SHALL accept cwa filter (County Warning Area code).
+part:: Subscriptions SHALL accept email filter for notification delivery.
+====

@@ -1,0 +1,27 @@
+[[ats_nwp_radar_radius_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/radius-endpoint
+target:: /req/nwp_radar/radius-endpoint
+test-purpose:: Validate that radius endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation/radius with a valid coordinate in EPSG:4326 and a radius of 1km.
+step:: Verify response Content-Type is application/json.
+step:: Verify each feature contains precipitation_amount property.
+step:: Verify each feature contains datetime property.
+step:: Verify each feature has height in metres based upon the EGM2008 gravity model.
+step:: Verify that the datetime is in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z
+step:: Verify that the default file format is GeoTIFF.
+step:: Verify that the endpoint supports CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
+step:: Send GET request to /collections/nwp_radar_precipitation/radius for a CoverageJSON file type.
+step:: Verify that the CoverageJSON file format returned complies with the OGC CoverageJSON standard - https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca
+step:: Send GET request to /collections/nwp_radar_precipitation/radius for a GeoTIFF file type.
+step:: Verify that the GeoTIFF file format returned complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.
+step:: Send GET request to /collections/nwp_radar_precipitation/radius for a GRIB file type.
+step:: Verify that the GRIB2 file format returned complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.
+step:: Send GET request to /collections/nwp_radar_precipitation/radius for a HDF5 file type.
+step:: Verify that the HDF5 file format returned complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.
+step:: Send GET request to /collections/nwp_radar_precipitation/radius for a NetCDF4 file type.
+step:: Verify that the NetCDF4 file format returned complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.
+====

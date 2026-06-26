@@ -1,0 +1,12 @@
+[[ats_nwp_radar_http_methods]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/http-methods
+target:: /req/nwp_radar/http-methods
+test-purpose:: Validate that http methods is correctly implemented.
+test-method::
+step:: Send GET request to the root URL /
+step:: Verify that the service is set up to support both POST and GET HTTP Method requests.
+step:: Verify that POST and GET Methods are supported for the query types of "cube", "radius", and "items".
+====

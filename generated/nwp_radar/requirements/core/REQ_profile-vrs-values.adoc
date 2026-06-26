@@ -1,0 +1,10 @@
+[[req_nwp_radar_profile_vrs_values]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-vrs-values
+statement:: Vertical Reference System (vrs) values SHALL be height in metres.
+part:: The service vrs SHALL be in height metres.
+part:: The service vrs SHALL be EPSG:3855.
+part:: The service vrs SHALL use the vertical datum EGM2008 geoid as the zero-height reference (orthometric height relative to mean sea level).
+====

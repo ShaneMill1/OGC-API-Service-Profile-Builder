@@ -249,10 +249,12 @@ required_conformance_classes:
 
 extent_requirements:
   minimum_bbox: [-180, -90, 180, 90]
-  allowed_crs:
-    - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-  allowed_trs:
-    - "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+  extent_crs:
+    allowed:
+      - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+  extent_trs:
+    allowed:
+      - "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
 
 output_formats:
   - name: GeoJSON

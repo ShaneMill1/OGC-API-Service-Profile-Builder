@@ -1,0 +1,12 @@
+[[req_nws_connect_states_collection]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/states-collection
+statement:: The states collection SHALL provide GeoJSON features for US state boundaries.
+part:: The service SHALL provide a /collections/states endpoint.
+part:: The service SHALL provide a /collections/states/items endpoint.
+part:: The response Content-Type SHALL be application/geo+json.
+part:: Each feature SHALL include a state identifier property.
+part:: Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon.
+====

@@ -1,0 +1,11 @@
+[[ats_nwp_radar_profile_keywords]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-keywords
+target:: /req/nwp_radar/profile-keywords
+test-purpose:: Validate that profile keywords is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the collection keywords list includes the following keywords - "cube", "radius", "items", "precipitation_amount", "radar".
+====

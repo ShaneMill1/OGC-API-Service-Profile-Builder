@@ -1,0 +1,15 @@
+[[ats_nws_connect_states_collection]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/states-collection
+target:: /req/nws_connect/states-collection
+test-purpose:: Validate that states collection is correctly implemented.
+test-method::
+step:: Send GET request to /collections/states.
+step:: Verify response contains collection metadata.
+step:: Send GET request to /collections/states/items?limit=10.
+step:: Verify response Content-Type is application/geo+json.
+step:: Verify each feature contains a state identifier.
+step:: Verify each feature geometry type is Polygon or MultiPolygon.
+====

@@ -1,0 +1,11 @@
+[[req_nws_connect_pubsub_amqp]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/pubsub-amqp
+statement:: The service SHALL support AMQP pub/sub for real-time notifications on water_gauge and wwa collections.
+part:: The service SHALL provide an AMQP broker at edr-api-desi-c.mdl.nws.noaa.gov:5672.
+part:: Clients SHALL be able to subscribe to collections/water_gauge/items/# channel.
+part:: Clients SHALL be able to subscribe to collections/wwa/items/# channel.
+part:: Notifications SHALL be published as GeoJSON features.
+====

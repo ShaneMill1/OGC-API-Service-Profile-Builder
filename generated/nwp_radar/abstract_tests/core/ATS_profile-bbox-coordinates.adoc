@@ -1,0 +1,12 @@
+[[ats_nwp_radar_profile_bbox_coordinates]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-bbox-coordinates
+target:: /req/nwp_radar/profile-bbox-coordinates
+test-purpose:: Validate that profile bbox coordinates is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the box boundary is for the extent [-180, -90, 180, 90].
+step:: Verify that the bounding box coordinate reference system is EPSG:4326 (WGS84).
+====

@@ -1,0 +1,16 @@
+== Requirements
+
+include::../requirements/requirements_class_core.adoc[]
+
+include::../requirements/core/REQ_spatial-extents-crs.adoc[]
+include::../requirements/core/REQ_profile-bbox-coordinates.adoc[]
+include::../requirements/core/REQ_profile-trs-values.adoc[]
+include::../requirements/core/REQ_profile-vrs-values.adoc[]
+include::../requirements/core/REQ_profile-keywords.adoc[]
+include::../requirements/core/REQ_profile-links.adoc[]
+include::../requirements/core/REQ_profile-query-types.adoc[]
+include::../requirements/core/REQ_items-endpoint.adoc[]
+include::../requirements/core/REQ_cube-endpoint.adoc[]
+include::../requirements/core/REQ_radius-endpoint.adoc[]
+include::../requirements/core/REQ_profile-nwp-parameters.adoc[]
+include::../requirements/core/REQ_http-methods.adoc[]

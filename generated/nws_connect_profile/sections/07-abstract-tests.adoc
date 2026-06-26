@@ -1,0 +1,16 @@
+[appendix,obligation=normative]
+== Abstract Test Suite
+
+include::../abstract_tests/ATS_class_core.adoc[]
+
+include::../abstract_tests/core/ATS_conformance.adoc[]
+include::../abstract_tests/core/ATS_collections-endpoint.adoc[]
+include::../abstract_tests/core/ATS_water-gauge-collection.adoc[]
+include::../abstract_tests/core/ATS_wwa-collection.adoc[]
+include::../abstract_tests/core/ATS_cwa-collection.adoc[]
+include::../abstract_tests/core/ATS_states-collection.adoc[]
+include::../abstract_tests/core/ATS_items-by-id.adoc[]
+include::../abstract_tests/core/ATS_pubsub-amqp.adoc[]
+include::../abstract_tests/core/ATS_pubsub-websocket.adoc[]
+include::../abstract_tests/core/ATS_pubsub-filters-water-gauge.adoc[]
+include::../abstract_tests/core/ATS_pubsub-filters-wwa.adoc[]

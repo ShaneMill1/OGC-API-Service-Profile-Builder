@@ -302,8 +302,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -481,6 +479,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -491,8 +499,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -628,37 +634,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/aigfs0p25_v1p0_global_latlon/position:
-    get:
-      summary: query aigfs0p25_v1p0_global_latlon by position
-      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
-        icechunk format
-      operationId: QueryPositionAigfs0p25V1p0GlobalLatlon
-      tags:
-      - aigfs0p25_v1p0_global_latlon
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/aigfs0p25_v1p0_global_latlon/instances:
     get:
       summary: Get pre-defined instances of aigfs0p25_v1p0_global_latlon
@@ -818,6 +793,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/aigfs0p25_v1p0_global_latlon/position:
+    get:
+      summary: query aigfs0p25_v1p0_global_latlon by position
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryPositionAigfs0p25V1p0GlobalLatlon
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/air_quality_alaska_polar_stereographic:
     get:
       summary: Get Air Quality Alaska Polar Stereographic metadata
@@ -871,8 +877,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -1050,6 +1054,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -1060,8 +1074,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -1197,37 +1209,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/air_quality_alaska_polar_stereographic/position:
-    get:
-      summary: query air_quality_alaska_polar_stereographic by position
-      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
-        stored in icechunk format
-      operationId: QueryPositionAirQualityAlaskaPolarStereographic
-      tags:
-      - air_quality_alaska_polar_stereographic
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/air_quality_alaska_polar_stereographic/instances:
     get:
       summary: Get pre-defined instances of air_quality_alaska_polar_stereographic
@@ -1387,6 +1368,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/air_quality_alaska_polar_stereographic/position:
+    get:
+      summary: query air_quality_alaska_polar_stereographic by position
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: QueryPositionAirQualityAlaskaPolarStereographic
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/air_quality_conus_lambert:
     get:
       summary: Get Air Quality CONUS Lambert metadata
@@ -1440,8 +1452,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -1619,6 +1629,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -1629,8 +1649,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -1766,37 +1784,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/air_quality_conus_lambert/position:
-    get:
-      summary: query air_quality_conus_lambert by position
-      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryPositionAirQualityConusLambert
-      tags:
-      - air_quality_conus_lambert
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/air_quality_conus_lambert/instances:
     get:
       summary: Get pre-defined instances of air_quality_conus_lambert
@@ -1956,6 +1943,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/air_quality_conus_lambert/position:
+    get:
+      summary: query air_quality_conus_lambert by position
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionAirQualityConusLambert
+      tags:
+      - air_quality_conus_lambert
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/air_quality_hawaii_mercator:
     get:
       summary: Get Air Quality Hawaii Mercator metadata
@@ -2009,8 +2027,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -2188,6 +2204,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -2198,8 +2224,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -2335,37 +2359,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/air_quality_hawaii_mercator/position:
-    get:
-      summary: query air_quality_hawaii_mercator by position
-      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
-        format
-      operationId: QueryPositionAirQualityHawaiiMercator
-      tags:
-      - air_quality_hawaii_mercator
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/air_quality_hawaii_mercator/instances:
     get:
       summary: Get pre-defined instances of air_quality_hawaii_mercator
@@ -2525,6 +2518,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/air_quality_hawaii_mercator/position:
+    get:
+      summary: query air_quality_hawaii_mercator by position
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: QueryPositionAirQualityHawaiiMercator
+      tags:
+      - air_quality_hawaii_mercator
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/gefs0p25_v12p3_global_latlon:
     get:
       summary: Get GEFS 0.25 Degree Global LatLon metadata
@@ -2578,8 +2602,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -2757,6 +2779,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -2767,8 +2799,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -2904,37 +2934,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/gefs0p25_v12p3_global_latlon/position:
-    get:
-      summary: query gefs0p25_v12p3_global_latlon by position
-      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
-        icechunk format
-      operationId: QueryPositionGefs0p25V12p3GlobalLatlon
-      tags:
-      - gefs0p25_v12p3_global_latlon
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/gefs0p25_v12p3_global_latlon/instances:
     get:
       summary: Get pre-defined instances of gefs0p25_v12p3_global_latlon
@@ -3094,6 +3093,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/gefs0p25_v12p3_global_latlon/position:
+    get:
+      summary: query gefs0p25_v12p3_global_latlon by position
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryPositionGefs0p25V12p3GlobalLatlon
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/gefs0p5_v12p3_global_latlon:
     get:
       summary: Get GEFS 0.5 Degree Global LatLon metadata
@@ -3147,8 +3177,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -3326,6 +3354,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -3336,8 +3374,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -3473,37 +3509,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/gefs0p5_v12p3_global_latlon/position:
-    get:
-      summary: query gefs0p5_v12p3_global_latlon by position
-      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
-        format
-      operationId: QueryPositionGefs0p5V12p3GlobalLatlon
-      tags:
-      - gefs0p5_v12p3_global_latlon
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/gefs0p5_v12p3_global_latlon/instances:
     get:
       summary: Get pre-defined instances of gefs0p5_v12p3_global_latlon
@@ -3663,6 +3668,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/gefs0p5_v12p3_global_latlon/position:
+    get:
+      summary: query gefs0p5_v12p3_global_latlon by position
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionGefs0p5V12p3GlobalLatlon
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/gfs0p25_v16p3_global_latlon:
     get:
       summary: Get GFS 0.25 Degree Global LatLon v16.3 metadata
@@ -3716,8 +3752,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -3895,6 +3929,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -3905,8 +3949,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -4042,37 +4084,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/gfs0p25_v16p3_global_latlon/position:
-    get:
-      summary: query gfs0p25_v16p3_global_latlon by position
-      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
-        format
-      operationId: QueryPositionGfs0p25V16p3GlobalLatlon
-      tags:
-      - gfs0p25_v16p3_global_latlon
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/gfs0p25_v16p3_global_latlon/instances:
     get:
       summary: Get pre-defined instances of gfs0p25_v16p3_global_latlon
@@ -4232,6 +4243,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/gfs0p25_v16p3_global_latlon/position:
+    get:
+      summary: query gfs0p25_v16p3_global_latlon by position
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionGfs0p25V16p3GlobalLatlon
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/gfs0p25_v17_global_latlon:
     get:
       summary: Get GFS 0.25 Degree Global LatLon v17 metadata
@@ -4285,8 +4327,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -4464,6 +4504,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -4474,8 +4524,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -4611,37 +4659,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/gfs0p25_v17_global_latlon/position:
-    get:
-      summary: query gfs0p25_v17_global_latlon by position
-      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
-        format
-      operationId: QueryPositionGfs0p25V17GlobalLatlon
-      tags:
-      - gfs0p25_v17_global_latlon
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/gfs0p25_v17_global_latlon/instances:
     get:
       summary: Get pre-defined instances of gfs0p25_v17_global_latlon
@@ -4801,6 +4818,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/gfs0p25_v17_global_latlon/position:
+    get:
+      summary: query gfs0p25_v17_global_latlon by position
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionGfs0p25V17GlobalLatlon
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/nbm_v5p0_conus_lambert:
     get:
       summary: Get National Blend of Models v5.0 CONUS Lambert metadata
@@ -4854,8 +4902,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -5033,6 +5079,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -5043,8 +5099,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -5180,37 +5234,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/nbm_v5p0_conus_lambert/position:
-    get:
-      summary: query nbm_v5p0_conus_lambert by position
-      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryPositionNbmV5p0ConusLambert
-      tags:
-      - nbm_v5p0_conus_lambert
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/nbm_v5p0_conus_lambert/instances:
     get:
       summary: Get pre-defined instances of nbm_v5p0_conus_lambert
@@ -5370,6 +5393,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/nbm_v5p0_conus_lambert/position:
+    get:
+      summary: query nbm_v5p0_conus_lambert by position
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionNbmV5p0ConusLambert
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/processed_gefs0p25_v12p3_global_latlon:
     get:
       summary: Get Processed GEFS 0.25 Degree Global LatLon metadata
@@ -5423,8 +5477,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -5602,6 +5654,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -5612,8 +5674,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -5749,37 +5809,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/processed_gefs0p25_v12p3_global_latlon/position:
-    get:
-      summary: query processed_gefs0p25_v12p3_global_latlon by position
-      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
-        stored in icechunk format
-      operationId: QueryPositionProcessedGefs0p25V12p3GlobalLatlon
-      tags:
-      - processed_gefs0p25_v12p3_global_latlon
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/processed_gefs0p25_v12p3_global_latlon/instances:
     get:
       summary: Get pre-defined instances of processed_gefs0p25_v12p3_global_latlon
@@ -5939,6 +5968,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/processed_gefs0p25_v12p3_global_latlon/position:
+    get:
+      summary: query processed_gefs0p25_v12p3_global_latlon by position
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: QueryPositionProcessedGefs0p25V12p3GlobalLatlon
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/rtma2p5_v2p10_conus_lambert:
     get:
       summary: Get RTMA 2.5km CONUS Lambert metadata
@@ -5992,8 +6052,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -6171,6 +6229,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -6181,8 +6249,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -6318,37 +6384,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/rtma2p5_v2p10_conus_lambert/position:
-    get:
-      summary: query rtma2p5_v2p10_conus_lambert by position
-      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryPositionRtma2p5V2p10ConusLambert
-      tags:
-      - rtma2p5_v2p10_conus_lambert
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/rtma2p5_v2p10_conus_lambert/instances:
     get:
       summary: Get pre-defined instances of rtma2p5_v2p10_conus_lambert
@@ -6508,6 +6543,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/rtma2p5_v2p10_conus_lambert/position:
+    get:
+      summary: query rtma2p5_v2p10_conus_lambert by position
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionRtma2p5V2p10ConusLambert
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/urma2p5_v2p10_conus_lambert:
     get:
       summary: Get URMA 2.5km CONUS Lambert metadata
@@ -6561,8 +6627,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -6740,6 +6804,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -6750,8 +6824,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -6887,37 +6959,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/urma2p5_v2p10_conus_lambert/position:
-    get:
-      summary: query urma2p5_v2p10_conus_lambert by position
-      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryPositionUrma2p5V2p10ConusLambert
-      tags:
-      - urma2p5_v2p10_conus_lambert
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/urma2p5_v2p10_conus_lambert/instances:
     get:
       summary: Get pre-defined instances of urma2p5_v2p10_conus_lambert
@@ -7077,6 +7118,37 @@ paths:
               schema:
                 type: string
                 format: binary
+  /collections/urma2p5_v2p10_conus_lambert/position:
+    get:
+      summary: query urma2p5_v2p10_conus_lambert by position
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionUrma2p5V2p10ConusLambert
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
   /collections/petss_test:
     get:
       summary: Get P-ETSS Test Data metadata
@@ -7129,8 +7201,6 @@ paths:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                   output_formats:
                     type: array
                     items:
@@ -7308,6 +7378,16 @@ paths:
                                   type: array
                                   items:
                                     type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
                                 crs_details:
                                   type: array
                                   description: CRS values supported by this data query
@@ -7318,8 +7398,6 @@ paths:
                                     properties:
                                       crs:
                                         type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
                                       wkt:
                                         type: string
         '400':
@@ -7453,36 +7531,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/petss_test/position:
-    get:
-      summary: query petss_test by position
-      description: P-ETSS test data collection from local filesystem
-      operationId: QueryPositionPetssTest
-      tags:
-      - petss_test
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/petss_test/instances:
     get:
       summary: Get pre-defined instances of petss_test
@@ -7616,6 +7664,36 @@ paths:
         schema:
           type: string
         example: '2025-04-02T00:00:00Z'
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/petss_test/position:
+    get:
+      summary: query petss_test by position
+      description: P-ETSS test data collection from local filesystem
+      operationId: QueryPositionPetssTest
+      tags:
+      - petss_test
+      parameters:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml

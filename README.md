@@ -245,12 +245,18 @@ abstract_tests: []
 | `description` | string | no | Human-readable description of the service profile. Surfaces in the OpenAPI `info.description` and the landing page response schema |
 | `keywords` | list | no | Service-level keywords (e.g. query types, parameter names, domain terms). Surfaces in `info.x-keywords` and the landing page response schema. Distinct from `document_metadata.keywords`, which are for the OGC PDF header |
 | `server_url` | string | no | Documentation only — not written to the profile OpenAPI |
+| `provider` | object | no | Service provider / responsible party. Surfaces in OpenAPI `info.contact` and the document Point of Contact (see below) |
+| `classification` | object | no | Security classification (`level` + `system`). Surfaces as a document banner and `info.x-classification` |
+| `metadata_date` | string | no | Metadata update date (ISO 8601). Surfaces as `info.x-metadata-date` |
+| `resource_service_publish_date` | string | no | Resource/service publication date (ISO 8601). Surfaces as `info.x-resource-publish-date` |
+| `resource_default_locale` | string | no | Default resource locale (e.g. `eng`). Surfaces as `info.x-default-locale` |
 | `allow_post_queries` | bool | no | When `true`, generates `POST` alongside `GET` for all EDR data query endpoints. Defaults to `false` |
 | `collections` | list | yes | One or more EDR collections (see below) |
 | `required_conformance_classes` | list | no | Conformance classes implementations must declare. Defaults to EDR Core |
 | `extent_requirements` | object | no | Profile-level CRS/TRS/VRS constraints (see below) |
 | `output_formats` | list | no | Format name → media type + schema ref mappings |
 | `collection_id_pattern` | string | no | Regex all collection IDs must match |
+| `spec_uri_base` | string | no | Base URI for the requirements/conformance class identifiers. Defaults to the OGC EDR Part 3 namespace; override to publish under another SDO namespace (e.g. DGIWG) |
 | `parameter_name_pattern` | string | no | Regex all `parameter_names` keys must match |
 | `parameter_schema` | object | no | JSON Schema for parameter objects — replaces the default schema in the generated OpenAPI (see below) |
 | `processes` | list | no | OGC API Processes to expose in the OpenAPI |
@@ -258,7 +264,7 @@ abstract_tests: []
 | `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id` |
 | `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
 | `collection_examples` | object | no | `{collectionId: {instanceId: "..."}}` — used by `validate-server` |
-| `document_metadata` | object | no | Metanorma PDF header (doc number, editors, orgs, keywords) |
+| `document_metadata` | object | no | Metanorma PDF header — doc number/type/subtype, status, editors, submitters, dates, notice, normative references (see below) |
 
 ---
 
@@ -315,6 +321,22 @@ data_queries:
         crs_details:
           - crs: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
           - crs: "http://www.opengis.net/def/crs/EPSG/0/4326"
+  cube:
+    link:
+      href: https://example.com/collections/obs/cube
+      rel: data
+      variables:
+        query_type: cube
+        output_formats: [CoverageJSON, GeoTIFF]
+        # default_output_format: response format used when the `f` query
+        # parameter is omitted. Must be one of output_formats. Sets the
+        # `default` on the generated OpenAPI `f` parameter for this query.
+        default_output_format: GeoTIFF
+        # crs: shorthand for crs_details — a plain list of CRS URIs.
+        # Validated against extent_requirements.supported_crs.
+        crs:
+          - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+          - "http://www.opengis.net/def/crs/EPSG/0/4326"
 ```
 
 #### `parameter_names` example
@@ -491,22 +513,103 @@ pubsub:
 
 ### `document_metadata`
 
-Required only when compiling a PDF with `--pdf`.
+Required only when compiling a PDF with `--pdf`. Fields map to Metanorma OGC document attributes.
 
 ```yaml
 document_metadata:
   doc_number: "25-myprofile"
-  doc_subtype: implementation   # implementation | best-practice | engineering-report
+  doc_type: draft-standard      # Metanorma :doctype: (draft-standard | standard | best-practice | engineering-report | ...)
+  doc_subtype: implementation   # implementation | best-practice | engineering-report | profile
+  status: approved              # Metanorma :status:/:docstage: (swg-draft | public-rfc | approved | ...)
   editors:
     - Jane Smith
+  # submitters: structured table for page iv — each row carries its own affiliation.
+  # When provided, takes precedence over the editors/submitting_orgs fallback.
+  submitters:
+    - name: Jane Smith
+      affiliation: My Organization
+      role: editor
+    - name: Standards Working Group
+      affiliation: My SDO
   submitting_orgs:
     - My Organization
+  # Title-page dates (YYYY-MM-DD). Omitted dates fall back to {copyright_year}-01-01.
+  submission_date: "2026-05-01"   # → :received-date:
+  approval_date:   "2026-06-15"   # → :issued-date:
+  publication_date: "2026-07-01"  # → :published-date:
+  # Custom notice paragraph rendered in the front matter. Note: the OGC cover-page
+  # legal notice itself is generated by Metanorma from doc_type/status.
+  notice: >
+    This is a DRAFT standard and is subject to change.
+  # Additional normative references appended to the References section.
+  normative_references:
+    - anchor: DGIWG-250
+      citation: DGIWG 250
+      title: DGIWG GeoTIFF Profile
   keywords:
     - ogcdoc
     - OGC API
     - EDR
   copyright_year: 2026
   external_id: http://www.opengis.net/doc/dp/my-profile/1.0
+```
+
+The cover-page sub-title (e.g. "Draft Standard — Implementation — Approved") is produced by Metanorma from the `doc_type`, `doc_subtype`, and `status` combination.
+
+---
+
+### `provider`, `classification`, and provenance metadata
+
+Optional service-level metadata. Each may also be set per-collection (the collection value overrides the profile root for that collection and is round-tripped into `profile_config.json`).
+
+```yaml
+provider:
+  name: Austrian Military
+  url: "https://www.bmlv.gv.at/english/forces/organisation.shtml"
+  contact:
+    email: presse@bmlvs.gv.at
+    phone: "+43 ..."
+    hours: Monday to Friday 08:00 - 17:00
+    instructions: During hours of Service
+    address: "Ministry of Defence, Rossauer Lände 1"
+    postalcode: A-1090
+    city: Vienna
+    country: Austria
+
+classification:
+  level: "NATO RESTRICTED (NR)"
+  system: NATO
+
+metadata_date: "2026-06-25T07:31Z"
+resource_service_publish_date: "2026-06-24T14:10Z"
+resource_default_locale: eng
+```
+
+Where these surface:
+
+- `provider` → OpenAPI `info.contact` (`name`/`url`/`email`; the remaining contact fields become `x-` extensions) and a **Point of Contact** section in the generated document.
+- `classification` → a **security classification banner** in the document Abstract and `info.x-classification` in the OpenAPI.
+- `metadata_date` / `resource_service_publish_date` / `resource_default_locale` → `info.x-metadata-date` / `info.x-resource-publish-date` / `info.x-default-locale`.
+
+> The profile OpenAPI is implementation-independent (per EDR Part 3 REQ_publishing), so these describe the profile/data provenance rather than a specific deployment endpoint.
+
+---
+
+### `spec_uri_base`
+
+By default, the requirements class and conformance class identifiers are published under the OGC API - EDR Part 3 namespace:
+
+```
+http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/<name>
+http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/<name>
+```
+
+Set `spec_uri_base` to publish under a different SDO namespace. This updates the OpenAPI `x-ogc-profile` link, the requirements/conformance AsciiDoc identifiers, and the conformance section:
+
+```yaml
+spec_uri_base: "https://schemas.dgiwg.org/edr/1.0"
+# → https://schemas.dgiwg.org/edr/1.0/req/<name>
+# → https://schemas.dgiwg.org/edr/1.0/conf/<name>
 ```
 
 ---
@@ -519,10 +622,12 @@ The tool enforces these rules at build time. Violations produce clear error mess
 |---|---|
 | `name` format | Must match `^[a-z0-9_]+$` |
 | No duplicate collection IDs | Across the whole profile |
-| `extent_requirements` requires CRS spec | Either `allowed_crs` or `crs_pattern` must be set |
-| Collection CRS validated | Each `extent.spatial.crs` checked against `allowed_crs`/`crs_pattern` |
-| Collection TRS validated | Each `extent.temporal.trs` checked against `allowed_trs`/`trs_pattern` |
-| `crs_details` validated | Each `data_queries.*.variables.crs_details[].crs` checked against CRS constraints |
+| `extent_requirements` requires CRS spec | At least one of `extent_crs` or `supported_crs` must be set (each uses `allowed` or `pattern`) |
+| Collection CRS validated | Each `extent.spatial.crs` checked against `extent_crs`; `crs[]` and `crs_details` checked against `supported_crs` |
+| Collection TRS validated | Each `extent.temporal.trs` checked against `extent_trs` |
+| `crs_details` / `crs` validated | Each `data_queries.*.variables.crs_details[].crs` and `crs[]` checked against `supported_crs` |
+| `default_output_format` validated | Each `data_queries.*.variables.default_output_format` must be one of that query's `output_formats` |
+| Document dates format | `submission_date` / `approval_date` / `publication_date` must be `YYYY-MM-DD` |
 | Parameters need `unit` + `observedProperty` | Required by OGC API - EDR Part 3 |
 | `parameter_name_pattern` enforced | All `parameter_names` keys must match if set |
 | `collection_id_pattern` enforced | All collection IDs must match if set |

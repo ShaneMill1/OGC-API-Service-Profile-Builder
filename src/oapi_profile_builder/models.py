@@ -79,6 +79,31 @@ class ExtentWithNullBounds(EDRExtent):
     temporal: Optional[TemporalWithNullBounds] = None
 
 
+class Classification(BaseModel):
+    """Security classification metadata (e.g. for DGIWG / military profiles)."""
+    level: str = Field(description="Classification level, e.g. 'NATO RESTRICTED (NR)'")
+    system: str | None = Field(default=None, description="Classification system, e.g. 'NATO'")
+
+
+class ProviderContact(BaseModel):
+    """Point-of-contact details for the service provider (OWS/ISO-style)."""
+    email: str | None = None
+    phone: str | None = None
+    hours: str | None = None
+    instructions: str | None = None
+    address: str | None = None
+    postalcode: str | None = None
+    city: str | None = None
+    country: str | None = None
+
+
+class Provider(BaseModel):
+    """Service provider / responsible party (OWS ServiceProvider-like)."""
+    name: str
+    url: str | None = None
+    contact: ProviderContact | None = None
+
+
 class Collection(EDRCollection):
     """
     EDR Collection with a null-aware temporal extent and optional parameter_names.
@@ -116,6 +141,13 @@ class Collection(EDRCollection):
             "Omit (null) to inherit the profile-level default."
         ),
     )
+    # Optional per-collection metadata. When set, overrides the profile-level
+    # value for this collection. Round-tripped into profile_config.json.
+    classification: Optional[Classification] = None
+    provider: Optional[Provider] = None
+    metadata_date: Optional[str] = None
+    resource_service_publish_date: Optional[str] = None
+    resource_default_locale: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -255,15 +287,111 @@ class OutputFormat(BaseModel):
     schema_ref: str | None = Field(default=None, description="URL to schema definition")
 
 
+class Submitter(BaseModel):
+    """A single entry in the document's submitters table (page iv).
+
+    Allows each submitter to carry their own affiliation, rather than sharing
+    a single organisation across every editor.
+    """
+    name: str
+    affiliation: str | None = None
+    role: str | None = Field(
+        default=None,
+        description="Role annotation shown next to the name, e.g. 'editor' or 'contributor'",
+    )
+
+
+class NormativeReference(BaseModel):
+    """An additional normative/bibliographic reference for the References section.
+
+    Rendered as a Metanorma bibliography entry of the form
+    ``* [[[<anchor>,<citation>]]], <title>``.
+    """
+    anchor: Annotated[str, Field(pattern=r"^[A-Za-z0-9_\-]+$")] = Field(
+        description="Cross-reference anchor (letters, digits, dash, underscore), e.g. DGIWG-250",
+    )
+    citation: str = Field(description="Short citation label, e.g. 'DGIWG 250' or 'OGC 19-086r6'")
+    title: str = Field(description="Full reference title")
+
+
+# Metanorma OGC document stages (`:status:` / `:docstage:`). See
+# https://www.metanorma.org/author/ogc/ref/document-attributes/
+DocStatus = Literal[
+    "draft",
+    "work-item-draft",
+    "swg-draft",
+    "oab-review",
+    "public-rfc",
+    "tc-vote",
+    "approved",
+    "published",
+    "deprecated",
+    "rescinded",
+    "retired",
+    "legacy",
+]
+
+# Loose ISO 8601 date (YYYY-MM-DD) check for document dates.
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
 class DocumentMetadata(BaseModel):
     """Metanorma/OGC document header metadata for PDF compilation."""
     doc_number: str
-    doc_subtype: Literal["implementation", "best-practice", "engineering-report"] = "implementation"
+    doc_type: str = Field(
+        default="draft-standard",
+        description=(
+            "Metanorma OGC :doctype: value (e.g. 'draft-standard', 'standard', "
+            "'best-practice', 'engineering-report'). Drives the cover-page document type."
+        ),
+    )
+    doc_subtype: Literal["implementation", "best-practice", "engineering-report", "profile"] = "implementation"
+    status: DocStatus | None = Field(
+        default=None,
+        description=(
+            "Metanorma OGC :status:/:docstage: value (e.g. 'swg-draft', 'approved'). "
+            "Combined with doc_type/doc_subtype this produces the cover-page sub-title."
+        ),
+    )
     editors: list[str] = Field(default_factory=list)
     submitting_orgs: list[str] = Field(default_factory=list)
+    submitters: list[Submitter] = Field(
+        default_factory=list,
+        description=(
+            "Structured submitters table (name + affiliation + role) for page iv. "
+            "When provided, takes precedence over the editors/submitting_orgs fallback."
+        ),
+    )
     keywords: list[str] = Field(default_factory=list)
     copyright_year: int = Field(default=2026)
+    # Title-page dates. Map to Metanorma attributes:
+    #   submission_date  -> :received-date:  (:submissionDate:)
+    #   approval_date    -> :issued-date:    (:approvalDate:)
+    #   publication_date -> :published-date: (:publicationDate:)
+    # Format: YYYY-MM-DD. When omitted, falls back to {copyright_year}-01-01.
+    submission_date: str | None = Field(default=None, description="Submission date (YYYY-MM-DD)")
+    approval_date: str | None = Field(default=None, description="Approval date (YYYY-MM-DD)")
+    publication_date: str | None = Field(default=None, description="Publication date (YYYY-MM-DD)")
+    notice: str | None = Field(
+        default=None,
+        description=(
+            "Custom notice text rendered in the document front matter. Note: the OGC "
+            "cover-page legal notice itself is generated by Metanorma from doc_type/status; "
+            "this field adds a notice paragraph in the preface."
+        ),
+    )
+    normative_references: list[NormativeReference] = Field(
+        default_factory=list,
+        description="Additional normative references appended to the References section.",
+    )
     external_id: str | None = None
+
+    @field_validator("submission_date", "approval_date", "publication_date")
+    @classmethod
+    def _valid_date(cls, v: str | None) -> str | None:
+        if v is not None and not _DATE_RE.match(v):
+            raise ValueError("date must be in YYYY-MM-DD format")
+        return v
 
 
 class PubSubServer(BaseModel):
@@ -324,6 +452,34 @@ class ServiceProfile(BaseModel):
         ),
     )
     server_url: str | None = Field(default=None, description="Base URL for implementation (not used in profile OpenAPI per standard)")
+    provider: Provider | None = Field(
+        default=None,
+        description=(
+            "Service provider / responsible party. Surfaces in the OpenAPI info.contact "
+            "block (name/url/email plus x- extensions for phone, address, etc.) and as the "
+            "document point of contact."
+        ),
+    )
+    classification: Classification | None = Field(
+        default=None,
+        description=(
+            "Security classification of the service/profile (e.g. NATO RESTRICTED). "
+            "Surfaces as a banner in the generated document and as info.x-classification "
+            "in the OpenAPI."
+        ),
+    )
+    metadata_date: str | None = Field(
+        default=None,
+        description="Date the metadata was last updated (ISO 8601 string). Surfaces as info.x-metadata-date.",
+    )
+    resource_service_publish_date: str | None = Field(
+        default=None,
+        description="Date the resource/service was published (ISO 8601 string). Surfaces as info.x-resource-publish-date.",
+    )
+    resource_default_locale: str | None = Field(
+        default=None,
+        description="Default locale of the resource (e.g. 'eng'). Surfaces as info.x-default-locale.",
+    )
     collections: list[Collection] = Field(min_length=1)
     collection_examples: dict[str, dict] = Field(default_factory=dict)
     requirements: list[Requirement] = Field(default_factory=list)
@@ -361,6 +517,16 @@ class ServiceProfile(BaseModel):
         default=None,
         description="Regex pattern for valid collection IDs"
     )
+    spec_uri_base: str = Field(
+        default="http://www.opengis.net/spec/ogcapi-edr-3/1.0",
+        description=(
+            "Base URI for the requirements class and conformance class identifiers. "
+            "Defaults to the OGC API - EDR Part 3 namespace. Override this to publish "
+            "under a different SDO namespace (e.g. a DGIWG location). Used to derive "
+            "req_uri and conf_uri, which appear in the OpenAPI x-ogc-profile link, the "
+            "requirements/conformance AsciiDoc identifiers, and the conformance section."
+        ),
+    )
     parameter_name_pattern: str | None = Field(
         default=None,
         description="Regex pattern that all parameter_names keys must match"
@@ -376,14 +542,14 @@ class ServiceProfile(BaseModel):
         ),
     )
 
-    # OGC identifiers derived from name — not user-supplied
+    # OGC identifiers derived from name and spec_uri_base — not user-supplied directly
     @property
     def req_uri(self) -> str:
-        return f"http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/{self.name}"
+        return f"{self.spec_uri_base.rstrip('/')}/req/{self.name}"
 
     @property
     def conf_uri(self) -> str:
-        return f"http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/{self.name}"
+        return f"{self.spec_uri_base.rstrip('/')}/conf/{self.name}"
 
     @model_validator(mode="after")
     def tests_reference_valid_requirements(self) -> ServiceProfile:
@@ -503,17 +669,18 @@ class ServiceProfile(BaseModel):
                 for crs_val in coll.crs:
                     _check(f"Collection '{coll.id}' crs[]", crs_val, er.supported_crs)
 
-            # --- crs_details in data_queries → supported_crs ---
+            # --- crs_details / crs shorthand in data_queries → supported_crs ---
             if coll.data_queries and er.supported_crs:
                 for qt_name, qt_val in coll.data_queries:
                     if qt_val is None:
                         continue
-                    crs_details = (
-                        qt_val.link.variables.model_extra.get("crs_details", [])
+                    extra = (
+                        qt_val.link.variables.model_extra
                         if hasattr(qt_val.link.variables, "model_extra")
-                        else []
-                    )
-                    for entry in (crs_details or []):
+                        else {}
+                    ) or {}
+                    crs_details = extra.get("crs_details", []) or []
+                    for entry in crs_details:
                         dq_crs = entry.get("crs") if isinstance(entry, dict) else None
                         if dq_crs:
                             _check(
@@ -521,6 +688,41 @@ class ServiceProfile(BaseModel):
                                 dq_crs,
                                 er.supported_crs,
                             )
+                    # `crs` is an accepted shorthand: a plain list of CRS URIs at
+                    # the query level, equivalent to crs_details: [{crs: ...}].
+                    for dq_crs in (extra.get("crs", []) or []):
+                        if isinstance(dq_crs, str):
+                            _check(
+                                f"Collection '{coll.id}' data_queries.{qt_name}.crs",
+                                dq_crs,
+                                er.supported_crs,
+                            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_default_output_format(self) -> ServiceProfile:
+        """Ensure a query's default_output_format is one of its output_formats."""
+        for coll in self.collections:
+            if not coll.data_queries:
+                continue
+            for qt_name, qt_val in coll.data_queries:
+                if qt_val is None:
+                    continue
+                extra = (
+                    qt_val.link.variables.model_extra
+                    if hasattr(qt_val.link.variables, "model_extra")
+                    else {}
+                ) or {}
+                variables = qt_val.link.variables
+                default = getattr(variables, "default_output_format", None) or extra.get("default_output_format")
+                if default is None:
+                    continue
+                formats = getattr(variables, "output_formats", None) or extra.get("output_formats") or []
+                if formats and default not in formats:
+                    raise ValueError(
+                        f"Collection '{coll.id}' data_queries.{qt_name}: "
+                        f"default_output_format '{default}' is not in output_formats {formats}"
+                    )
         return self
 
     @model_validator(mode="after")

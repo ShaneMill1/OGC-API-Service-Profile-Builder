@@ -4,14 +4,18 @@ Authoritative tooling for creating OGC API - Environmental Data Retrieval (EDR) 
 
 ## Overview
 
-Profile structure is defined as Pydantic models (`src/ogc_edr_profile/models.py`). Instantiating a `ServiceProfile` validates the entire profile — cross-model validators catch referential errors — before any files are written.
+Profile structure is defined as Pydantic models (`src/oapi_profile_builder/models.py`). Instantiating a `ServiceProfile` validates the entire profile — cross-model validators catch referential errors — before any files are written.
 
 Collections use `edr-pydantic`'s authoritative `Collection` model directly, meaning a profile config is simultaneously a valid EDR collection descriptor and a Part 3 profile definition.
+
+The console command is `oapi-profile-builder` and the importable package is `oapi_profile_builder`.
 
 ## Installation
 
 ```bash
-pip install ogc-edr-profile
+pip install oapi-profile-builder
+# or, for local development:
+pip install -e .
 ```
 
 ---
@@ -20,10 +24,10 @@ pip install ogc-edr-profile
 
 ### 1. Author a Profile Config
 
-A profile config is a YAML or JSON file. Copy the example and modify it:
+A profile config is a YAML or JSON file. Copy an example and modify it:
 
 ```bash
-cp examples/nwsviz_profile.yaml my_profile.yaml
+cp examples/minimal_profile.yaml my_profile.yaml
 ```
 
 The minimal valid config:
@@ -46,12 +50,12 @@ collections:
     parameter_names: {}
 ```
 
-See [`examples/nwsviz_profile.yaml`](examples/nwsviz_profile.yaml) for a full working config with 13 collections, 3 processes, requirements, abstract tests, `collection_examples`, and `document_metadata`.
+See [`examples/nwsviz_profile.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/nwsviz_profile.yaml) for a large working config, and [`examples/nwp_radar.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/nwp_radar.yaml) for a DGIWG-style profile exercising the newer fields (`provider`, `classification`, `default_output_format`, per-query `crs`).
 
 ### 2. Generate Profile Artifacts
 
 ```bash
-ogc-edr-profile generate \
+oapi-profile-builder generate \
   --config my_profile.yaml \
   --output ./my_profile
 ```
@@ -61,6 +65,7 @@ Produces:
 ```
 my_profile/
 ├── openapi.yaml
+├── asyncapi.yaml                        # only when `pubsub` is configured
 ├── profile_config.json
 ├── document.adoc                        # Metanorma root document
 ├── sections/
@@ -83,7 +88,13 @@ my_profile/
 Validate a config without generating output:
 
 ```bash
-ogc-edr-profile validate --config my_profile.yaml
+oapi-profile-builder validate --config my_profile.yaml
+```
+
+Export the JSON Schema for the profile config:
+
+```bash
+oapi-profile-builder schema --output profile.schema.json
 ```
 
 ### 3. Compile OGC PDF
@@ -91,92 +102,48 @@ ogc-edr-profile validate --config my_profile.yaml
 Requires Docker. Shells out to the official `metanorma/metanorma` image — no Ruby or LaTeX install needed.
 
 ```bash
-ogc-edr-profile generate \
+oapi-profile-builder generate \
   --config my_profile.yaml \
   --output ./my_profile \
   --pdf
 ```
 
-The `document_metadata` block in the profile config drives the Metanorma document header:
-
-```yaml
-document_metadata:
-  doc_number: "24-nwsviz"
-  doc_subtype: implementation
-  copyright_year: 2026
-  editors:
-    - Shane Mill
-  submitting_orgs:
-    - NOAA/NWS/MDL
-  keywords:
-    - ogcdoc
-    - OGC API
-    - EDR
-    - NWSViz
-    - service profile
-  external_id: http://www.opengis.net/doc/dp/ogcapi-edr-nwsviz/1.0
-```
-
-Produces `my_profile/document.pdf` — a fully compliant OGC `draft-standard` PDF with Abstract, Preface, Scope, Conformance, References, Terms, Requirements class, and normative Abstract Test Suite annex.
+The `document_metadata` block drives the Metanorma document header (see the reference below). Produces `my_profile/document.pdf` — an OGC `draft-standard` PDF with Abstract, Preface, Scope, Conformance, References, Terms, Requirements class, and a normative Abstract Test Suite annex.
 
 ### 4. Validate Against a Live Server
 
 ```bash
-ogc-edr-profile validate-server \
+oapi-profile-builder validate-server \
   --config my_profile.yaml \
-  --url https://edr-api-desi-c.mdl.nws.noaa.gov \
+  --url https://your-edr-server.example.com \
   --max-examples 3
 ```
 
-Results:
-
-```
-Operations:  100 selected / 106 total
-Tested:      47
-Test cases:  1002 generated, 1002 passed
-
-No issues found in 49.51s
-```
-
-Use `--stateful` to additionally test job lifecycle endpoints (`/jobs/{jobId}`, `DELETE /jobs/{jobId}`) via POST `/execution` chaining.
-
-Add `collection_examples` to your config to supply real `instanceId` values for schemathesis path parameters:
+Use `--stateful` to additionally test job lifecycle endpoints (`/jobs/{jobId}`, `DELETE /jobs/{jobId}`) via POST `/execution` chaining. Add `collection_examples` to your config to supply real `instanceId` values for schemathesis path parameters:
 
 ```yaml
 collection_examples:
   my_collection:
-    instanceId: "2025-04-02T00:00:00Z"
+    instanceId: "2026-04-02T00:00:00Z"
 ```
 
 ### 5. OGC CITE Conformance Testing
 
-Run the official OGC API - EDR Part 1 conformance test suite (ets-ogcapi-edr10):
+Run the official OGC API - EDR Part 1 conformance suite (ets-ogcapi-edr10):
 
 ```bash
-ogc-edr-profile cite-test \
-  --url https://edr-api-desi-c.mdl.nws.noaa.gov \
+oapi-profile-builder cite-test \
+  --url https://your-edr-server.example.com \
   --report ./cite_results
 ```
 
-Results:
+For OGC API - Features:
 
+```bash
+oapi-profile-builder cite-test-features \
+  --url https://your-edr-server.example.com \
+  --report ./cite_features_results
 ```
-OGC API - EDR CITE Results
-  Passed:  76/84
-  Failed:  0
-  Skipped: 8
-
-✓ All CITE tests passed.
-```
-
-The tool automatically:
-- Clones and builds ets-ogcapi-edr10 from GitHub on first run
-- Caches Docker image (`ogccite/ets-ogcapi-edr10:local`) for subsequent runs
-- Runs TestNG tests via `docker exec`
-- Supports localhost testing with `--network host` mode
-- Generates JSON report with detailed test results
-
-The skipped tests are optional features not implemented by the server.
 
 ---
 
@@ -186,38 +153,54 @@ The skipped tests are optional features not implemented by the server.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | `string` | yes | Lowercase identifier using only `a-z`, `0-9`, `_`. Used in OGC URIs and OpenAPI `operationId`s. e.g. `water_gauge` |
-| `title` | `string` | yes | Human-readable profile title |
-| `version` | `string` | no | Profile version. Defaults to `1.0` |
-| `description` | `string` | no | Human-readable description of the service profile. Surfaces in the OpenAPI `info.description` and the landing page response schema |
-| `keywords` | `list[string]` | no | Service-level keywords describing what this profile provides (e.g. query types, parameter names, domain terms). Surfaces in `info.x-keywords` and the landing page response schema. Distinct from `document_metadata.keywords`, which are for the OGC PDF header |
-| `server_url` | `string` | no | Base URL of the live server. Populates the OpenAPI `servers` block |
-| `allow_post_queries` | `bool` | no | When `true`, generates `POST` alongside `GET` for all EDR data query endpoints. Can be overridden per-collection via `post_queries`. Defaults to `false` |
-| `collections` | `list` | yes | One or more EDR collections (see below) |
-| `processes` | `list` | no | OGC API Processes to include in the OpenAPI (see below) |
-| `requirements` | `list` | no | Normative requirements (see below) |
-| `abstract_tests` | `list` | no | Conformance tests — each must reference a valid requirement `id` (see below) |
-| `pubsub` | `object` | no | OGC API - EDR Part 2 PubSub configuration (see below) |
-| `collection_examples` | `object` | no | Map of collection id → example parameter values (e.g. `instanceId`) for server validation |
-| `document_metadata` | `object` | no | Metanorma document header fields for PDF compilation (see below) |
+| `name` | string | yes | Lowercase `a-z 0-9 _`. Drives OGC URIs and OpenAPI `operationId`s |
+| `title` | string | yes | Human-readable profile title |
+| `version` | string | no | Defaults to `1.0` |
+| `description` | string | no | Surfaces in OpenAPI `info.description` and the landing page schema |
+| `keywords` | list | no | Service-level keywords. Surfaces in `info.x-keywords`. Distinct from `document_metadata.keywords` |
+| `server_url` | string | no | Documentation only — not written to the profile OpenAPI |
+| `provider` | object | no | Service provider / responsible party (see below) |
+| `classification` | object | no | Security classification (`level` + `system`) (see below) |
+| `metadata_date` | string | no | Metadata update date (ISO 8601). Surfaces as `info.x-metadata-date` |
+| `resource_service_publish_date` | string | no | Resource publication date (ISO 8601). Surfaces as `info.x-resource-publish-date` |
+| `resource_default_locale` | string | no | Default locale (e.g. `eng`). Surfaces as `info.x-default-locale` |
+| `allow_post_queries` | bool | no | When `true`, generate `POST` alongside `GET` for all EDR data queries. Defaults to `false` |
+| `collections` | list | yes | One or more EDR collections (see below) |
+| `required_conformance_classes` | list | no | Conformance classes implementations must declare. Defaults to EDR Core |
+| `extent_requirements` | object | no | Profile-level CRS/TRS/VRS constraints (see below) |
+| `output_formats` | list | no | Format name → media type + schema ref mappings |
+| `spec_uri_base` | string | no | Base URI for requirement/conformance identifiers. Defaults to the OGC EDR Part 3 namespace; override for another SDO (e.g. DGIWG) |
+| `collection_id_pattern` | string | no | Regex all collection IDs must match |
+| `parameter_name_pattern` | string | no | Regex all `parameter_names` keys must match |
+| `parameter_schema` | object | no | JSON Schema for parameter objects — replaces the default in the generated OpenAPI |
+| `processes` | list | no | OGC API Processes to expose in the OpenAPI |
+| `requirements` | list | no | Normative requirements for the AsciiDoc/PDF |
+| `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id` |
+| `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
+| `collection_examples` | object | no | `{collectionId: {instanceId: "..."}}` — used by `validate-server` |
+| `document_metadata` | object | no | Metanorma PDF header (see below) |
 
 ---
 
 ### `collections[]`
 
-Each collection uses the [edr-pydantic](https://github.com/KNMI/edr-pydantic) `Collection` schema — the same model an EDR server returns at `/collections/{id}`. Key fields:
+Each collection uses the [edr-pydantic](https://github.com/KNMI/edr-pydantic) `Collection` schema. Key fields:
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `id` | `string` | yes | Collection identifier |
-| `title` | `string` | no | Human-readable collection name |
-| `description` | `string` | no | Collection description |
-| `links` | `list` | yes | At minimum a `self` link |
-| `extent.spatial.bbox` | `list` | yes | Bounding box as `[[minLon, minLat, maxLon, maxLat]]` |
-| `extent.spatial.crs` | `string` | yes | CRS URI, typically `http://www.opengis.net/def/crs/OGC/1.3/CRS84` |
-| `data_queries` | `object` | no | Which EDR query types this collection supports |
-| `output_formats` | `list` | no | Supported output format labels e.g. `GeoJSON`, `CoverageJSON` |
-| `parameter_names` | `object` | no | Map of parameter id → `Parameter` object |
+| Field | Required | Description |
+|---|---|---|
+| `id` | yes | Collection identifier |
+| `title` / `description` / `keywords` | no | Human-readable metadata |
+| `links` | yes | At minimum a `self` link |
+| `extent.spatial.bbox` | yes | `[[minLon, minLat, maxLon, maxLat]]` |
+| `extent.spatial.crs` | yes | CRS URI — validated against `extent_requirements` |
+| `extent.temporal` | no | `interval`, `values`, `trs` |
+| `extent.vertical` | no | `interval`, `values`, `vrs` |
+| `crs` | no | Full list of CRS values the collection supports |
+| `output_formats` | no | Format names this collection supports |
+| `data_queries` | no | EDR query types (see below) |
+| `parameter_names` | no | Map of parameter id → Parameter object (each needs `unit` + `observedProperty`) |
+
+`provider`, `classification`, `metadata_date`, `resource_service_publish_date`, and `resource_default_locale` may also be set per-collection to override the profile-root value for that collection.
 
 #### `data_queries`
 
@@ -225,49 +208,154 @@ Supported keys: `items` · `position` · `area` · `radius` · `cube` · `trajec
 
 ```yaml
 data_queries:
-  position:
+  cube:
     link:
-      href: https://example.com/collections/water_gauge/position
+      href: https://example.com/collections/obs/cube
       rel: data
       variables:
-        query_type: position
-        output_formats:
-          - CoverageJSON
-  items:
+        query_type: cube
+        output_formats: [CoverageJSON, GeoTIFF]
+        # Response format used when `f` is omitted. Must be one of output_formats.
+        # Sets the `default` on the generated OpenAPI `f` parameter for this query.
+        default_output_format: GeoTIFF
+        # Per-query CRS. Either `crs` (shorthand list) or `crs_details`
+        # (objects with optional `wkt`). Validated against supported_crs.
+        crs:
+          - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+  radius:
     link:
-      href: https://example.com/collections/water_gauge/items
+      href: https://example.com/collections/obs/radius
       rel: data
       variables:
-        query_type: items
-        output_formats:
-          - GeoJSON
+        query_type: radius
+        output_formats: [CoverageJSON]
+        within_units: [m, km]
+        crs_details:
+          - crs: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+          - crs: "http://www.opengis.net/def/crs/EPSG/0/4326"
 ```
 
-#### `parameter_names`
+---
+
+### `extent_requirements`
+
+Constrains CRS, TRS, and VRS across all collections. Validated at build time and embedded in the generated OpenAPI as `enum`/`pattern` constraints.
+
+- `extent_crs` / `extent_trs` / `extent_vrs` — constrain the **single value** used to express the extent (`extent.spatial.crs`, `extent.temporal.trs`, `extent.vertical.vrs`).
+- `supported_crs` / `supported_trs` / `supported_vrs` — constrain the **list of values** supported for queries (the top-level `crs` array and per-query `crs`/`crs_details`).
+
+Each constraint uses either `allowed` (exact list) or `pattern` (regex) — not both. At least one of `extent_crs` or `supported_crs` is required.
 
 ```yaml
-parameter_names:
-  gauge_height:
-    type: Parameter
-    observedProperty:
-      label: Gauge Height
-    unit:
-      label: feet
-      symbol: ft
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  extent_crs:
+    allowed:
+      - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+  supported_crs:
+    allowed:
+      - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+      - "http://www.opengis.net/def/crs/EPSG/0/4326"
+  extent_trs:
+    allowed:
+      - "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+```
+
+---
+
+### `output_formats`
+
+Maps format names (used in `data_queries.*.variables.output_formats`) to media types and optional schema references. The `schema_ref` flows into the generated OpenAPI response content — use it to point GeoJSON/CoverageJSON/GeoTIFF at a specific (e.g. DGIWG) schema.
+
+```yaml
+output_formats:
+  - name: CoverageJSON
+    media_type: application/prs.coverage+json
+    schema_ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+  - name: GeoTIFF
+    media_type: image/tiff; application=geotiff
+    schema_ref: https://www.dgiwg.org/std/geotiff-profile/1.0/schema.json
+```
+
+---
+
+### `provider`, `classification`, and provenance metadata
+
+Optional service-level metadata (each may also be set per-collection):
+
+```yaml
+provider:
+  name: Austrian Military
+  url: "https://www.bmlv.gv.at/english/forces/organisation.shtml"
+  contact:
+    email: presse@bmlvs.gv.at
+    phone: "+43 ..."
+    hours: Monday to Friday 08:00 - 17:00
+    instructions: During hours of Service
+    address: "Ministry of Defence, Rossauer Lände 1"
+    postalcode: A-1090
+    city: Vienna
+    country: Austria
+
+classification:
+  level: "NATO RESTRICTED (NR)"
+  system: NATO
+
+metadata_date: "2026-06-25T07:31Z"
+resource_service_publish_date: "2026-06-24T14:10Z"
+resource_default_locale: eng
+```
+
+- `provider` → OpenAPI `info.contact` (name/url/email; other contact fields as `x-` extensions) and a **Point of Contact** section in the document.
+- `classification` → a **security classification banner** in the document Abstract and `info.x-classification`.
+- the date/locale fields → `info.x-metadata-date` / `info.x-resource-publish-date` / `info.x-default-locale`.
+
+The profile OpenAPI is implementation-independent (per EDR Part 3 REQ_publishing), so these describe profile/data provenance, not a specific deployment endpoint.
+
+---
+
+### `spec_uri_base`
+
+By default, requirement/conformance identifiers use the OGC EDR Part 3 namespace:
+
+```
+http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/<name>
+http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/<name>
+```
+
+Set `spec_uri_base` to publish under a different SDO namespace (updates the OpenAPI `x-ogc-profile` link, the requirements/conformance AsciiDoc identifiers, and the conformance section):
+
+```yaml
+spec_uri_base: "https://schemas.dgiwg.org/edr/1.0"
+```
+
+---
+
+### `requirements[]` and `abstract_tests[]`
+
+Requirements drive the AsciiDoc/PDF output. Each requirement needs `id` (lowercase, hyphenated), `statement`, and at least one `parts` entry. Every abstract test `requirement_id` must reference an existing requirement, and its `id` must equal the `requirement_id`.
+
+```yaml
+requirements:
+  - id: position-coveragejson
+    statement: The position query SHALL return CoverageJSON.
+    parts:
+      - The service SHALL provide a /collections/{id}/position endpoint.
+      - The response Content-Type SHALL be application/prs.coverage+json.
+
+abstract_tests:
+  - id: position-coveragejson
+    requirement_id: position-coveragejson
+    steps:
+      - Send GET request to /collections/{id}/position?coords=POINT(lon lat).
+      - Verify the response Content-Type is application/prs.coverage+json.
 ```
 
 ---
 
 ### `processes[]`
 
-OGC API Processes to expose in the generated OpenAPI. Each entry produces `/processes/{id}` and `/processes/{id}/execution` paths, plus `/processes`, `/jobs`, `/jobs/{jobId}`, and `/jobs/{jobId}/results`.
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `id` | `string` | yes | Process identifier e.g. `edr-zarr-difference` |
-| `title` | `string` | no | Human-readable process name |
-| `description` | `string` | no | Process description |
-| `output_content` | `object` | no | OpenAPI content map for the 200 response. Defaults to `application/json` |
+Adds OGC API Processes paths. Each entry produces `/processes/{id}` and `/processes/{id}/execution`, plus `/processes`, `/jobs`, `/jobs/{jobId}`, and `/jobs/{jobId}/results`.
 
 ```yaml
 processes:
@@ -282,58 +370,18 @@ processes:
 
 ---
 
-### `requirements[]`
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `id` | `string` | yes | Lowercase, hyphen-separated. Must match `^[a-z0-9][a-z0-9\-]*$` |
-| `statement` | `string` | yes | One-sentence normative statement |
-| `parts` | `list[string]` | yes | One or more SHALL/MUST clauses |
-
-```yaml
-requirements:
-  - id: position-coveragejson
-    statement: The position query SHALL return CoverageJSON.
-    parts:
-      - The service SHALL provide a /collections/{id}/position endpoint.
-      - The response Content-Type SHALL be application/prs.coverage+json.
-```
-
----
-
-### `abstract_tests[]`
-
-Every `requirement_id` must match an existing requirement `id` — the model validator will reject the profile if not.
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `id` | `string` | yes | Must equal `requirement_id` |
-| `requirement_id` | `string` | yes | The `id` of the requirement this test validates |
-| `steps` | `list[string]` | yes | Ordered test steps |
-
-```yaml
-abstract_tests:
-  - id: position-coveragejson
-    requirement_id: position-coveragejson
-    steps:
-      - Send GET request to /collections/{id}/position?coords=POINT(lon lat).
-      - Verify the response Content-Type is application/prs.coverage+json.
-```
-
----
-
 ### `pubsub`
 
-When present, an `asyncapi.yaml` is generated.
+When present, generates `asyncapi.yaml`.
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `broker_host` | `string` | `localhost` | Message broker hostname |
-| `broker_port` | `integer` | `5672` | Broker port (1–65535) |
-| `protocol` | `string` | `amqp` | One of `amqp`, `mqtt`, `kafka` |
-| `filters` | `list` | `[]` | Subscription filters |
-
-Each filter: `name` (required), `description` (required), `type` (one of `string`, `number`, `array`, `boolean`, default `string`).
+| `broker_host` | string | `localhost` | Message broker hostname |
+| `broker_port` | integer | `5672` | Broker port (1–65535) |
+| `protocol` | string | `amqp` | One of `amqp`, `mqtt`, `kafka` |
+| `collections` | list | all | Collection IDs that support PubSub |
+| `filters` | list | `[]` | Subscription filters (`name`, `description`, `type`) |
+| `servers` | list | `[]` | Additional server endpoints (e.g. `ws`, `wss`) |
 
 ---
 
@@ -343,21 +391,54 @@ Controls the Metanorma document header when compiling a PDF with `--pdf`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `doc_number` | `string` | yes | OGC document number e.g. `24-nwsviz` |
-| `doc_subtype` | `string` | yes | One of `implementation`, `best-practice`, `engineering-report` |
-| `editors` | `list[string]` | yes | Editor names |
-| `submitting_orgs` | `list[string]` | yes | Submitting organization names |
-| `keywords` | `list[string]` | no | Document keywords |
-| `copyright_year` | `integer` | no | Defaults to current year |
-| `external_id` | `string` | no | OGC external document URI |
+| `doc_number` | string | yes | OGC document number e.g. `24-nwsviz` |
+| `doc_type` | string | no | Metanorma `:doctype:` (default `draft-standard`) |
+| `doc_subtype` | string | no | `implementation` (default), `best-practice`, `engineering-report`, `profile` |
+| `status` | string | no | Metanorma `:status:`/`:docstage:` (e.g. `swg-draft`, `public-rfc`, `approved`) |
+| `editors` | list | no | Editor names |
+| `submitters` | list | no | Structured table rows: `name` + `affiliation` + `role` |
+| `submitting_orgs` | list | no | Submitting organization names (fallback affiliation) |
+| `submission_date` | string | no | `YYYY-MM-DD` → `:received-date:` |
+| `approval_date` | string | no | `YYYY-MM-DD` → `:issued-date:` |
+| `publication_date` | string | no | `YYYY-MM-DD` → `:published-date:` |
+| `notice` | string | no | Notice paragraph rendered in the front matter |
+| `normative_references` | list | no | Extra references: `anchor` + `citation` + `title` |
+| `keywords` | list | no | Document keywords |
+| `copyright_year` | integer | no | Defaults to 2026 |
+| `external_id` | string | no | OGC external document URI |
+
+```yaml
+document_metadata:
+  doc_number: "DGIWG-NWP-RADAR-001"
+  doc_type: draft-standard
+  doc_subtype: implementation
+  status: approved
+  editors:
+    - Jane Smith
+  submitters:
+    - name: Jane Smith
+      affiliation: My Organization
+      role: editor
+  submission_date: "2026-05-01"
+  approval_date: "2026-06-15"
+  publication_date: "2026-07-01"
+  notice: This is a DRAFT standard and is subject to change.
+  normative_references:
+    - anchor: DGIWG-250
+      citation: DGIWG 250
+      title: DGIWG GeoTIFF Profile
+  copyright_year: 2026
+```
+
+The cover-page sub-title is produced by Metanorma from the `doc_type` + `doc_subtype` + `status` combination.
 
 ---
 
 ## Programmatic Use
 
 ```python
-from ogc_edr_profile.models import ServiceProfile
-from ogc_edr_profile.generate import generate
+from oapi_profile_builder.models import ServiceProfile
+from oapi_profile_builder.generate import generate
 from pathlib import Path
 
 profile = ServiceProfile.model_validate(config_dict)
@@ -368,15 +449,16 @@ generate(profile, Path("./output"))
 
 ```
 ├── src/
-│   └── ogc_edr_profile/
+│   └── oapi_profile_builder/
 │       ├── models.py            # Authoritative Pydantic schema
 │       ├── generate.py          # Validated model → OpenAPI, AsyncAPI, AsciiDoc
 │       ├── compile.py           # PDF compilation via metanorma/metanorma Docker image
-│       ├── cite.py              # OGC CITE test suite orchestration
+│       ├── cite.py              # OGC CITE (EDR) test suite orchestration
+│       ├── cite_features.py     # OGC CITE (Features) test suite orchestration
+│       ├── server_validation.py # schemathesis-based live server validation
 │       └── cli.py               # CLI entry point
-├── examples/
-│   ├── water_gauge.yaml         # Minimal example profile config
-│   └── nwsviz_profile.yaml      # Full NWSViz profile: 13 collections, 3 processes, PDF metadata
+├── examples/                    # Example profile configs
+├── generated/                   # Generated artifacts for each example
 ├── profile.schema.json          # Machine-readable JSON Schema for profile configs
 └── pyproject.toml
 ```
@@ -387,15 +469,15 @@ generate(profile, Path("./output"))
 - OGC API - EDR Part 2: PubSub
 - OGC API - EDR Part 3: Service Profiles (draft)
 - OGC API - Processes Part 1
-- OpenAPI 3.0 / AsyncAPI 3.0
+- OpenAPI 3.1 / AsyncAPI 3.0
 - Metanorma/AsciiDoc documentation format
 
 ## License
 
-MIT — See [LICENSE](LICENSE) for details.
+MIT — See [LICENSE](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/LICENSE) for details.
 
 ## Contact
 
 - **Author**: Shane Mill (NOAA/NWS/MDL)
 - **Email**: shane.mill@noaa.gov
-- **Issues**: https://github.com/ShaneMill1/OGC-Service-Profile-Creation/issues
+- **Issues**: https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/issues

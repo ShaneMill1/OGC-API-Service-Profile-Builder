@@ -1,0 +1,11 @@
+[[ats_nwp_radar_profile_query_types]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/profile-query-types
+target:: /req/nwp_radar/profile-query-types
+test-purpose:: Validate that profile query types is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the following data queries are listed - "cube", "items", "radius".
+====

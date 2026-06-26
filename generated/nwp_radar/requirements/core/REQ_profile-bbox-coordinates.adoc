@@ -1,0 +1,9 @@
+[[req_nwp_radar_profile_bbox_coordinates]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-bbox-coordinates
+statement:: The coordinates for the 2D bounding box SHALL be defined in the CRS84 EPSG:4326 (WGS84) for the extent [-180, -90, 180, 90].
+part:: The 2D bounding box boundary SHALL be for the extent [-180, -90, 180, 90].
+part:: The coordinate reference system for the bounding box SHALL be EPSG:4326 (WGS84).
+====

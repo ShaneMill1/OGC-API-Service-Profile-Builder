@@ -5,6 +5,11 @@
   "description": null,
   "keywords": [],
   "server_url": null,
+  "provider": null,
+  "classification": null,
+  "metadata_date": null,
+  "resource_service_publish_date": null,
+  "resource_default_locale": null,
   "collections": [
     {
       "id": "temperature",
@@ -68,7 +73,12 @@
         }
       },
       "distanceunits": null,
-      "post_queries": null
+      "post_queries": null,
+      "classification": null,
+      "provider": null,
+      "metadata_date": null,
+      "resource_service_publish_date": null,
+      "resource_default_locale": null
     }
   ],
   "collection_examples": {},
@@ -106,14 +116,17 @@
       180.0,
       90.0
     ],
-    "allowed_crs": [
-      "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-    ],
-    "crs_pattern": null,
-    "allowed_trs": null,
-    "trs_pattern": null,
-    "allowed_vrs": null,
-    "vrs_pattern": null
+    "extent_crs": {
+      "allowed": [
+        "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+      ],
+      "pattern": null
+    },
+    "extent_trs": null,
+    "extent_vrs": null,
+    "supported_crs": null,
+    "supported_trs": null,
+    "supported_vrs": null
   },
   "output_formats": [
     {
@@ -124,6 +137,7 @@
   ],
   "allow_post_queries": false,
   "collection_id_pattern": null,
+  "spec_uri_base": "http://www.opengis.net/spec/ogcapi-edr-3/1.0",
   "parameter_name_pattern": null,
   "parameter_schema": null
 }

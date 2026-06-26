@@ -1,0 +1,10 @@
+[[req_nws_connect_conformance]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/conformance
+statement:: The service SHALL declare conformance to OGC API - EDR Part 1 Core and Part 2 PubSub.
+part:: The service SHALL provide a /conformance endpoint.
+part:: The response SHALL include http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.
+part:: The response SHALL include http://www.opengis.net/spec/ogcapi-edr-2/1.0/conf/pubsub.
+====

@@ -1,0 +1,8 @@
+[[req_nwp_radar_http_methods]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/http-methods
+statement:: The service SHALL be configured to return data for both GET and POST HTTP Method Requests.
+part:: The service SHALL support both GET and POST HTTP Methods for queries.
+====

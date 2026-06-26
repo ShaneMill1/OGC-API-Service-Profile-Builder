@@ -1,0 +1,19 @@
+[[req_class_nwp_radar]]
+[requirements_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar
+target-type:: NWP Radar Profile Profile Standard
+requirement:: /req/nwp_radar/spatial-extents-crs
+requirement:: /req/nwp_radar/profile-bbox-coordinates
+requirement:: /req/nwp_radar/profile-trs-values
+requirement:: /req/nwp_radar/profile-vrs-values
+requirement:: /req/nwp_radar/profile-keywords
+requirement:: /req/nwp_radar/profile-links
+requirement:: /req/nwp_radar/profile-query-types
+requirement:: /req/nwp_radar/items-endpoint
+requirement:: /req/nwp_radar/cube-endpoint
+requirement:: /req/nwp_radar/radius-endpoint
+requirement:: /req/nwp_radar/profile-nwp-parameters
+requirement:: /req/nwp_radar/http-methods
+====

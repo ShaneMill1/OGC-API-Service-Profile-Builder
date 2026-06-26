@@ -1,0 +1,13 @@
+[[ats_nws_connect_pubsub_websocket]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/pubsub-websocket
+target:: /req/nws_connect/pubsub-websocket
+test-purpose:: Validate that pubsub websocket is correctly implemented.
+test-method::
+step:: Connect to WebSocket endpoint at ws://205.156.8.80:15670.
+step:: Verify connection succeeds and supports AMQP over WebSocket.
+step:: Connect to secure WebSocket endpoint at wss://edr-api-c.mdl.nws.noaa.gov/wifs_wss/.
+step:: Verify connection succeeds and supports AMQP over WebSocket.
+====

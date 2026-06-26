@@ -1,0 +1,9 @@
+[[req_nwp_radar_profile_keywords]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-keywords
+statement:: The following keywords SHALL be included in the collection response: "cube", "radius", "items", "precipitation_amount", "radar".
+part:: The collection keywords array SHALL include "cube", "radius", and "items".
+part:: The collection keywords array SHALL include "precipitation_amount" and "radar".
+====

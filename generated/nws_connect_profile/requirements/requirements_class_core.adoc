@@ -1,0 +1,18 @@
+[[req_class_nws_connect]]
+[requirements_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nws_connect
+target-type:: NWS Connect Service Profile Profile Standard
+requirement:: /req/nws_connect/conformance
+requirement:: /req/nws_connect/collections-endpoint
+requirement:: /req/nws_connect/water-gauge-collection
+requirement:: /req/nws_connect/wwa-collection
+requirement:: /req/nws_connect/cwa-collection
+requirement:: /req/nws_connect/states-collection
+requirement:: /req/nws_connect/items-by-id
+requirement:: /req/nws_connect/pubsub-amqp
+requirement:: /req/nws_connect/pubsub-websocket
+requirement:: /req/nws_connect/pubsub-filters-water-gauge
+requirement:: /req/nws_connect/pubsub-filters-wwa
+====

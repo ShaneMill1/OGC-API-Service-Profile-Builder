@@ -1,0 +1,11 @@
+[[req_nws_connect_pubsub_filters_water_gauge]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/pubsub-filters-water-gauge
+statement:: The water_gauge collection pub/sub SHALL support filtering by flood stages, stations, and WFO.
+part:: Subscriptions SHALL accept flood_stages filter (array of stage values).
+part:: Subscriptions SHALL accept stations filter (comma-separated station IDs or 'all').
+part:: Subscriptions SHALL accept wfo filter (Weather Forecast Office codes).
+part:: Subscriptions SHALL accept email filter for notification delivery.
+====

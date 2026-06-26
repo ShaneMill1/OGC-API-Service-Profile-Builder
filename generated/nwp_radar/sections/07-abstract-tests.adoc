@@ -1,0 +1,17 @@
+[appendix,obligation=normative]
+== Abstract Test Suite
+
+include::../abstract_tests/ATS_class_core.adoc[]
+
+include::../abstract_tests/core/ATS_spatial-extents-crs.adoc[]
+include::../abstract_tests/core/ATS_profile-bbox-coordinates.adoc[]
+include::../abstract_tests/core/ATS_profile-trs-values.adoc[]
+include::../abstract_tests/core/ATS_profile-vrs-values.adoc[]
+include::../abstract_tests/core/ATS_profile-keywords.adoc[]
+include::../abstract_tests/core/ATS_profile-links.adoc[]
+include::../abstract_tests/core/ATS_profile-query-types.adoc[]
+include::../abstract_tests/core/ATS_items-endpoint.adoc[]
+include::../abstract_tests/core/ATS_cube-endpoint.adoc[]
+include::../abstract_tests/core/ATS_radius-endpoint.adoc[]
+include::../abstract_tests/core/ATS_profile-nwp-parameters.adoc[]
+include::../abstract_tests/core/ATS_http-methods.adoc[]

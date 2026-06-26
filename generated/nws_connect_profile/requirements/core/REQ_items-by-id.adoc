@@ -1,0 +1,10 @@
+[[req_nws_connect_items_by_id]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/items-by-id
+statement:: All collections SHALL support retrieval of individual features by ID.
+part:: Each collection SHALL provide a /collections/{collectionId}/items/{featureId} endpoint.
+part:: The response SHALL return a single GeoJSON feature.
+part:: The response SHALL return 404 if the feature does not exist.
+====

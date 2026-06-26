@@ -1,0 +1,1027 @@
+openapi: 3.1.0
+info:
+  title: NWP Radar Profile
+  version: '1.0'
+  description: 'Service profile for DGIWG NWP radar data, providing precipitation
+    amount via OGC API - EDR. Supports cube, radius, and items queries with GET and
+    POST.
+
+    '
+  x-ogc-profile: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar
+  x-keywords:
+  - cube
+  - radius
+  - items
+  - datetime
+  - precipitation_amount
+  - radar
+  contact:
+    name: Austrian Military
+    url: https://www.bmlv.gv.at/english/forces/organisation.shtml
+    email: presse@bmlvs.gv.at
+    x-hours: Monday to Friday 08:00 - 17:00
+    x-instructions: During hours of Service
+    x-address: Ministry of Defence, Kommunikation, Rossauer Lände 1
+    x-postalcode: A-1090
+    x-city: Vienna
+    x-country: Austria
+  x-classification:
+    level: NATO RESTRICTED (NR)
+    system: NATO
+  x-metadata-date: 2026-06-25T07:31Z
+  x-resource-publish-date: 2026-06-24T14:10Z
+  x-default-locale: eng
+servers:
+- url: /
+  description: Placeholder server URL. Per OGC API - EDR Part 3 REQ_publishing, this
+    profile document is implementation-independent. Implementations SHALL substitute
+    their own server URL.
+tags:
+- name: server
+  description: NWP Radar Profile
+- name: nwp_radar_precipitation
+  description: NWP Radar Observations providing precipitation information. Datetime
+    values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+paths:
+  /:
+    get:
+      summary: Landing page
+      description: Landing page
+      operationId: getLandingPage
+      tags:
+      - server
+      parameters:
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: Landing page
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - links
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    contains:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        rel:
+                          const: profile
+                        href:
+                          const: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar
+                  title:
+                    type: string
+                    const: NWP Radar Profile
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                    contains:
+                      enum:
+                      - cube
+                      - radius
+                      - items
+                      - datetime
+                      - precipitation_amount
+                      - radar
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+  /conformance:
+    get:
+      summary: API conformance definition
+      description: API conformance definition
+      operationId: getConformanceDeclaration
+      tags:
+      - server
+      parameters:
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: Conformance classes
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - conformsTo
+                properties:
+                  conformsTo:
+                    type: array
+                    items:
+                      type: string
+                    contains:
+                      enum:
+                      - http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core
+                      - http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections
+                      - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
+                      - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/oas30
+                      - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/html
+                      - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/coveragejson
+                      - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/wkt
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+  /collections:
+    get:
+      summary: Collections
+      description: Collections
+      operationId: getCollections
+      tags:
+      - server
+      parameters:
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: Collections list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+  /openapi:
+    get:
+      summary: OpenAPI definition
+      description: Retrieve the OpenAPI definition document for this API.
+      operationId: getOpenAPI
+      tags:
+      - server
+      parameters:
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: OpenAPI document
+        default:
+          $ref: '#/components/responses/default'
+  /collections/nwp_radar_precipitation:
+    get:
+      summary: Get NWP Radar Collection metadata
+      description: NWP Radar Observations providing precipitation information. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: DescribeNwpRadarPrecipitationCollection
+      tags:
+      - nwp_radar_precipitation
+      parameters:
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                  crs:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                      - https://epsg.org/crs_4326/WGS-84.html
+                      - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - CoverageJSON
+                      - GRIB2
+                      - GeoTIFF
+                      - HDF5
+                      - NetCDF4
+                      - PNG
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                    propertyNames:
+                      type: string
+                      pattern: ^[a-z][a-z0-9_]*$
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs:
+                            type: string
+                            enum:
+                            - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                oneOf:
+                                - type: string
+                                  format: date-time
+                                - type: 'null'
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum:
+                            - http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs:
+                                        type: string
+                                        enum:
+                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                                        - https://epsg.org/crs_4326/WGS-84.html
+                                        - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+                                      wkt:
+                                        type: string
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+  /collections/nwp_radar_precipitation/items:
+    get:
+      summary: query nwp_radar_precipitation by items
+      description: NWP Radar Observations providing precipitation information. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryItemsNwpRadarPrecipitation
+      tags:
+      - nwp_radar_precipitation
+      parameters:
+      - name: bbox
+        in: query
+        description: Bounding box filter
+        schema:
+          type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - name: f
+        in: query
+        required: false
+        description: The optional f parameter indicates the output format which the
+          server shall provide as part of the response document. Defaults to GeoTIFF
+          for this query.
+        schema:
+          type: string
+          enum:
+          - json
+          - html
+          - application/json
+          - application/grib; edition=2
+          - image/tiff; application=geotiff
+          - application/x-hdf
+          - application/netcdf
+          - image/png
+          default: image/tiff; application=geotiff
+        style: form
+        explode: false
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/grib; edition=2:
+              schema:
+                type: object
+            image/tiff; application=geotiff:
+              schema:
+                type: object
+            application/x-hdf:
+              schema:
+                type: object
+            application/netcdf:
+              schema:
+                type: object
+            image/png:
+              schema:
+                $ref: https://w3c.github.io/png/
+    post:
+      summary: query (POST) nwp_radar_precipitation by items
+      description: NWP Radar Observations providing precipitation information. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryPostItemsNwpRadarPrecipitation
+      tags:
+      - nwp_radar_precipitation
+      requestBody:
+        required: true
+        description: Query parameters for items request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bbox:
+                  type: string
+                  description: Bounding box filter
+                datetime:
+                  type: string
+                  description: RFC 3339 datetime or interval
+                parameter-name:
+                  type: string
+                  description: Comma-separated list of parameter names to return
+                z:
+                  type: string
+                  description: Vertical level(s)
+                f:
+                  type: string
+                  description: Response format
+                  default: image/tiff; application=geotiff
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/grib; edition=2:
+              schema:
+                type: object
+            image/tiff; application=geotiff:
+              schema:
+                type: object
+            application/x-hdf:
+              schema:
+                type: object
+            application/netcdf:
+              schema:
+                type: object
+            image/png:
+              schema:
+                $ref: https://w3c.github.io/png/
+  /collections/nwp_radar_precipitation/items/{featureId}:
+    get:
+      summary: Get NWP Radar Collection item by id
+      description: NWP Radar Observations providing precipitation information. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: GetNwpRadarPrecipitationFeature
+      tags:
+      - nwp_radar_precipitation
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: Feature collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    const: FeatureCollection
+                  features:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+  /collections/nwp_radar_precipitation/radius:
+    get:
+      summary: query nwp_radar_precipitation by radius
+      description: NWP Radar Observations providing precipitation information. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryRadiusNwpRadarPrecipitation
+      tags:
+      - nwp_radar_precipitation
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/within.yaml
+      - name: within-units
+        in: query
+        required: true
+        description: Units for the within parameter e.g. km
+        schema:
+          type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - name: f
+        in: query
+        required: false
+        description: The optional f parameter indicates the output format which the
+          server shall provide as part of the response document. Defaults to GeoTIFF
+          for this query.
+        schema:
+          type: string
+          enum:
+          - json
+          - html
+          - application/json
+          - application/grib; edition=2
+          - image/tiff; application=geotiff
+          - application/x-hdf
+          - application/netcdf
+          - image/png
+          default: image/tiff; application=geotiff
+        style: form
+        explode: false
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/grib; edition=2:
+              schema:
+                type: object
+            image/tiff; application=geotiff:
+              schema:
+                type: object
+            application/x-hdf:
+              schema:
+                type: object
+            application/netcdf:
+              schema:
+                type: object
+            image/png:
+              schema:
+                $ref: https://w3c.github.io/png/
+    post:
+      summary: query (POST) nwp_radar_precipitation by radius
+      description: NWP Radar Observations providing precipitation information. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryPostRadiusNwpRadarPrecipitation
+      tags:
+      - nwp_radar_precipitation
+      requestBody:
+        required: true
+        description: Query parameters for radius request
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - coords
+              - within
+              - within-units
+              properties:
+                coords:
+                  type: string
+                  description: WKT Point geometry
+                within:
+                  type: number
+                  description: Radius distance
+                within-units:
+                  type: string
+                  description: Units for the within parameter (e.g. km)
+                datetime:
+                  type: string
+                  description: RFC 3339 datetime or interval
+                parameter-name:
+                  type: string
+                  description: Comma-separated list of parameter names to return
+                z:
+                  type: string
+                  description: Vertical level(s)
+                f:
+                  type: string
+                  description: Response format
+                  default: image/tiff; application=geotiff
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/grib; edition=2:
+              schema:
+                type: object
+            image/tiff; application=geotiff:
+              schema:
+                type: object
+            application/x-hdf:
+              schema:
+                type: object
+            application/netcdf:
+              schema:
+                type: object
+            image/png:
+              schema:
+                $ref: https://w3c.github.io/png/
+  /collections/nwp_radar_precipitation/cube:
+    get:
+      summary: query nwp_radar_precipitation by cube
+      description: NWP Radar Observations providing precipitation information. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryCubeNwpRadarPrecipitation
+      tags:
+      - nwp_radar_precipitation
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/bbox.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - name: f
+        in: query
+        required: false
+        description: The optional f parameter indicates the output format which the
+          server shall provide as part of the response document. Defaults to GeoTIFF
+          for this query.
+        schema:
+          type: string
+          enum:
+          - json
+          - html
+          - application/json
+          - application/grib; edition=2
+          - image/tiff; application=geotiff
+          - application/x-hdf
+          - application/netcdf
+          - image/png
+          default: image/tiff; application=geotiff
+        style: form
+        explode: false
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/grib; edition=2:
+              schema:
+                type: object
+            image/tiff; application=geotiff:
+              schema:
+                type: object
+            application/x-hdf:
+              schema:
+                type: object
+            application/netcdf:
+              schema:
+                type: object
+            image/png:
+              schema:
+                $ref: https://w3c.github.io/png/
+    post:
+      summary: query (POST) nwp_radar_precipitation by cube
+      description: NWP Radar Observations providing precipitation information. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryPostCubeNwpRadarPrecipitation
+      tags:
+      - nwp_radar_precipitation
+      requestBody:
+        required: true
+        description: Query parameters for cube request
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - bbox
+              properties:
+                bbox:
+                  type: array
+                  description: Bounding box [minLon, minLat, maxLon, maxLat]
+                  items:
+                    type: number
+                  minItems: 4
+                  maxItems: 6
+                datetime:
+                  type: string
+                  description: RFC 3339 datetime or interval
+                parameter-name:
+                  type: string
+                  description: Comma-separated list of parameter names to return
+                z:
+                  type: string
+                  description: Vertical level(s)
+                f:
+                  type: string
+                  description: Response format
+                  default: image/tiff; application=geotiff
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/grib; edition=2:
+              schema:
+                type: object
+            image/tiff; application=geotiff:
+              schema:
+                type: object
+            application/x-hdf:
+              schema:
+                type: object
+            application/netcdf:
+              schema:
+                type: object
+            image/png:
+              schema:
+                $ref: https://w3c.github.io/png/
+components:
+  parameters:
+    f:
+      name: f
+      in: query
+      required: false
+      description: The optional f parameter indicates the output format which the
+        server shall provide as part of the response document.
+      schema:
+        type: string
+        enum:
+        - json
+        - html
+        - application/json
+        - application/grib; edition=2
+        - image/tiff; application=geotiff
+        - application/x-hdf
+        - application/netcdf
+        - image/png
+      style: form
+      explode: false
+    lang:
+      name: lang
+      in: query
+      required: false
+      description: The optional lang parameter instructs the server return a response
+        in a certain language, if supported.
+      schema:
+        type: string
+        default: en-US
+        enum:
+        - en-US
+  responses:
+    default:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            type: object

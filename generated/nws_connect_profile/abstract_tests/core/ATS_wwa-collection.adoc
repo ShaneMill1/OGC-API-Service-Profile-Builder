@@ -1,0 +1,15 @@
+[[ats_nws_connect_wwa_collection]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/wwa-collection
+target:: /req/nws_connect/wwa-collection
+test-purpose:: Validate that wwa collection is correctly implemented.
+test-method::
+step:: Send GET request to /collections/wwa.
+step:: Verify response contains collection metadata.
+step:: Send GET request to /collections/wwa/items?limit=10.
+step:: Verify response Content-Type is application/geo+json.
+step:: Verify each feature contains CAP_info_event, CAP_info_severity, CAP_info_urgency, and CAP_status properties.
+step:: Verify each feature geometry type is Polygon or MultiPolygon.
+====

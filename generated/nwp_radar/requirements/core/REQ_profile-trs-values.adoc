@@ -1,0 +1,9 @@
+[[req_nwp_radar_profile_trs_values]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-trs-values
+statement:: Temporal Reference System (trs) values SHALL be presented in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second according to the time format specified in RFC 3339.
+part:: The service trs SHALL be in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.
+part:: The service trs SHALL be the time format specified in RFC 3339.
+====

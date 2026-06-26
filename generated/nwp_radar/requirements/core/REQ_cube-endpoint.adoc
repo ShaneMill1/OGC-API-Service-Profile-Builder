@@ -1,0 +1,16 @@
+[[req_nwp_radar_cube_endpoint]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/cube-endpoint
+statement:: The service SHALL provide a /collections/nwp_radar_precipitation/cube endpoint.
+part:: The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
+part:: The service SHALL return a default file format of GeoTIFF.
+part:: Each feature SHALL include precipitation_amount property.
+part:: Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.
+part:: The cube data queries SHALL return CoverageJSON that complies with the OGC CoverageJSON standard - https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca
+part:: The cube data queries SHALL return GeoTIFF which complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.
+part:: The cube data queries SHALL return GRIB2 which complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.
+part:: The cube data queries SHALL return HDF5 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.
+part:: The cube data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.
+====

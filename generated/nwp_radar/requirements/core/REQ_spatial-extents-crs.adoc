@@ -1,0 +1,10 @@
+[[req_nwp_radar_spatial_extents_crs]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/spatial-extents-crs
+statement:: The coordinates for the bounding box SHALL be defined in the CRS EPSG:4326 (WGS84) with geographical latitude, then longitude, in decimal degrees.
+part:: The service bbox SHALL have a geometry defined in WGS84.
+part:: The service bounding box coordinates SHALL be returned with geographical latitude, then longitude.
+part:: The service bounding box coordinates SHALL be returned in decimal degrees.
+====

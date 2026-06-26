@@ -1,0 +1,9 @@
+[[req_nwp_radar_profile_links]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-links
+statement:: All links objects SHALL have href, rel, title and type attributes.
+part:: Each link object SHALL include a non-empty href attribute.
+part:: Each link object SHALL include rel, title and type attributes.
+====

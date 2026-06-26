@@ -1,0 +1,10 @@
+[[req_nwp_radar_profile_nwp_parameters]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp_radar/profile-nwp-parameters
+statement:: The following parameters SHALL be supported: datetime, precipitation_amount.
+part:: The parameter datetime SHALL be in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.
+part:: The parameter datetime SHALL be the time format specified in RFC 3339.
+part:: The parameter precipitation_amount SHALL return values in kg m-2 units.
+====

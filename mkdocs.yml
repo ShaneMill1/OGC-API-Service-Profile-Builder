@@ -16,6 +16,7 @@ theme:
 
 nav:
   - Home: index.md
+  - Feedback Status: dgiwg-feedback-status.md
 
 markdown_extensions:
   - pymdownx.highlight:

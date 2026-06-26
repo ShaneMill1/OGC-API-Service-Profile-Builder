@@ -1,0 +1,10 @@
+[[req_nws_connect_pubsub_websocket]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/pubsub-websocket
+statement:: The service SHALL support WebSocket pub/sub endpoints for browser clients.
+part:: The service SHALL provide a WebSocket endpoint at ws://205.156.8.80:15670 for local development.
+part:: The service SHALL provide a secure WebSocket endpoint at wss://edr-api-c.mdl.nws.noaa.gov/wifs_wss/ for production.
+part:: WebSocket connections SHALL support AMQP protocol over WebSocket.
+====

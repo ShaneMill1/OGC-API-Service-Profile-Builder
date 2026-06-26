@@ -1,0 +1,15 @@
+[[ats_nws_connect_items_by_id]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/items-by-id
+target:: /req/nws_connect/items-by-id
+test-purpose:: Validate that items by id is correctly implemented.
+test-method::
+step:: Send GET request to /collections/water_gauge/items?limit=1.
+step:: Extract the id of the first feature.
+step:: Send GET request to /collections/water_gauge/items/{featureId}.
+step:: Verify response is a single GeoJSON feature with matching id.
+step:: Send GET request to /collections/water_gauge/items/nonexistent.
+step:: Verify response status is 404.
+====

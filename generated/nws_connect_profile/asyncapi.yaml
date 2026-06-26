@@ -1,0 +1,132 @@
+asyncapi: 3.0.0
+info:
+  title: NWS Connect Service Profile AsyncAPI
+  version: '1.0'
+servers:
+  production:
+    host: edr-api-desi-c.mdl.nws.noaa.gov:5672
+    protocol: amqp
+  amqp_websocket_local:
+    description: AMQP WebSocket endpoint (local development)
+    host: 205.156.8.80:15670
+    protocol: ws
+    security: []
+    variables:
+      port:
+        default: '15670'
+        enum:
+        - '15670'
+  amqp_websocket_secure:
+    description: AMQP WebSocket endpoint (production)
+    host: edr-api-c.mdl.nws.noaa.gov
+    protocol: wss
+    security: []
+    pathname: /wifs_wss/
+channels:
+  water_gauge_notifications:
+    address: collections/water_gauge/items/#
+    description: Real-time notifications for water_gauge
+    messages:
+      water_gaugeObservation:
+        $ref: '#/components/messages/water_gaugeObservation'
+    x-ogc-subscription:
+      filters:
+      - name: flood_stages
+        description: Alert for selected flood stages (below_action, action, minor,
+          moderate, major)
+        schema:
+          type: array
+      - name: stations
+        description: Comma-separated station IDs or 'all' for all stations
+        schema:
+          type: string
+      - name: wfo
+        description: Weather Forecast Office codes (e.g., PHI, AKQ, OKX)
+        schema:
+          type: string
+      - name: email
+        description: Email address for notifications
+        schema:
+          type: string
+  wwa_notifications:
+    address: collections/wwa/items/#
+    description: Real-time notifications for wwa
+    messages:
+      wwaObservation:
+        $ref: '#/components/messages/wwaObservation'
+    x-ogc-subscription:
+      filters:
+      - name: event_types
+        description: Weather event types to subscribe to (e.g., Tornado Warning, Flood
+          Watch)
+        schema:
+          type: array
+      - name: state
+        description: Filter by state, or leave blank for all states
+        schema:
+          type: string
+      - name: cwa
+        description: Filter by County Warning Area code
+        schema:
+          type: string
+      - name: email
+        description: Email address for notifications
+        schema:
+          type: string
+operations:
+  receive_water_gauge_update:
+    action: receive
+    channel:
+      $ref: '#/channels/water_gauge_notifications'
+    messages:
+    - $ref: '#/channels/water_gauge_notifications/messages/water_gaugeObservation'
+  receive_wwa_update:
+    action: receive
+    channel:
+      $ref: '#/channels/wwa_notifications'
+    messages:
+    - $ref: '#/channels/wwa_notifications/messages/wwaObservation'
+components:
+  messages:
+    water_gaugeObservation:
+      payload:
+        type: object
+        required:
+        - type
+        - properties
+        properties:
+          type:
+            type: string
+            const: Feature
+          properties:
+            type: object
+            required:
+            - id
+            - timestamp
+            properties:
+              id:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+    wwaObservation:
+      payload:
+        type: object
+        required:
+        - type
+        - properties
+        properties:
+          type:
+            type: string
+            const: Feature
+          properties:
+            type: object
+            required:
+            - id
+            - timestamp
+            properties:
+              id:
+                type: string
+              timestamp:
+                type: string
+                format: date-time

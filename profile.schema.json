@@ -58,8 +58,37 @@
       "title": "Category",
       "type": "object"
     },
+    "Classification": {
+      "description": "Security classification metadata (e.g. for DGIWG / military profiles).",
+      "properties": {
+        "level": {
+          "description": "Classification level, e.g. 'NATO RESTRICTED (NR)'",
+          "title": "Level",
+          "type": "string"
+        },
+        "system": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Classification system, e.g. 'NATO'",
+          "title": "System"
+        }
+      },
+      "required": [
+        "level"
+      ],
+      "title": "Classification",
+      "type": "object"
+    },
     "Collection": {
       "additionalProperties": false,
+      "description": "EDR Collection with a null-aware temporal extent and optional parameter_names.\n\nDifferences from edr_pydantic.collections.Collection:\n\n- extent uses ExtentWithNullBounds so open-ended intervals like\n  [\"2020-01-01T00:00:00Z\", null] are accepted (spec-compliant).\n\n- parameter_names is Optional (default None). edr-pydantic marks it as\n  required, but OGC API - EDR Part 3 allows a profile to define the\n  *schema* for parameter objects via parameter_schema without mandating\n  any specific parameter names in the profile document itself.\n\n- post_queries controls whether POST operations are generated for this\n  collection's data query endpoints. None means inherit the profile-level\n  allow_post_queries default. Set to True or False to override per-collection.",
       "properties": {
         "id": {
           "title": "Id",
@@ -112,7 +141,15 @@
           "type": "array"
         },
         "extent": {
-          "$ref": "#/$defs/Extent"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtentWithNullBounds"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "data_queries": {
           "anyOf": [
@@ -156,7 +193,16 @@
           "title": "Output Formats"
         },
         "parameter_names": {
-          "$ref": "#/$defs/RootModel_Dict_str__Parameter__"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RootModel_Dict_str__Parameter__"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Map of parameter id \u2192 Parameter object. Optional \u2014 omit when using parameter_schema to describe the structure without mandating specific parameter names."
         },
         "distanceunits": {
           "anyOf": [
@@ -172,13 +218,82 @@
           ],
           "default": null,
           "title": "Distanceunits"
+        },
+        "post_queries": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override the profile-level allow_post_queries setting for this collection. True generates POST alongside GET for all data query endpoints. False suppresses POST even if allow_post_queries is True at profile level. Omit (null) to inherit the profile-level default.",
+          "title": "Post Queries"
+        },
+        "classification": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Classification"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Provider"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metadata_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metadata Date"
+        },
+        "resource_service_publish_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resource Service Publish Date"
+        },
+        "resource_default_locale": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resource Default Locale"
         }
       },
       "required": [
         "id",
-        "links",
-        "extent",
-        "parameter_names"
+        "links"
       ],
       "title": "Collection",
       "type": "object"
@@ -252,6 +367,42 @@
         "within_units"
       ],
       "title": "CorridorVariables",
+      "type": "object"
+    },
+    "CrsConstraint": {
+      "description": "An enum or regex constraint on a CRS/TRS/VRS value or list.\n\nExactly one of `allowed` or `pattern` must be set.",
+      "properties": {
+        "allowed": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enumerated list of accepted values",
+          "title": "Allowed"
+        },
+        "pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Regular expression that accepted values must match",
+          "title": "Pattern"
+        }
+      },
+      "title": "CrsConstraint",
       "type": "object"
     },
     "CubeVariables": {
@@ -475,15 +626,49 @@
           "title": "Doc Number",
           "type": "string"
         },
+        "doc_type": {
+          "default": "draft-standard",
+          "description": "Metanorma OGC :doctype: value (e.g. 'draft-standard', 'standard', 'best-practice', 'engineering-report'). Drives the cover-page document type.",
+          "title": "Doc Type",
+          "type": "string"
+        },
         "doc_subtype": {
           "default": "implementation",
           "enum": [
             "implementation",
             "best-practice",
-            "engineering-report"
+            "engineering-report",
+            "profile"
           ],
           "title": "Doc Subtype",
           "type": "string"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "draft",
+                "work-item-draft",
+                "swg-draft",
+                "oab-review",
+                "public-rfc",
+                "tc-vote",
+                "approved",
+                "published",
+                "deprecated",
+                "rescinded",
+                "retired",
+                "legacy"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Metanorma OGC :status:/:docstage: value (e.g. 'swg-draft', 'approved'). Combined with doc_type/doc_subtype this produces the cover-page sub-title.",
+          "title": "Status"
         },
         "editors": {
           "items": {
@@ -499,6 +684,14 @@
           "title": "Submitting Orgs",
           "type": "array"
         },
+        "submitters": {
+          "description": "Structured submitters table (name + affiliation + role) for page iv. When provided, takes precedence over the editors/submitting_orgs fallback.",
+          "items": {
+            "$ref": "#/$defs/Submitter"
+          },
+          "title": "Submitters",
+          "type": "array"
+        },
         "keywords": {
           "items": {
             "type": "string"
@@ -510,6 +703,66 @@
           "default": 2026,
           "title": "Copyright Year",
           "type": "integer"
+        },
+        "submission_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Submission date (YYYY-MM-DD)",
+          "title": "Submission Date"
+        },
+        "approval_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Approval date (YYYY-MM-DD)",
+          "title": "Approval Date"
+        },
+        "publication_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Publication date (YYYY-MM-DD)",
+          "title": "Publication Date"
+        },
+        "notice": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Custom notice text rendered in the document front matter. Note: the OGC cover-page legal notice itself is generated by Metanorma from doc_type/status; this field adds a notice paragraph in the preface.",
+          "title": "Notice"
+        },
+        "normative_references": {
+          "description": "Additional normative references appended to the References section.",
+          "items": {
+            "$ref": "#/$defs/NormativeReference"
+          },
+          "title": "Normative References",
+          "type": "array"
         },
         "external_id": {
           "anyOf": [
@@ -694,7 +947,7 @@
       "type": "object"
     },
     "ExtentRequirements": {
-      "description": "Profile-level extent restrictions per OGC API - EDR Part 3.",
+      "description": "Profile-level extent restrictions per OGC API - EDR Part 3.\n\nCRS/TRS/VRS constraints are split into two distinct concerns:\n\n- ``extent_crs`` / ``extent_trs`` / ``extent_vrs`` \u2014 constrain the single\n  CRS/TRS/VRS value used to *express* the extent (``extent.spatial.crs``,\n  ``extent.temporal.trs``, ``extent.vertical.vrs``).  Typically this is\n  just CRS84 / Gregorian.\n\n- ``supported_crs`` / ``supported_trs`` / ``supported_vrs`` \u2014 constrain\n  the list of CRS/TRS/VRS values the service *supports* for queries\n  (the top-level ``crs`` array and ``data_queries.*.variables.crs_details``).\n  This is usually broader than the extent CRS.",
       "properties": {
         "minimum_bbox": {
           "description": "Minimum spatial bounds [minLon, minLat, maxLon, maxLat]",
@@ -706,98 +959,134 @@
           "title": "Minimum Bbox",
           "type": "array"
         },
-        "allowed_crs": {
+        "extent_crs": {
           "anyOf": [
             {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
+              "$ref": "#/$defs/CrsConstraint"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "description": "Enumerated list of valid CRS values",
-          "title": "Allowed Crs"
+          "description": "Constraint on extent.spatial.crs \u2014 the CRS the extent is expressed in"
         },
-        "crs_pattern": {
+        "extent_trs": {
           "anyOf": [
             {
-              "type": "string"
+              "$ref": "#/$defs/CrsConstraint"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "description": "Regular expression defining valid CRS string patterns",
-          "title": "Crs Pattern"
+          "description": "Constraint on extent.temporal.trs \u2014 the TRS the temporal extent is expressed in"
         },
-        "allowed_trs": {
+        "extent_vrs": {
           "anyOf": [
             {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
+              "$ref": "#/$defs/CrsConstraint"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "description": "Enumerated list of valid TRS values",
-          "title": "Allowed Trs"
+          "description": "Constraint on extent.vertical.vrs \u2014 the VRS the vertical extent is expressed in"
         },
-        "trs_pattern": {
+        "supported_crs": {
           "anyOf": [
             {
-              "type": "string"
+              "$ref": "#/$defs/CrsConstraint"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "description": "Regular expression defining valid TRS string patterns",
-          "title": "Trs Pattern"
+          "description": "Constraint on the top-level crs array and crs_details \u2014 the CRS values the service supports for data queries. Typically broader than extent_crs."
         },
-        "allowed_vrs": {
+        "supported_trs": {
           "anyOf": [
             {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
+              "$ref": "#/$defs/CrsConstraint"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "description": "Enumerated list of valid VRS values",
-          "title": "Allowed Vrs"
+          "description": "Constraint on supported TRS values for data queries"
         },
-        "vrs_pattern": {
+        "supported_vrs": {
           "anyOf": [
             {
-              "type": "string"
+              "$ref": "#/$defs/CrsConstraint"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "description": "Regular expression defining valid VRS string patterns",
-          "title": "Vrs Pattern"
+          "description": "Constraint on supported VRS values for data queries"
         }
       },
       "required": [
         "minimum_bbox"
       ],
       "title": "ExtentRequirements",
+      "type": "object"
+    },
+    "ExtentWithNullBounds": {
+      "additionalProperties": false,
+      "description": "Extent that uses TemporalWithNullBounds instead of the upstream Temporal.",
+      "properties": {
+        "spatial": {
+          "$ref": "#/$defs/Spatial"
+        },
+        "temporal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TemporalWithNullBounds"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "vertical": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Vertical"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "custom": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Custom"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Custom"
+        }
+      },
+      "required": [
+        "spatial"
+      ],
+      "title": "ExtentWithNullBounds",
       "type": "object"
     },
     "FilterType": {
@@ -971,6 +1260,34 @@
         "duration"
       ],
       "title": "MeasurementType",
+      "type": "object"
+    },
+    "NormativeReference": {
+      "description": "An additional normative/bibliographic reference for the References section.\n\nRendered as a Metanorma bibliography entry of the form\n``* [[[<anchor>,<citation>]]], <title>``.",
+      "properties": {
+        "anchor": {
+          "description": "Cross-reference anchor (letters, digits, dash, underscore), e.g. DGIWG-250",
+          "pattern": "^[A-Za-z0-9_\\-]+$",
+          "title": "Anchor",
+          "type": "string"
+        },
+        "citation": {
+          "description": "Short citation label, e.g. 'DGIWG 250' or 'OGC 19-086r6'",
+          "title": "Citation",
+          "type": "string"
+        },
+        "title": {
+          "description": "Full reference title",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "anchor",
+        "citation",
+        "title"
+      ],
+      "title": "NormativeReference",
       "type": "object"
     },
     "ObservedProperty": {
@@ -1162,6 +1479,146 @@
         "observedProperty"
       ],
       "title": "Parameter",
+      "type": "object"
+    },
+    "Provider": {
+      "description": "Service provider / responsible party (OWS ServiceProvider-like).",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "contact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProviderContact"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Provider",
+      "type": "object"
+    },
+    "ProviderContact": {
+      "description": "Point-of-contact details for the service provider (OWS/ISO-style).",
+      "properties": {
+        "email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Email"
+        },
+        "phone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Phone"
+        },
+        "hours": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hours"
+        },
+        "instructions": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Instructions"
+        },
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "postalcode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Postalcode"
+        },
+        "city": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "City"
+        },
+        "country": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Country"
+        }
+      },
+      "title": "ProviderContact",
       "type": "object"
     },
     "PubSubConfig": {
@@ -1393,6 +1850,45 @@
       "title": "Spatial",
       "type": "object"
     },
+    "Submitter": {
+      "description": "A single entry in the document's submitters table (page iv).\n\nAllows each submitter to carry their own affiliation, rather than sharing\na single organisation across every editor.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "affiliation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Affiliation"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Role annotation shown next to the name, e.g. 'editor' or 'contributor'",
+          "title": "Role"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Submitter",
+      "type": "object"
+    },
     "SubscriptionFilter": {
       "properties": {
         "name": {
@@ -1472,6 +1968,50 @@
         "trs"
       ],
       "title": "Temporal",
+      "type": "object"
+    },
+    "TemporalWithNullBounds": {
+      "additionalProperties": false,
+      "description": "Temporal extent that allows null start/end bounds per OGC API - EDR.",
+      "properties": {
+        "interval": {
+          "items": {
+            "items": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "title": "Interval",
+          "type": "array"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Values",
+          "type": "array"
+        },
+        "trs": {
+          "title": "Trs",
+          "type": "string"
+        }
+      },
+      "required": [
+        "interval",
+        "values",
+        "trs"
+      ],
+      "title": "TemporalWithNullBounds",
       "type": "object"
     },
     "Unit": {
@@ -1611,6 +2151,27 @@
       "title": "Version",
       "type": "string"
     },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Human-readable description of the service profile. Surfaces in the OpenAPI info block and the landing page response.",
+      "title": "Description"
+    },
+    "keywords": {
+      "description": "Service-level keywords describing what this profile provides. Surfaces in the OpenAPI info block (as x-keywords) and the landing page response. Distinct from document_metadata.keywords, which are for the OGC PDF header.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Keywords",
+      "type": "array"
+    },
     "server_url": {
       "anyOf": [
         {
@@ -1623,6 +2184,69 @@
       "default": null,
       "description": "Base URL for implementation (not used in profile OpenAPI per standard)",
       "title": "Server Url"
+    },
+    "provider": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Provider"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Service provider / responsible party. Surfaces in the OpenAPI info.contact block (name/url/email plus x- extensions for phone, address, etc.) and as the document point of contact."
+    },
+    "classification": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Classification"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Security classification of the service/profile (e.g. NATO RESTRICTED). Surfaces as a banner in the generated document and as info.x-classification in the OpenAPI."
+    },
+    "metadata_date": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Date the metadata was last updated (ISO 8601 string). Surfaces as info.x-metadata-date.",
+      "title": "Metadata Date"
+    },
+    "resource_service_publish_date": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Date the resource/service was published (ISO 8601 string). Surfaces as info.x-resource-publish-date.",
+      "title": "Resource Service Publish Date"
+    },
+    "resource_default_locale": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Default locale of the resource (e.g. 'eng'). Surfaces as info.x-default-locale.",
+      "title": "Resource Default Locale"
     },
     "collections": {
       "items": {
@@ -1710,6 +2334,12 @@
       "title": "Output Formats",
       "type": "array"
     },
+    "allow_post_queries": {
+      "default": false,
+      "description": "When True, generate POST operations alongside GET for all EDR data query endpoints (position, area, radius, cube, trajectory, corridor, items, locations). The POST body mirrors the GET query parameters as a JSON object, allowing clients to submit large geometries that would exceed URL length limits. Can be overridden per-collection via the collection's post_queries field.",
+      "title": "Allow Post Queries",
+      "type": "boolean"
+    },
     "collection_id_pattern": {
       "anyOf": [
         {
@@ -1723,6 +2353,12 @@
       "description": "Regex pattern for valid collection IDs",
       "title": "Collection Id Pattern"
     },
+    "spec_uri_base": {
+      "default": "http://www.opengis.net/spec/ogcapi-edr-3/1.0",
+      "description": "Base URI for the requirements class and conformance class identifiers. Defaults to the OGC API - EDR Part 3 namespace. Override this to publish under a different SDO namespace (e.g. a DGIWG location). Used to derive req_uri and conf_uri, which appear in the OpenAPI x-ogc-profile link, the requirements/conformance AsciiDoc identifiers, and the conformance section.",
+      "title": "Spec Uri Base",
+      "type": "string"
+    },
     "parameter_name_pattern": {
       "anyOf": [
         {
@@ -1735,6 +2371,19 @@
       "default": null,
       "description": "Regex pattern that all parameter_names keys must match",
       "title": "Parameter Name Pattern"
+    },
+    "parameter_schema": {
+      "anyOf": [
+        {
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "JSON Schema fragment used as the additionalProperties definition for parameter_names in the generated OpenAPI. Replaces the default parameter schema, allowing full control over required fields, patterns, and custom extension properties (e.g. metocean:standard_name). Must be a valid JSON Schema object.",
+      "title": "Parameter Schema"
     }
   },
   "required": [

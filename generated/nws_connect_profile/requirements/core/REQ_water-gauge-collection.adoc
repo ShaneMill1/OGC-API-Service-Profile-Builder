@@ -1,0 +1,12 @@
+[[req_nws_connect_water_gauge_collection]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/water-gauge-collection
+statement:: The water_gauge collection SHALL provide GeoJSON features with flood stage information.
+part:: The service SHALL provide a /collections/water_gauge endpoint.
+part:: The service SHALL provide a /collections/water_gauge/items endpoint.
+part:: The response Content-Type SHALL be application/geo+json.
+part:: Each feature SHALL include flood_stage, feet_above_stage, and value properties.
+part:: Each feature geometry SHALL be a GeoJSON Point.
+====

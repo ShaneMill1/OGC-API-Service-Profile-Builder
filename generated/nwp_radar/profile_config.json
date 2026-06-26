@@ -1,0 +1,619 @@
+{
+  "name": "nwp_radar",
+  "title": "NWP Radar Profile",
+  "version": "1.0",
+  "description": "Service profile for DGIWG NWP radar data, providing precipitation amount via OGC API - EDR. Supports cube, radius, and items queries with GET and POST.\n",
+  "keywords": [
+    "cube",
+    "radius",
+    "items",
+    "datetime",
+    "precipitation_amount",
+    "radar"
+  ],
+  "server_url": null,
+  "provider": {
+    "name": "Austrian Military",
+    "url": "https://www.bmlv.gv.at/english/forces/organisation.shtml",
+    "contact": {
+      "email": "presse@bmlvs.gv.at",
+      "phone": null,
+      "hours": "Monday to Friday 08:00 - 17:00",
+      "instructions": "During hours of Service",
+      "address": "Ministry of Defence, Kommunikation, Rossauer Lände 1",
+      "postalcode": "A-1090",
+      "city": "Vienna",
+      "country": "Austria"
+    }
+  },
+  "classification": {
+    "level": "NATO RESTRICTED (NR)",
+    "system": "NATO"
+  },
+  "metadata_date": "2026-06-25T07:31Z",
+  "resource_service_publish_date": "2026-06-24T14:10Z",
+  "resource_default_locale": "eng",
+  "collections": [
+    {
+      "id": "nwp_radar_precipitation",
+      "title": "NWP Radar Collection",
+      "description": "NWP Radar Observations providing precipitation information. Datetime values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).",
+      "keywords": [
+        "NWP",
+        "earth observations",
+        "cube",
+        "radius",
+        "items",
+        "datetime",
+        "precipitation_amount",
+        "radar"
+      ],
+      "links": [
+        {
+          "href": "https://example.com/collections/nwp_radar_precipitation",
+          "hreflang": null,
+          "rel": "self",
+          "type": "application/json",
+          "title": "NWP Radar Profile",
+          "length": null,
+          "templated": null,
+          "variables": null
+        }
+      ],
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180.0,
+              -90.0,
+              180.0,
+              90.0
+            ]
+          ],
+          "crs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+        },
+        "temporal": {
+          "interval": [
+            [
+              "2020-01-01T00:00:00Z",
+              null
+            ]
+          ],
+          "values": [
+            "2020-01-01T00:00:00Z/.."
+          ],
+          "trs": "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+        },
+        "vertical": {
+          "interval": [
+            [
+              "0",
+              "0"
+            ]
+          ],
+          "values": [
+            "0"
+          ],
+          "vrs": "https://epsg.org/crs/wkt/id/3855"
+        },
+        "custom": null
+      },
+      "data_queries": {
+        "position": null,
+        "radius": {
+          "link": {
+            "href": "https://example.com/collections/nwp_radar_precipitation/radius",
+            "hreflang": null,
+            "rel": "data",
+            "type": null,
+            "title": null,
+            "length": null,
+            "templated": null,
+            "variables": {
+              "query_type": "radius",
+              "output_formats": [
+                "CoverageJSON",
+                "GRIB2",
+                "GeoTIFF",
+                "HDF5",
+                "NetCDF4",
+                "PNG"
+              ],
+              "default_output_format": "GeoTIFF",
+              "within_units": [
+                "km",
+                "m"
+              ],
+              "crs": [
+                "https://epsg.org/crs_4326/WGS-84.html",
+                "https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html"
+              ]
+            }
+          }
+        },
+        "area": null,
+        "cube": {
+          "link": {
+            "href": "https://example.com/collections/nwp_radar_precipitation/cube",
+            "hreflang": null,
+            "rel": "data",
+            "type": null,
+            "title": null,
+            "length": null,
+            "templated": null,
+            "variables": {
+              "query_type": "cube",
+              "output_formats": [
+                "CoverageJSON",
+                "GRIB2",
+                "GeoTIFF",
+                "HDF5",
+                "NetCDF4",
+                "PNG"
+              ],
+              "default_output_format": "GeoTIFF",
+              "crs": [
+                "https://epsg.org/crs_4326/WGS-84.html",
+                "https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html"
+              ]
+            }
+          }
+        },
+        "trajectory": null,
+        "corridor": null,
+        "locations": null,
+        "items": {
+          "link": {
+            "href": "https://example.com/collections/nwp_radar_precipitation/items",
+            "hreflang": null,
+            "rel": "data",
+            "type": null,
+            "title": null,
+            "length": null,
+            "templated": null,
+            "variables": {
+              "query_type": "items",
+              "output_formats": [
+                "CoverageJSON",
+                "GRIB2",
+                "GeoTIFF",
+                "HDF5",
+                "NetCDF4",
+                "PNG"
+              ],
+              "default_output_format": "GeoTIFF"
+            }
+          }
+        },
+        "instances": null
+      },
+      "crs": [
+        "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+        "https://epsg.org/crs_4326/WGS-84.html",
+        "https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html"
+      ],
+      "output_formats": [
+        "CoverageJSON",
+        "GRIB2",
+        "GeoTIFF",
+        "HDF5",
+        "NetCDF4",
+        "PNG"
+      ],
+      "parameter_names": {
+        "precipitation_amount": {
+          "type": "Parameter",
+          "id": null,
+          "label": null,
+          "description": "Precipitation amount in kg m-2.",
+          "dataType": null,
+          "unit": {
+            "id": null,
+            "label": "Precipitation amount of water in all phases: kilograms per metres squared.",
+            "symbol": {
+              "value": "kg m-2",
+              "type": "https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"
+            }
+          },
+          "observedProperty": {
+            "id": "https://vocab.nerc.ac.uk/standard_name/precipitation_amount",
+            "label": "Precipitation amount of water in all phases",
+            "description": null,
+            "categories": null
+          },
+          "extent": null,
+          "measurementType": null
+        }
+      },
+      "distanceunits": null,
+      "post_queries": null,
+      "classification": null,
+      "provider": null,
+      "metadata_date": null,
+      "resource_service_publish_date": null,
+      "resource_default_locale": null
+    }
+  ],
+  "collection_examples": {},
+  "requirements": [
+    {
+      "id": "spatial-extents-crs",
+      "statement": "The coordinates for the bounding box SHALL be defined in the CRS EPSG:4326 (WGS84) with geographical latitude, then longitude, in decimal degrees.",
+      "parts": [
+        "The service bbox SHALL have a geometry defined in WGS84.",
+        "The service bounding box coordinates SHALL be returned with geographical latitude, then longitude.",
+        "The service bounding box coordinates SHALL be returned in decimal degrees."
+      ]
+    },
+    {
+      "id": "profile-bbox-coordinates",
+      "statement": "The coordinates for the 2D bounding box SHALL be defined in the CRS84 EPSG:4326 (WGS84) for the extent [-180, -90, 180, 90].",
+      "parts": [
+        "The 2D bounding box boundary SHALL be for the extent [-180, -90, 180, 90].",
+        "The coordinate reference system for the bounding box SHALL be EPSG:4326 (WGS84)."
+      ]
+    },
+    {
+      "id": "profile-trs-values",
+      "statement": "Temporal Reference System (trs) values SHALL be presented in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second according to the time format specified in RFC 3339.",
+      "parts": [
+        "The service trs SHALL be in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.",
+        "The service trs SHALL be the time format specified in RFC 3339."
+      ]
+    },
+    {
+      "id": "profile-vrs-values",
+      "statement": "Vertical Reference System (vrs) values SHALL be height in metres.",
+      "parts": [
+        "The service vrs SHALL be in height metres.",
+        "The service vrs SHALL be EPSG:3855.",
+        "The service vrs SHALL use the vertical datum EGM2008 geoid as the zero-height reference (orthometric height relative to mean sea level)."
+      ]
+    },
+    {
+      "id": "profile-keywords",
+      "statement": "The following keywords SHALL be included in the collection response: \"cube\", \"radius\", \"items\", \"precipitation_amount\", \"radar\".",
+      "parts": [
+        "The collection keywords array SHALL include \"cube\", \"radius\", and \"items\".",
+        "The collection keywords array SHALL include \"precipitation_amount\" and \"radar\"."
+      ]
+    },
+    {
+      "id": "profile-links",
+      "statement": "All links objects SHALL have href, rel, title and type attributes.",
+      "parts": [
+        "Each link object SHALL include a non-empty href attribute.",
+        "Each link object SHALL include rel, title and type attributes."
+      ]
+    },
+    {
+      "id": "profile-query-types",
+      "statement": "The following data queries SHALL be supported: \"cube\", \"items\", \"radius\".",
+      "parts": [
+        "The collection SHALL advertise cube, items and radius data queries."
+      ]
+    },
+    {
+      "id": "items-endpoint",
+      "statement": "The service SHALL provide a /collections/nwp_radar_precipitation/items endpoint.",
+      "parts": [
+        "The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.",
+        "The service SHALL return a default file format of GeoTIFF.",
+        "Each feature SHALL include precipitation_amount property.",
+        "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.",
+        "The items data queries SHALL return CoverageJSON that complies with the OGC CoverageJSON standard - https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca",
+        "The items data queries SHALL return GeoTIFF which complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.",
+        "The items data queries SHALL return GRIB2 which complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.",
+        "The items data queries SHALL return HDF5 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.",
+        "The items data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html."
+      ]
+    },
+    {
+      "id": "cube-endpoint",
+      "statement": "The service SHALL provide a /collections/nwp_radar_precipitation/cube endpoint.",
+      "parts": [
+        "The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.",
+        "The service SHALL return a default file format of GeoTIFF.",
+        "Each feature SHALL include precipitation_amount property.",
+        "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.",
+        "The cube data queries SHALL return CoverageJSON that complies with the OGC CoverageJSON standard - https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca",
+        "The cube data queries SHALL return GeoTIFF which complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.",
+        "The cube data queries SHALL return GRIB2 which complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.",
+        "The cube data queries SHALL return HDF5 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.",
+        "The cube data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html."
+      ]
+    },
+    {
+      "id": "radius-endpoint",
+      "statement": "The service SHALL provide a /collections/nwp_radar_precipitation/radius endpoint.",
+      "parts": [
+        "The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.",
+        "The service SHALL return a default file format of GeoTIFF.",
+        "Each feature SHALL include precipitation_amount property.",
+        "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.",
+        "The radius data queries SHALL return CoverageJSON that complies with the OGC CoverageJSON standard - https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca",
+        "The radius data queries SHALL return GeoTIFF which complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.",
+        "The radius data queries SHALL return GRIB2 which complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.",
+        "The radius data queries SHALL return HDF5 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.",
+        "The radius data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html."
+      ]
+    },
+    {
+      "id": "profile-nwp-parameters",
+      "statement": "The following parameters SHALL be supported: datetime, precipitation_amount.",
+      "parts": [
+        "The parameter datetime SHALL be in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.",
+        "The parameter datetime SHALL be the time format specified in RFC 3339.",
+        "The parameter precipitation_amount SHALL return values in kg m-2 units."
+      ]
+    },
+    {
+      "id": "http-methods",
+      "statement": "The service SHALL be configured to return data for both GET and POST HTTP Method Requests.",
+      "parts": [
+        "The service SHALL support both GET and POST HTTP Methods for queries."
+      ]
+    }
+  ],
+  "abstract_tests": [
+    {
+      "id": "spatial-extents-crs",
+      "requirement_id": "spatial-extents-crs",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation",
+        "Verify that the bbox geometry is defined in WGS84.",
+        "Verify that the bounding box coordinates are presented as geographical latitude, then longitude.",
+        "Verify that the bounding box coordinates are returned in decimal degrees."
+      ]
+    },
+    {
+      "id": "profile-bbox-coordinates",
+      "requirement_id": "profile-bbox-coordinates",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation",
+        "Verify that the box boundary is for the extent [-180, -90, 180, 90].",
+        "Verify that the bounding box coordinate reference system is EPSG:4326 (WGS84)."
+      ]
+    },
+    {
+      "id": "profile-trs-values",
+      "requirement_id": "profile-trs-values",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation",
+        "Verify that the trs is in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.",
+        "Verify that the trs is in the time format specified in RFC 3339 e.g. 2026-04-12T21:20:50.52Z."
+      ]
+    },
+    {
+      "id": "profile-vrs-values",
+      "requirement_id": "profile-vrs-values",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation",
+        "Verify that the vrs is defined in height metres.",
+        "Verify that the vrs is defined as WKT2 EPSG:3855.",
+        "Verify that the vrs has the vertical datum EGM2008 geoid as the zero-height reference."
+      ]
+    },
+    {
+      "id": "profile-keywords",
+      "requirement_id": "profile-keywords",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation",
+        "Verify that the collection keywords list includes the following keywords - \"cube\", \"radius\", \"items\", \"precipitation_amount\", \"radar\"."
+      ]
+    },
+    {
+      "id": "profile-links",
+      "requirement_id": "profile-links",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation",
+        "Verify that the links object consists of href, rel, title and type elements and that they are filled in with appropriate values.",
+        "Send GET request to the root URL /",
+        "Verify that the links object consists of href, rel, title and type elements and that they are filled in with appropriate values."
+      ]
+    },
+    {
+      "id": "profile-query-types",
+      "requirement_id": "profile-query-types",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation",
+        "Verify that the following data queries are listed - \"cube\", \"items\", \"radius\"."
+      ]
+    },
+    {
+      "id": "items-endpoint",
+      "requirement_id": "items-endpoint",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation/items.",
+        "Verify response Content-Type is application/json.",
+        "Verify each feature contains precipitation_amount property.",
+        "Verify each feature contains datetime property.",
+        "Verify that the datetime is in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z",
+        "Verify that the default file format is GeoTIFF.",
+        "Verify that the endpoint supports CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.",
+        "Send GET request to /collections/nwp_radar_precipitation/items for a CoverageJSON file type.",
+        "Verify that the CoverageJSON file format returned complies with the OGC CoverageJSON standard - https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca",
+        "Send GET request to /collections/nwp_radar_precipitation/items for a GeoTIFF file type.",
+        "Verify that the GeoTIFF file format returned complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.",
+        "Send GET request to /collections/nwp_radar_precipitation/items for a GRIB file type.",
+        "Verify that the GRIB2 file format returned complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.",
+        "Send GET request to /collections/nwp_radar_precipitation/items for a HDF5 file type.",
+        "Verify that the HDF5 file format returned complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.",
+        "Send GET request to /collections/nwp_radar_precipitation/items for a NetCDF4 file type.",
+        "Verify that the NetCDF4 file format returned complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html."
+      ]
+    },
+    {
+      "id": "cube-endpoint",
+      "requirement_id": "cube-endpoint",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation/cube with a valid coordinate in CRS EPSG:4326.",
+        "Verify response Content-Type is application/json.",
+        "Verify each feature contains precipitation_amount property.",
+        "Verify each feature contains datetime property.",
+        "Verify each feature has height in metres based upon the EGM2008 gravity model.",
+        "Verify that the datetime is in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z",
+        "Verify that the default file format is GeoTIFF.",
+        "Verify that the endpoint supports CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.",
+        "Send GET request to /collections/nwp_radar_precipitation/cube for a CoverageJSON file type.",
+        "Verify that the CoverageJSON file format returned complies with the OGC CoverageJSON standard - https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca",
+        "Send GET request to /collections/nwp_radar_precipitation/cube for a GeoTIFF file type.",
+        "Verify that the GeoTIFF file format returned complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.",
+        "Send GET request to /collections/nwp_radar_precipitation/cube for a GRIB file type.",
+        "Verify that the GRIB2 file format returned complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.",
+        "Send GET request to /collections/nwp_radar_precipitation/cube for a HDF5 file type.",
+        "Verify that the HDF5 file format returned complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.",
+        "Send GET request to /collections/nwp_radar_precipitation/cube for a NetCDF4 file type.",
+        "Verify that the NetCDF4 file format returned complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html."
+      ]
+    },
+    {
+      "id": "radius-endpoint",
+      "requirement_id": "radius-endpoint",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation/radius with a valid coordinate in EPSG:4326 and a radius of 1km.",
+        "Verify response Content-Type is application/json.",
+        "Verify each feature contains precipitation_amount property.",
+        "Verify each feature contains datetime property.",
+        "Verify each feature has height in metres based upon the EGM2008 gravity model.",
+        "Verify that the datetime is in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z",
+        "Verify that the default file format is GeoTIFF.",
+        "Verify that the endpoint supports CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.",
+        "Send GET request to /collections/nwp_radar_precipitation/radius for a CoverageJSON file type.",
+        "Verify that the CoverageJSON file format returned complies with the OGC CoverageJSON standard - https://docs.ogc.org/cs/21-069r2/21-069r2.html#_df6ce66a-7369-49cb-b59f-47a8c5d424ca",
+        "Send GET request to /collections/nwp_radar_precipitation/radius for a GeoTIFF file type.",
+        "Verify that the GeoTIFF file format returned complies with the DGIWG 108 GeoTIFF for GeoRef Imagery Standard.",
+        "Send GET request to /collections/nwp_radar_precipitation/radius for a GRIB file type.",
+        "Verify that the GRIB2 file format returned complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.",
+        "Send GET request to /collections/nwp_radar_precipitation/radius for a HDF5 file type.",
+        "Verify that the HDF5 file format returned complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.",
+        "Send GET request to /collections/nwp_radar_precipitation/radius for a NetCDF4 file type.",
+        "Verify that the NetCDF4 file format returned complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html."
+      ]
+    },
+    {
+      "id": "profile-nwp-parameters",
+      "requirement_id": "profile-nwp-parameters",
+      "steps": [
+        "Send GET request to /collections/nwp_radar_precipitation/",
+        "Verify that datetime is formatted in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.",
+        "Verify that the datetime format is aligned to RFC 3339.",
+        "Verify that precipitation_amount uses kg m-2 units."
+      ]
+    },
+    {
+      "id": "http-methods",
+      "requirement_id": "http-methods",
+      "steps": [
+        "Send GET request to the root URL /",
+        "Verify that the service is set up to support both POST and GET HTTP Method requests.",
+        "Verify that POST and GET Methods are supported for the query types of \"cube\", \"radius\", and \"items\"."
+      ]
+    }
+  ],
+  "pubsub": null,
+  "processes": [],
+  "document_metadata": {
+    "doc_number": "DGIWG-NWP-RADAR-001",
+    "doc_type": "draft-standard",
+    "doc_subtype": "implementation",
+    "status": null,
+    "editors": [],
+    "submitting_orgs": [],
+    "submitters": [],
+    "keywords": [
+      "NWP",
+      "earth observations",
+      "cube",
+      "radius",
+      "items",
+      "datetime",
+      "precipitation_amount",
+      "radar"
+    ],
+    "copyright_year": 2026,
+    "submission_date": null,
+    "approval_date": null,
+    "publication_date": null,
+    "notice": null,
+    "normative_references": [],
+    "external_id": null
+  },
+  "required_conformance_classes": [
+    "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
+    "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections",
+    "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core",
+    "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/oas30",
+    "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/html",
+    "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/coveragejson",
+    "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/wkt"
+  ],
+  "extent_requirements": {
+    "minimum_bbox": [
+      -180.0,
+      -90.0,
+      180.0,
+      90.0
+    ],
+    "extent_crs": {
+      "allowed": [
+        "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+      ],
+      "pattern": null
+    },
+    "extent_trs": {
+      "allowed": [
+        "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+      ],
+      "pattern": null
+    },
+    "extent_vrs": null,
+    "supported_crs": {
+      "allowed": [
+        "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+        "https://epsg.org/crs_4326/WGS-84.html",
+        "https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html"
+      ],
+      "pattern": null
+    },
+    "supported_trs": null,
+    "supported_vrs": null
+  },
+  "output_formats": [
+    {
+      "name": "CoverageJSON",
+      "media_type": "application/json",
+      "schema_ref": "https://schemas.opengis.net/covjson/1.0/coveragejson.json"
+    },
+    {
+      "name": "GRIB2",
+      "media_type": "application/grib; edition=2",
+      "schema_ref": null
+    },
+    {
+      "name": "GeoTIFF",
+      "media_type": "image/tiff; application=geotiff",
+      "schema_ref": null
+    },
+    {
+      "name": "HDF5",
+      "media_type": "application/x-hdf",
+      "schema_ref": null
+    },
+    {
+      "name": "NetCDF4",
+      "media_type": "application/netcdf",
+      "schema_ref": null
+    },
+    {
+      "name": "PNG",
+      "media_type": "image/png",
+      "schema_ref": "https://w3c.github.io/png/"
+    }
+  ],
+  "allow_post_queries": true,
+  "collection_id_pattern": null,
+  "spec_uri_base": "http://www.opengis.net/spec/ogcapi-edr-3/1.0",
+  "parameter_name_pattern": "^[a-z][a-z0-9_]*$",
+  "parameter_schema": null
+}

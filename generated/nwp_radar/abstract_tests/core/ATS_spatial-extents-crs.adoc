@@ -1,0 +1,13 @@
+[[ats_nwp_radar_spatial_extents_crs]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp_radar/spatial-extents-crs
+target:: /req/nwp_radar/spatial-extents-crs
+test-purpose:: Validate that spatial extents crs is correctly implemented.
+test-method::
+step:: Send GET request to /collections/nwp_radar_precipitation
+step:: Verify that the bbox geometry is defined in WGS84.
+step:: Verify that the bounding box coordinates are presented as geographical latitude, then longitude.
+step:: Verify that the bounding box coordinates are returned in decimal degrees.
+====

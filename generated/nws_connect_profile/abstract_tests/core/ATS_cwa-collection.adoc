@@ -1,0 +1,15 @@
+[[ats_nws_connect_cwa_collection]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/cwa-collection
+target:: /req/nws_connect/cwa-collection
+test-purpose:: Validate that cwa collection is correctly implemented.
+test-method::
+step:: Send GET request to /collections/cwa.
+step:: Verify response contains collection metadata.
+step:: Send GET request to /collections/cwa/items?limit=10.
+step:: Verify response Content-Type is application/geo+json.
+step:: Verify each feature contains a CWA identifier.
+step:: Verify each feature geometry type is Polygon or MultiPolygon.
+====

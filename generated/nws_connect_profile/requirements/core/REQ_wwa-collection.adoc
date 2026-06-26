@@ -1,0 +1,12 @@
+[[req_nws_connect_wwa_collection]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/wwa-collection
+statement:: The wwa collection SHALL provide GeoJSON features for weather watches and warnings.
+part:: The service SHALL provide a /collections/wwa endpoint.
+part:: The service SHALL provide a /collections/wwa/items endpoint.
+part:: The response Content-Type SHALL be application/geo+json.
+part:: Each feature SHALL include CAP_info_event, CAP_info_severity, CAP_info_urgency, and CAP_status properties.
+part:: Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon.
+====

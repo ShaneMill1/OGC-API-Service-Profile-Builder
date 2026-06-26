@@ -1,0 +1,13 @@
+[[ats_nws_connect_collections_endpoint]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/collections-endpoint
+target:: /req/nws_connect/collections-endpoint
+test-purpose:: Validate that collections endpoint is correctly implemented.
+test-method::
+step:: Send GET request to /collections.
+step:: Verify response contains collections array.
+step:: Verify water_gauge, wwa, cwa, and states are present in the collections array.
+step:: Verify each collection has id, title, description, extent, and links.
+====

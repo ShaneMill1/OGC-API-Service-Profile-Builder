@@ -9,7 +9,10 @@
 :published-date: 2026-01-01
 :issued-date: 2026-01-01
 :received-date: 2026-01-01
+:fullname: Guy Collins
+:role: editor
 :keywords: cube, radius, items, datetime, frequency_of_lightning_flashes_per_unit_area, lightning flashes, lightning
+:submitting-organizations: Met Office; DGIWG
 :mn-document-class: ogc
 :mn-output-extensions: xml,html,pdf
 :local-cache-only:

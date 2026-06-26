@@ -1,0 +1,12 @@
+[.preface]
+== Preface
+
+This document was prepared by the submitting organizations.
+
+[.preface]
+== Point of Contact
+
+This service is provided by Austrian Military (https://www.bmlv.gv.at/english/forces/organisation.shtml). Email: presse@bmlvs.gv.at +
+Address: Ministry of Defence, Kommunikation, Rossauer Lände 1, A-1090, Vienna, Austria +
+Hours: Monday to Friday 08:00 - 17:00 +
+Contact instructions: During hours of Service

@@ -1,0 +1,12 @@
+[[ats_nws_connect_conformance]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/conformance
+target:: /req/nws_connect/conformance
+test-purpose:: Validate that conformance is correctly implemented.
+test-method::
+step:: Send GET request to /conformance.
+step:: Verify response contains http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.
+step:: Verify response contains http://www.opengis.net/spec/ogcapi-edr-2/1.0/conf/pubsub.
+====
