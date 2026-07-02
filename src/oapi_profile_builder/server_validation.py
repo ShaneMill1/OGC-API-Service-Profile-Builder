@@ -39,6 +39,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import urljoin, urlsplit
 
 import yaml
 
@@ -58,6 +59,72 @@ VALID_CHECKS = {
     "ignored_auth",
     "all",
 }
+
+
+def _discover_service_desc_path(base_url: str) -> str | None:
+    """
+    Fetch the landing page and resolve where the live server actually serves
+    its OpenAPI document.
+
+    OGC API standards do not fix the OpenAPI document path. It is discoverable
+    via the landing page link with rel="service-desc" (machine-readable). This
+    returns the path relative to ``base_url`` (e.g. "/openapi.json") suitable
+    for use as an OpenAPI path template, or None if it cannot be resolved to a
+    path on the same host as ``base_url``.
+    """
+    try:
+        import requests
+    except ImportError:
+        return None
+
+    # Normalise to a base that urljoin treats as a directory.
+    base = base_url if base_url.endswith("/") else base_url + "/"
+
+    try:
+        resp = requests.get(
+            base,
+            headers={"Accept": "application/json"},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        landing = resp.json()
+    except Exception:
+        return None
+
+    if not isinstance(landing, dict):
+        return None
+
+    links = landing.get("links")
+    if not isinstance(links, list):
+        return None
+
+    href = None
+    for link in links:
+        if isinstance(link, dict) and link.get("rel") == "service-desc" and link.get("href"):
+            href = link["href"]
+            break
+    if not href:
+        return None
+
+    # Resolve relative hrefs against the landing page URL.
+    absolute = urljoin(base, href)
+
+    base_parts = urlsplit(base)
+    href_parts = urlsplit(absolute)
+
+    # schemathesis appends the OpenAPI path template to --url, so the spec can
+    # only describe resources on the same origin as the validated base URL.
+    if (href_parts.scheme, href_parts.netloc) != (base_parts.scheme, base_parts.netloc):
+        return None
+
+    # Return the href path relative to the base URL's path.
+    base_path = base_parts.path  # ends with "/"
+    href_path = href_parts.path or "/"
+    if href_path.startswith(base_path):
+        rel = href_path[len(base_path):]
+    else:
+        rel = href_path.lstrip("/")
+    return "/" + rel
 
 
 def validate_server(
@@ -88,6 +155,27 @@ def validate_server(
             )
             sys.exit(1)
 
+    # The OpenAPI document path is discoverable, not fixed by OGC API. The spec
+    # ships a placeholder "/openapi" path; remap it to wherever the live server
+    # actually advertises its service-desc link, or drop it if we cannot resolve
+    # a same-origin path (testing a path the standard never mandated would be a
+    # false failure).
+    drop_openapi_path = False
+    paths = spec.get("paths")
+    if isinstance(paths, dict) and "/openapi" in paths:
+        discovered = _discover_service_desc_path(url)
+        if discovered and discovered != "/openapi":
+            if discovered in paths:
+                # Server serves its spec at a path the profile already describes.
+                paths.pop("/openapi")
+            else:
+                paths[discovered] = paths.pop("/openapi")
+            print(f"Discovered service-desc document at: {discovered}")
+        elif not discovered:
+            drop_openapi_path = True
+            print("Could not resolve service-desc from landing page; "
+                  "excluding /openapi from validation.")
+
     with tempfile.NamedTemporaryFile(
         mode="w", suffix=".yaml", delete=False, encoding="utf-8"
     ) as tmp:
@@ -107,6 +195,9 @@ def validate_server(
 
         if exclude_pattern:
             cmd += ["--exclude-path-regex", exclude_pattern.pattern]
+
+        if drop_openapi_path:
+            cmd += ["--exclude-path-regex", r"^/openapi$"]
 
         # Exclude POST /execution and job resource paths unless stateful testing is enabled
         if not stateful:

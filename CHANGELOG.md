@@ -1,5 +1,11 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.2.1] - 2026-07-02
+
+### Fixed
+
+- **`validate-server` no longer tests a hardcoded `/openapi` path.** The location of the OpenAPI document is not fixed by the OGC API standards — it is discoverable via the landing page link with `rel="service-desc"`, so implementations may serve it at `/openapi`, `/openapi.json`, `/api`, etc. `validate-server` now fetches the landing page, resolves the actual `service-desc` document location, and remaps the placeholder `/openapi` path in the generated OpenAPI to match the live server before running schemathesis. If the link cannot be resolved to a same-origin path, `/openapi` is excluded from the run instead of producing a false failure. This lives entirely in server validation, so collection-only profiles need no service-level path configuration. Resolves [issue #9](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/issues/9).
+
 ## [3.2.0] - 2026-07-02
 
 ### Added
