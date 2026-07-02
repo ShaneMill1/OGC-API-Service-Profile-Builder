@@ -436,6 +436,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -1011,6 +1019,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -1586,6 +1602,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -2161,6 +2185,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -2736,6 +2768,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -3311,6 +3351,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -3886,6 +3934,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -4461,6 +4517,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -5036,6 +5100,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -5611,6 +5683,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -6186,6 +6266,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -6761,6 +6849,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -7335,6 +7431,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:

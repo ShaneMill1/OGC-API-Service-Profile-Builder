@@ -1927,7 +1927,12 @@
     "publication_date": null,
     "notice": null,
     "normative_references": [],
-    "external_id": "http://www.opengis.net/doc/dp/ogcapi-edr-nwsviz/1.0"
+    "external_id": "http://www.opengis.net/doc/dp/ogcapi-edr-nwsviz/1.0",
+    "colors": null,
+    "cover": null,
+    "copyright_holder": null,
+    "boilerplate": null,
+    "suppress_flavor_logo": false
   },
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core",
@@ -1953,6 +1958,7 @@
       "pattern": null
     },
     "extent_vrs": null,
+    "require_vertical_direction": false,
     "supported_crs": null,
     "supported_trs": null,
     "supported_vrs": null
