@@ -7,7 +7,7 @@ info:
     radius, and items queries with GET and POST.
 
     '
-  x-ogc-profile: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_earth_observations_lightning
+  x-ogc-profile: https://schemas.dgiwg.org/edr/1.0/req/nwp_earth_observations_lightning
   x-keywords:
   - cube
   - radius
@@ -77,7 +77,7 @@ paths:
                         rel:
                           const: profile
                         href:
-                          const: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_earth_observations_lightning
+                          const: https://schemas.dgiwg.org/edr/1.0/req/nwp_earth_observations_lightning
                   title:
                     type: string
                     const: DGIWG NWP Earth Observations Lightning Profile
@@ -435,6 +435,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:

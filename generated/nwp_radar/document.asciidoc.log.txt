@@ -10,6 +10,14 @@
 :issued-date: 2026-01-01
 :received-date: 2026-01-01
 :keywords: NWP, earth observations, cube, radius, items, datetime, precipitation_amount, radar
+:presentation-metadata-color-secondary-shade-1: #1F3864
+:presentation-metadata-color-text-title: #1F3864
+:presentation-metadata-color-background-table-header: #1F3864
+:coverpage-image: cover.png
+:presentation-metadata-full-coverpage-replacement: true
+:copyright-holder: DGIWG
+:boilerplate-authority: boilerplate.xml
+:pdf-stylesheet-override: logo_override.xsl
 :mn-document-class: ogc
 :mn-output-extensions: xml,html,pdf
 :local-cache-only:
@@ -57,7 +65,7 @@ Conformance with this standard shall be checked using the Abstract Test Suite in
 
 The following conformance classes are defined:
 
-* link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/nwp_radar++[]
+* link:++https://schemas.dgiwg.org/edr/1.0/conf/nwp_radar++[]
 
 [bibliography]
 == References
@@ -77,7 +85,7 @@ This document also uses terms defined in OGC API - EDR Part 1: Core.
 [requirements_class]
 ====
 [%metadata]
-identifier:: link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar++[]
+identifier:: link:++https://schemas.dgiwg.org/edr/1.0/req/nwp_radar++[]
 target-type:: NWP Radar Profile Profile Standard
 requirement:: /req/nwp_radar/spatial-extents-crs
 requirement:: /req/nwp_radar/profile-bbox-coordinates
@@ -126,10 +134,11 @@ part:: The service trs SHALL be the time format specified in RFC 3339.
 ====
 [%metadata]
 identifier:: /req/nwp_radar/profile-vrs-values
-statement:: Vertical Reference System (vrs) values SHALL be height in metres.
+statement:: Vertical Reference System (vrs) values SHALL be height in metres, with an unambiguous direction of increase declared.
 part:: The service vrs SHALL be in height metres.
 part:: The service vrs SHALL be EPSG:3855.
 part:: The service vrs SHALL use the vertical datum EGM2008 geoid as the zero-height reference (orthometric height relative to mean sea level).
+part:: The service SHALL declare extent.vertical.positive as "up" or "down" so vertical interval ordering (e.g. pressure levels ordered top-to-bottom vs. bottom-to-top) is unambiguous.
 ====
 [[req_nwp_radar_profile_keywords]]
 [requirement]
@@ -231,8 +240,8 @@ part:: The service SHALL support both GET and POST HTTP Methods for queries.
 [conformance_class]
 ====
 [%metadata]
-identifier:: link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/nwp_radar++[]
-target:: link:++http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar++[]
+identifier:: link:++https://schemas.dgiwg.org/edr/1.0/conf/nwp_radar++[]
+target:: link:++https://schemas.dgiwg.org/edr/1.0/req/nwp_radar++[]
 abstract-test:: /conf/nwp_radar/spatial-extents-crs
 abstract-test:: /conf/nwp_radar/profile-bbox-coordinates
 abstract-test:: /conf/nwp_radar/profile-trs-values
@@ -296,6 +305,7 @@ step:: Send GET request to /collections/nwp_radar_precipitation
 step:: Verify that the vrs is defined in height metres.
 step:: Verify that the vrs is defined as WKT2 EPSG:3855.
 step:: Verify that the vrs has the vertical datum EGM2008 geoid as the zero-height reference.
+step:: Verify that extent.vertical.positive is present and is either "up" or "down".
 ====
 [[ats_nwp_radar_profile_keywords]]
 [abstract_test]

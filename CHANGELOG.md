@@ -1,5 +1,21 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.2.0] - 2026-07-02
+
+### Added
+
+- **`document_metadata.copyright_holder`**: sets Metanorma `:copyright-holder:`, which also replaces the PDF footer organisation name (e.g. "OPEN GEOSPATIAL CONSORTIUM" → "DGIWG").
+- **`document_metadata.boilerplate`**: replaces the page-ii legal boilerplate (copyright / license / legal notice / feedback) via `:boilerplate-authority:`, so a rebranded document carries no OGC legal text. Unset fields are synthesised from `copyright_holder`.
+- **`document_metadata.suppress_flavor_logo`**: removes the OGC logo from the preface/legal page via a targeted PDF-stylesheet override. Together with `cover`, `colors`, `copyright_holder`, `boilerplate` and `spec_uri_base`, the PDF can be fully rebranded (e.g. DGIWG) with no residual OGC branding.
+- **`document_metadata.cover`**: custom PDF cover-page branding. When `cover.logo` is set, the builder renders a replacement cover page (logo + the document's title, number, edition and date) and instructs Metanorma to use it in place of the built-in OGC cover via `:coverpage-image:` + `:presentation-metadata-full-coverpage-replacement:`. Optional `tagline`, `background`, and `text_color`. Requires Pillow (`pip install 'oapi-profile-builder[pdf]'`).
+- **`document_metadata.colors`**: PDF colour-scheme overrides mapped to Metanorma `:presentation-metadata-color-*:` attributes (body text, cover text, titles, page background, table header/row colours). Lets a profile recolour the PDF (e.g. to a DGIWG palette) without a custom Metanorma flavor.
+- **`extent.vertical.positive`** (`up` | `down`): declares the direction in which vertical extent values increase, per the CF Conventions `positive` attribute. Addresses inconsistent ordering of vertical intervals across providers — pressure levels in particular are sometimes listed top-to-bottom and sometimes bottom-to-top, with no way to tell which from the VRS alone. Surfaces in the generated OpenAPI collection schema.
+- **`extent_requirements.require_vertical_direction`**: when `true`, every collection with a vertical extent must declare `extent.vertical.positive`. Lets a profile mandate one consistent vertical-ordering convention instead of leaving it per-collection.
+
+### Fixed
+
+- Added the missing `output_formats` reference section to the README (it existed in `docs/index.md` but not the README, which was raised as a documentation gap).
+
 ## [3.1.0] - 2026-06-26
 
 ### Added

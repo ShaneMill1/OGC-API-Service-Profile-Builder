@@ -1,6 +1,6 @@
 # OGC API Service Profile Builder
 
-Generate OGC API - EDR Part 3 Service Profile artifacts from a YAML config — OpenAPI 3.1.0, AsyncAPI, AsciiDoc requirements, and conformance tests.
+Generate OGC API - EDR Part 3 Service Profile artifacts from a YAML config — OpenAPI 3.1.0, AsyncAPI, AsciiDoc requirements and conformance tests, and a publication-ready Metanorma PDF with optional custom (e.g. DGIWG) branding.
 
 [![PyPI](https://img.shields.io/pypi/v/oapi-profile-builder)](https://pypi.org/project/oapi-profile-builder/)
 [![License](https://img.shields.io/badge/license-Apache-blue)](LICENSE)
@@ -35,13 +35,16 @@ output/
 
 ## Example Profiles
 
-Three working examples are included:
+Six working examples are included:
 
 | File | What it shows |
 |---|---|
 | [`examples/minimal_profile.yaml`](examples/minimal_profile.yaml) | Smallest valid profile — one collection, one requirement |
 | [`examples/insitu_observations_profile.yaml`](examples/insitu_observations_profile.yaml) | Full meteorological profile — 8 parameters with QUDT units, CF standard names, metocean extensions, CRS listing, temporal extent, custom dimensions, `parameter_schema` |
+| [`examples/nws_connect_profile.yaml`](examples/nws_connect_profile.yaml) | PubSub profile — generates `asyncapi.yaml` alongside the OpenAPI |
 | [`examples/nwsviz_profile.yaml`](examples/nwsviz_profile.yaml) | Production profile — 13 collections, 3 OGC API Processes, PDF metadata |
+| [`examples/nwp_radar.yaml`](examples/nwp_radar.yaml) | **DGIWG-branded** profile — custom cover logo, DGIWG colours/footer/legal page, `default_output_format`, per-query CRS, vertical `positive`, DGIWG namespace |
+| [`examples/nwp_earth_observations_lightning_profile.yaml`](examples/nwp_earth_observations_lightning_profile.yaml) | DGIWG lightning profile — same branding, CF units |
 
 ---
 
@@ -69,6 +72,8 @@ Add `--pdf` to also compile an OGC-compliant PDF via the `metanorma/metanorma` D
 ```bash
 oapi-profile-builder generate --config my_profile.yaml --output ./output --pdf
 ```
+
+The PDF can be rebranded for another SDO (e.g. DGIWG) — custom cover logo, colours, legal page, footer, and identifier namespace — all from the profile config. See [Document generation and branding](#document-generation-and-branding).
 
 ### `validate`
 
@@ -171,6 +176,29 @@ jobs:
 | `cite-type` | `edr` | `edr`, `features`, or `both` |
 
 > **CITE + VPN:** The CITE test runner needs to reach the server from GitHub's runners. Servers behind a VPN require a [self-hosted runner](https://docs.github.com/en/actions/hosting-your-own-runners).
+
+---
+
+## Document generation and branding
+
+With `--pdf`, the builder compiles a Metanorma document (`document.adoc` + `sections/`, `requirements/`, `abstract_tests/`) into `document.pdf` using the official `metanorma/metanorma` Docker image. By default this is an OGC `draft-standard` document.
+
+Everything about the document — cover, title-page metadata, legal page, footer, colours, and even the requirement/conformance identifier namespace — is driven from the profile config, so the same tooling can produce a document branded for another SDO such as **DGIWG** with no OGC branding remaining.
+
+| What you want to change | Field | Mechanism |
+|---|---|---|
+| Cover logo + tagline (replaces the OGC cover) | `document_metadata.cover` | Generated cover image via `:coverpage-image:` full replacement |
+| Title, doc number, edition, dates, sub-title/status | `title`, `version`, `document_metadata.{doc_number, doc_type, doc_subtype, status, *_date}` | Metanorma document attributes |
+| PDF colours (titles, tables, cover, backgrounds) | `document_metadata.colors` | `:presentation-metadata-color-*:` |
+| Page-ii legal text (copyright / license / notice) | `document_metadata.boilerplate` | `:boilerplate-authority:` |
+| Footer organisation name | `document_metadata.copyright_holder` | `:copyright-holder:` |
+| Remove the OGC logo from the legal page | `document_metadata.suppress_flavor_logo` | targeted `:pdf-stylesheet-override:` |
+| Requirement / conformance identifier namespace | `spec_uri_base` | derives `req_uri` / `conf_uri` |
+| Submitter table, notice paragraph, normative refs | `document_metadata.{submitters, notice, normative_references}` | Metanorma attributes / sections |
+
+Custom branding requires Pillow for the cover image: `pip install 'oapi-profile-builder[pdf]'`. Field-by-field detail is in the [`document_metadata`](#document_metadata) reference below; [`examples/nwp_radar.yaml`](examples/nwp_radar.yaml) is a complete DGIWG-branded example.
+
+> The `suppress_flavor_logo` override reaches into the OGC Metanorma flavor's XSL (template `insertLogoPreface`) and is coupled to that flavor. Everything else uses documented Metanorma attributes. For long-term SDO adoption, a dedicated Metanorma "taste"/flavor is the most durable path.
 
 ---
 
@@ -400,6 +428,61 @@ extent_requirements:
 
 At least one of `extent_crs` or `supported_crs` is required. The same applies to TRS and VRS — all are optional individually but at least one CRS constraint must be present.
 
+#### Vertical direction (`positive`)
+
+OGC API - EDR's vertical extent has no field for which way values increase. This is ambiguous for VRS like pressure levels, which different providers order top-to-bottom or bottom-to-top inconsistently (pressure increases as altitude *decreases*). Set `extent.vertical.positive` to `up` or `down` on a collection (following the CF Conventions `positive` attribute) to make the ordering explicit:
+
+```yaml
+collections:
+  - id: my_collection
+    extent:
+      spatial: { ... }
+      vertical:
+        interval:
+          - ["1000", "100"]   # hPa, surface to top of atmosphere
+        values: ["1000", "850", "700", "500", "300", "100"]
+        vrs: "http://www.opengis.net/def/crs/EPSG/0/5798"  # or similar pressure VRS
+        positive: down   # pressure increases downward, toward the surface
+```
+
+Set `extent_requirements.require_vertical_direction: true` to make `positive` mandatory on every collection with a vertical extent, so a profile can enforce one consistent convention rather than leaving it up to each collection author:
+
+```yaml
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  extent_crs:
+    allowed: ["http://www.opengis.net/def/crs/OGC/1.3/CRS84"]
+  require_vertical_direction: true
+```
+
+---
+
+### `output_formats`
+
+Maps format names (referenced by `collections[].output_formats` and `data_queries.*.variables.output_formats`) to a media type and, optionally, a schema reference. The `schema_ref` flows into the generated OpenAPI response `content` for that format — use it to point a format at a specific schema (e.g. a DGIWG-published schema for GeoTIFF or CoverageJSON) instead of the tool's built-in default.
+
+```yaml
+output_formats:
+  - name: CoverageJSON
+    media_type: application/prs.coverage+json
+    schema_ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+  - name: GeoJSON
+    media_type: application/geo+json
+    schema_ref: https://geojson.org/schema/FeatureCollection.json
+  - name: GeoTIFF
+    media_type: image/tiff; application=geotiff
+    # Omit schema_ref until a published schema exists for this format —
+    # the requirement/abstract test can still state the standard to conform to.
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `name` | yes | Format name, referenced elsewhere as a string (e.g. `CoverageJSON`) |
+| `media_type` | yes | MIME type used as the OpenAPI response `content` key and the `f` parameter value |
+| `schema_ref` | no | URL to a JSON Schema (or other schema) for this format. When set, the generated response uses `{"$ref": schema_ref}`; when omitted, a generic/default schema is used |
+
+`schema_ref` is optional — if no schema exists yet for a format (as is currently the case for some binary formats like GeoTIFF), leave it unset and capture the required standard as a normative `requirements[]` entry instead. Add `schema_ref` later once a schema URL exists.
+
 ---
 
 ### `parameter_schema`
@@ -556,6 +639,55 @@ document_metadata:
 
 The cover-page sub-title (e.g. "Draft Standard — Implementation — Approved") is produced by Metanorma from the `doc_type`, `doc_subtype`, and `status` combination.
 
+#### Custom branding (logo + colors)
+
+Two `document_metadata` blocks let you rebrand the PDF (e.g. for DGIWG) without a custom Metanorma flavor:
+
+- **`colors`** — recolours the PDF via Metanorma's `:presentation-metadata-color-*:` attributes. Values are hex colours.
+- **`cover`** — replaces the built-in OGC cover page with a generated one: your logo plus the document's title, number, edition and date. Requires Pillow (`pip install 'oapi-profile-builder[pdf]'`). The builder renders `cover.png` into the output directory and points Metanorma at it via `:coverpage-image:` + `:presentation-metadata-full-coverpage-replacement:`.
+
+```yaml
+document_metadata:
+  doc_number: "DGIWG 134"
+  cover:
+    logo: assets/dgiwg_logo.png    # path relative to the working directory (or absolute)
+    tagline: Delivering Military Advantage through multi-national geospatial interoperability
+    background: "#FFFFFF"          # optional cover background (default white)
+    text_color: "#1F3864"          # optional cover text colour (default black)
+  colors:
+    text: "#000000"                # body text
+    cover_text: "#1F3864"          # cover text / section numbers / ToC
+    cover_lines: "#1F3864"         # preface 'crossing lines' element
+    title: "#1F3864"               # clause/table/figure titles
+    page_background: "#FFFFFF"     # cover + section page background
+    table_header: "#1F3864"        # table header background
+    table_row_even: "#EEF1F7"      # even table rows
+    table_row_odd: "#FFFFFF"       # odd table rows
+```
+
+Note: colours work against the normal OGC cover too. The `cover` block does a *full* cover replacement, so the dynamic title/number/edition/date are drawn onto the generated image (which is why the builder composes it rather than relying on Metanorma attributes — logo attributes like `:coverpage-image:` alone are not rendered by the OGC flavor).
+
+#### De-branding the rest of the document (legal page + footer + logo)
+
+Cover + colors handle the front page, but the OGC flavor also stamps its identity on the page-ii legal boilerplate, the page footer, and an OGC logo on the legal page. Three more `document_metadata` fields remove those:
+
+- **`copyright_holder`** — sets `:copyright-holder:`, which also drives the **PDF footer** organisation name (replacing "OPEN GEOSPATIAL CONSORTIUM").
+- **`boilerplate`** — replaces the page-ii legal text (copyright / license / legal notice / feedback) via `:boilerplate-authority:`. Any field left unset is synthesised from `copyright_holder`, so no OGC text leaks through.
+- **`suppress_flavor_logo`** — removes the OGC logo from the preface/legal page via a targeted PDF-stylesheet override. (Coupled to the OGC Metanorma flavor's XSL.)
+
+```yaml
+document_metadata:
+  copyright_holder: DGIWG
+  suppress_flavor_logo: true
+  boilerplate:
+    copyright: "Copyright © 2026 Defence Geospatial Information Working Group (DGIWG). All rights reserved."
+    license: "Use of this document is subject to the DGIWG terms and conditions."
+    legal: "Attention is drawn to the possibility that some elements may be subject to patent rights; DGIWG shall not be held responsible for identifying any such rights."
+    feedback: "Comments on this document should be directed to DGIWG."
+```
+
+With `cover` + `colors` + `copyright_holder` + `boilerplate` + `suppress_flavor_logo` (and `spec_uri_base` for the requirement/conformance identifiers), the generated PDF carries no OGC branding — only legitimate citations to the OGC standards the profile conforms to. See [`examples/nwp_radar.yaml`](examples/nwp_radar.yaml).
+
 ---
 
 ### `provider`, `classification`, and provenance metadata
@@ -627,6 +759,7 @@ The tool enforces these rules at build time. Violations produce clear error mess
 | Collection TRS validated | Each `extent.temporal.trs` checked against `extent_trs` |
 | `crs_details` / `crs` validated | Each `data_queries.*.variables.crs_details[].crs` and `crs[]` checked against `supported_crs` |
 | `default_output_format` validated | Each `data_queries.*.variables.default_output_format` must be one of that query's `output_formats` |
+| `require_vertical_direction` enforced | If set, every collection with a vertical extent must declare `extent.vertical.positive` as `up` or `down` |
 | Document dates format | `submission_date` / `approval_date` / `publication_date` must be `YYYY-MM-DD` |
 | Parameters need `unit` + `observedProperty` | Required by OGC API - EDR Part 3 |
 | `parameter_name_pattern` enforced | All `parameter_names` keys must match if set |

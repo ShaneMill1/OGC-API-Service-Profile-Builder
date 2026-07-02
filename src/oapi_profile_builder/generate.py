@@ -552,6 +552,15 @@ def _collection_response_schema(coll: Collection,
                                 "items": {"type": "string"},
                             },
                             "vrs": vrs_schema,
+                            "positive": {
+                                "type": "string",
+                                "enum": ["up", "down"],
+                                "description": (
+                                    "Direction in which vertical extent values increase "
+                                    "(CF Conventions 'positive' attribute). Disambiguates "
+                                    "interval ordering for VRS such as pressure levels."
+                                ),
+                            },
                         },
                     },
                     "custom": {
@@ -1365,6 +1374,82 @@ def _individual_test_adoc(profile: ServiceProfile, test_id: str) -> str:
 # Metanorma root document
 # ---------------------------------------------------------------------------
 
+_LOGO_OVERRIDE_XSL = """<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:fo="http://www.w3.org/1999/XSL/Format"
+                version="1.0">
+  <!-- Rebranding override: suppress the OGC flavor logo on the preface/legal
+       page (and the cover, which is replaced separately). Coupled to the OGC
+       Metanorma flavor's XSL template names. -->
+  <xsl:template name="insertLogoPreface"/>
+  <xsl:template name="insertLogo"/>
+</xsl:stylesheet>
+"""
+
+
+def _xml_escape(text: str) -> str:
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
+
+
+def _build_boilerplate_xml(profile: ServiceProfile) -> str | None:
+    """Build a Metanorma boilerplate XML overriding the flavor's legal text.
+
+    Returns the XML string, or None when no boilerplate is configured. Any
+    statement not supplied is synthesised from copyright_holder so no flavor
+    default (e.g. OGC copyright) leaks through.
+    """
+    m = profile.document_metadata
+    bp = m.boilerplate if m else None
+    if not bp:
+        return None
+
+    holder = (m.copyright_holder if m and m.copyright_holder else None) or (
+        m.submitting_orgs[0] if m and m.submitting_orgs else "the copyright holder"
+    )
+    year = m.copyright_year if m else 2026
+
+    copyright_txt = bp.copyright or f"Copyright © {year} {holder}. All rights reserved."
+    license_txt = bp.license or f"Use of this document is subject to the terms and conditions of {holder}."
+    legal_txt = bp.legal or (
+        "Attention is drawn to the possibility that some of the elements of this "
+        f"document may be the subject of patent rights. {holder} shall not be held "
+        "responsible for identifying any or all such patent rights."
+    )
+    feedback_txt = bp.feedback or f"Comments on this document should be directed to {holder}."
+
+    return (
+        "<boilerplate>\n"
+        "  <copyright-statement>\n"
+        "    <clause>\n"
+        "      <title>Copyright notice</title>\n"
+        f"      <p id=\"bp-copyright\">{_xml_escape(copyright_txt)}</p>\n"
+        "    </clause>\n"
+        "  </copyright-statement>\n"
+        "  <license-statement>\n"
+        "    <clause>\n"
+        "      <title>License Agreement</title>\n"
+        f"      <p id=\"bp-license\">{_xml_escape(license_txt)}</p>\n"
+        "    </clause>\n"
+        "  </license-statement>\n"
+        "  <legal-statement>\n"
+        "    <clause>\n"
+        "      <title>Note</title>\n"
+        f"      <p id=\"bp-legal\">{_xml_escape(legal_txt)}</p>\n"
+        "    </clause>\n"
+        "  </legal-statement>\n"
+        "  <feedback-statement>\n"
+        "    <clause>\n"
+        f"      <p id=\"bp-feedback\">{_xml_escape(feedback_txt)}</p>\n"
+        "    </clause>\n"
+        "  </feedback-statement>\n"
+        "</boilerplate>\n"
+    )
+
+
 def _build_document_adoc(profile: ServiceProfile) -> str:
     m = profile.document_metadata
     year = m.copyright_year if m else 2026
@@ -1400,6 +1485,24 @@ def _build_document_adoc(profile: ServiceProfile) -> str:
         lines.append(f":keywords: {', '.join(m.keywords)}")
     if m and m.submitting_orgs:
         lines.append(f":submitting-organizations: {'; '.join(m.submitting_orgs)}")
+    # PDF colour-scheme overrides (mapped to Metanorma attributes).
+    if m and m.colors:
+        for attr, value in m.colors.to_metanorma_attributes().items():
+            lines.append(f":{attr}: {value}")
+    # Custom cover page: replace the built-in OGC cover with our generated image.
+    # The image file (cover.png) is written by generate(); this just references it.
+    if m and m.cover and m.cover.logo:
+        lines.append(":coverpage-image: cover.png")
+        lines.append(":presentation-metadata-full-coverpage-replacement: true")
+    # Copyright holder → also sets the PDF footer org name (replaces OGC default).
+    if m and m.copyright_holder:
+        lines.append(f":copyright-holder: {m.copyright_holder}")
+    # Custom legal boilerplate (page ii). The XML file is written by generate().
+    if m and m.boilerplate:
+        lines.append(":boilerplate-authority: boilerplate.xml")
+    # Suppress the flavor's built-in (OGC) logo on the preface page when rebranding.
+    if m and m.suppress_flavor_logo:
+        lines.append(":pdf-stylesheet-override: logo_override.xsl")
     lines += [
         ":mn-document-class: ogc",
         ":mn-output-extensions: xml,html,pdf",
@@ -1621,5 +1724,22 @@ def generate(profile: ServiceProfile, output_dir: Path) -> None:
     safe_write("document.adoc", _build_document_adoc(profile))
     for path, content in _build_sections(profile).items():
         safe_write(path, content)
+
+    # Custom cover-page image (only when document_metadata.cover.logo is set).
+    m = profile.document_metadata
+    if m and m.cover and m.cover.logo:
+        from oapi_profile_builder.cover import build_cover_image
+        cover_file = build_cover_image(profile, output_dir)
+        if cover_file:
+            print(f"Custom cover page written to {output_dir / cover_file}")
+
+    # Custom legal boilerplate (page ii), replacing the flavor's built-in text.
+    boilerplate_xml = _build_boilerplate_xml(profile)
+    if boilerplate_xml:
+        safe_write("boilerplate.xml", boilerplate_xml)
+
+    # PDF stylesheet override to suppress the flavor's preface-page logo.
+    if m and m.suppress_flavor_logo:
+        safe_write("logo_override.xsl", _LOGO_OVERRIDE_XSL)
 
     print(f"Profile '{profile.name}' written to {output_dir}")

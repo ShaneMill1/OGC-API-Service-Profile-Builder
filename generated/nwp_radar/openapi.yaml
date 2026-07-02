@@ -7,7 +7,7 @@ info:
     POST.
 
     '
-  x-ogc-profile: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar
+  x-ogc-profile: https://schemas.dgiwg.org/edr/1.0/req/nwp_radar
   x-keywords:
   - cube
   - radius
@@ -88,7 +88,7 @@ paths:
                         rel:
                           const: profile
                         href:
-                          const: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar
+                          const: https://schemas.dgiwg.org/edr/1.0/req/nwp_radar
                   title:
                     type: string
                     const: NWP Radar Profile
@@ -450,6 +450,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:

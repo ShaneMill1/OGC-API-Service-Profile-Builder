@@ -3,8 +3,9 @@
 ====
 [%metadata]
 identifier:: /req/nwp_radar/profile-vrs-values
-statement:: Vertical Reference System (vrs) values SHALL be height in metres.
+statement:: Vertical Reference System (vrs) values SHALL be height in metres, with an unambiguous direction of increase declared.
 part:: The service vrs SHALL be in height metres.
 part:: The service vrs SHALL be EPSG:3855.
 part:: The service vrs SHALL use the vertical datum EGM2008 geoid as the zero-height reference (orthometric height relative to mean sea level).
+part:: The service SHALL declare extent.vertical.positive as "up" or "down" so vertical interval ordering (e.g. pressure levels ordered top-to-bottom vs. bottom-to-top) is unambiguous.
 ====

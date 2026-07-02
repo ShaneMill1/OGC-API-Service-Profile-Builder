@@ -261,6 +261,17 @@ extent_requirements:
       - "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
 ```
 
+**Vertical direction:** OGC API - EDR's vertical extent has no field for which way values increase, which is ambiguous for VRS like pressure levels (providers order them top-to-bottom or bottom-to-top inconsistently — pressure increases as altitude decreases). Set `extent.vertical.positive` (`up`/`down`, following the CF Conventions `positive` attribute) on a collection to make the ordering explicit, and set `extent_requirements.require_vertical_direction: true` to make it mandatory across the whole profile.
+
+```yaml
+vertical:
+  interval:
+    - ["1000", "100"]   # hPa, surface to top of atmosphere
+  values: ["1000", "850", "700", "500", "300", "100"]
+  vrs: "http://www.opengis.net/def/crs/EPSG/0/5798"
+  positive: down   # pressure increases downward, toward the surface
+```
+
 ---
 
 ### `output_formats`
@@ -406,6 +417,11 @@ Controls the Metanorma document header when compiling a PDF with `--pdf`.
 | `keywords` | list | no | Document keywords |
 | `copyright_year` | integer | no | Defaults to 2026 |
 | `external_id` | string | no | OGC external document URI |
+| `colors` | object | no | PDF colour-scheme overrides (hex), mapped to Metanorma `:presentation-metadata-color-*:` |
+| `cover` | object | no | Custom cover-page branding: `logo` (path), plus optional `tagline`, `background`, `text_color`. Generates a replacement cover; needs `pip install 'oapi-profile-builder[pdf]'` |
+| `copyright_holder` | string | no | Sets `:copyright-holder:` — also replaces the PDF footer organisation name (e.g. "OPEN GEOSPATIAL CONSORTIUM") |
+| `boilerplate` | object | no | Replaces the page-ii legal text (`copyright`/`license`/`legal`/`feedback`) via `:boilerplate-authority:` |
+| `suppress_flavor_logo` | bool | no | Removes the flavor's (OGC) logo from the preface/legal page via a targeted PDF-stylesheet override |
 
 ```yaml
 document_metadata:
@@ -431,6 +447,39 @@ document_metadata:
 ```
 
 The cover-page sub-title is produced by Metanorma from the `doc_type` + `doc_subtype` + `status` combination.
+
+### Custom branding (e.g. DGIWG)
+
+With `--pdf`, the document is compiled through the OGC Metanorma flavor by default. The following `document_metadata` fields rebrand it for another SDO, with no OGC branding left:
+
+- `cover` — replaces the OGC cover with a generated cover (logo + title/number/edition/date). Needs `pip install 'oapi-profile-builder[pdf]'`.
+- `colors` — recolours titles, tables, cover and backgrounds via `:presentation-metadata-color-*:`.
+- `boilerplate` — replaces the page-ii legal text (copyright/license/notice/feedback).
+- `copyright_holder` — sets the footer organisation name (replaces "OPEN GEOSPATIAL CONSORTIUM").
+- `suppress_flavor_logo` — removes the OGC logo from the legal page.
+
+Combined with `spec_uri_base` (requirement/conformance identifier namespace), the result carries only legitimate citations to the OGC standards the profile conforms to. See [`examples/nwp_radar.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/nwp_radar.yaml).
+
+```yaml
+document_metadata:
+  doc_number: "DGIWG 134"
+  copyright_holder: DGIWG
+  suppress_flavor_logo: true
+  cover:
+    logo: assets/dgiwg_logo.png
+    tagline: Delivering Military Advantage through multi-national geospatial interoperability
+  colors:
+    cover_text: "#1F3864"
+    title: "#1F3864"
+    table_header: "#1F3864"
+  boilerplate:
+    copyright: "Copyright © 2026 DGIWG. All rights reserved."
+    license: "Use of this document is subject to the DGIWG terms and conditions."
+    legal: "Attention is drawn to the possibility that some elements may be subject to patent rights; DGIWG shall not be held responsible for identifying any such rights."
+    feedback: "Comments on this document should be directed to DGIWG."
+```
+
+> `suppress_flavor_logo` overrides an OGC-flavor XSL template and is coupled to that flavor; the other fields use documented Metanorma attributes.
 
 ---
 

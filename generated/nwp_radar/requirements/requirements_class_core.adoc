@@ -2,7 +2,7 @@
 [requirements_class]
 ====
 [%metadata]
-identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nwp_radar
+identifier:: https://schemas.dgiwg.org/edr/1.0/req/nwp_radar
 target-type:: NWP Radar Profile Profile Standard
 requirement:: /req/nwp_radar/spatial-extents-crs
 requirement:: /req/nwp_radar/profile-bbox-coordinates

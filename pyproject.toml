@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oapi-profile-builder"
-version = "3.1.0"
+version = "3.2.0"
 description = "Authoritative tooling for creating OGC API Service Profiles (EDR, Features)"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -30,6 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 validate = ["schemathesis>=3.0"]
+pdf = ["pillow>=10.0"]
 
 [project.urls]
 Homepage = "https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder"

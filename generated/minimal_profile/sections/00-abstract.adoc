@@ -13,5 +13,5 @@ All questions regarding this document should be directed to the editor or the su
 |===
 h|Name h|Affiliation
 
-| Unknown _(editor)_ |Unknown
+| Unknown _(editor)_ |
 |===

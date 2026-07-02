@@ -415,6 +415,14 @@ paths:
                               type: string
                           vrs:
                             type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
                       custom:
                         type: array
                         items:
@@ -456,6 +464,16 @@ paths:
                                   type: string
                                 output_formats:
                                   type: array
+                                  items:
+                                    type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
                                   items:
                                     type: string
                                 crs_details:
@@ -629,41 +647,6 @@ paths:
                     type: string
                   description:
                     type: string
-  /collections/insitu-observations/radius:
-    get:
-      summary: query insitu-observations by radius
-      description: Real-time in-situ meteorological observations from surface stations.
-        Provides air temperature, wind, humidity, pressure, precipitation, and dew
-        point at standard measurement heights.
-      operationId: QueryRadiusInsituObservations
-      tags:
-      - insitu-observations
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/within.yaml
-      - name: within-units
-        in: query
-        required: true
-        description: Units for the within parameter e.g. km
-        schema:
-          type: string
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
   /collections/insitu-observations/locations:
     get:
       summary: Get pre-defined locations of insitu-observations
@@ -727,6 +710,41 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/locationId.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+  /collections/insitu-observations/radius:
+    get:
+      summary: query insitu-observations by radius
+      description: Real-time in-situ meteorological observations from surface stations.
+        Provides air temperature, wind, humidity, pressure, precipitation, and dew
+        point at standard measurement heights.
+      operationId: QueryRadiusInsituObservations
+      tags:
+      - insitu-observations
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/within.yaml
+      - name: within-units
+        in: query
+        required: true
+        description: Units for the within parameter e.g. km
+        schema:
+          type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
       responses:
         '200':

@@ -10,4 +10,5 @@ step:: Send GET request to /collections/nwp_radar_precipitation
 step:: Verify that the vrs is defined in height metres.
 step:: Verify that the vrs is defined as WKT2 EPSG:3855.
 step:: Verify that the vrs has the vertical datum EGM2008 geoid as the zero-height reference.
+step:: Verify that extent.vertical.positive is present and is either "up" or "down".
 ====

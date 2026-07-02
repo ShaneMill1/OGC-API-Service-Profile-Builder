@@ -73,10 +73,39 @@ class TemporalWithNullBounds(EdrBaseModel):
     trs: str
 
 
+class VerticalWithDirection(Vertical):
+    """Vertical extent with an explicit direction of increasing value.
+
+    OGC API - EDR's Vertical extent has no way to state whether the interval
+    values are ordered "positive up" (e.g. height) or "positive down" (e.g.
+    depth, or pressure levels — which increase in magnitude *downward* toward
+    the surface while decreasing in altitude). Different data providers order
+    pressure-level intervals top-to-bottom or bottom-to-top inconsistently.
+
+    ``positive`` follows the CF Conventions attribute of the same name
+    (https://cfconventions.org/cf-conventions/cf-conventions.html#vertical-coordinate)
+    so profiles can require a single, unambiguous convention.
+    """
+
+    positive: Optional[Literal["up", "down"]] = Field(
+        default=None,
+        description=(
+            "Direction in which vertical extent values increase, per the CF "
+            "Conventions 'positive' attribute. 'up' means values increase with "
+            "altitude/height (e.g. height above ground); 'down' means values "
+            "increase toward the surface/downward (e.g. depth, or pressure — "
+            "since pressure increases as altitude decreases). Recommended "
+            "whenever the VRS alone doesn't make the ordering unambiguous "
+            "(pressure levels are the common case)."
+        ),
+    )
+
+
 class ExtentWithNullBounds(EDRExtent):
     """Extent that uses TemporalWithNullBounds instead of the upstream Temporal."""
 
     temporal: Optional[TemporalWithNullBounds] = None
+    vertical: Optional[VerticalWithDirection] = None  # type: ignore[assignment]
 
 
 class Classification(BaseModel):
@@ -252,6 +281,16 @@ class ExtentRequirements(BaseModel):
         default=None,
         description="Constraint on extent.vertical.vrs — the VRS the vertical extent is expressed in",
     )
+    require_vertical_direction: bool = Field(
+        default=False,
+        description=(
+            "When true, every collection with a vertical extent must declare "
+            "extent.vertical.positive ('up' or 'down'), per the CF Conventions "
+            "'positive' attribute. Use this to force a single, unambiguous "
+            "ordering convention for vertical intervals (e.g. pressure levels) "
+            "across all collections in the profile."
+        ),
+    )
 
     # --- Supported CRS/TRS/VRS (lists — what the service supports for queries) ---
     supported_crs: CrsConstraint | None = Field(
@@ -334,6 +373,91 @@ DocStatus = Literal[
 # Loose ISO 8601 date (YYYY-MM-DD) check for document dates.
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
+# Hex colour (#RGB or #RRGGBB) check for PDF colour overrides.
+_HEX_COLOR_RE = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+
+
+class PdfColors(BaseModel):
+    """PDF colour-scheme overrides.
+
+    Each field maps to a Metanorma OGC ``:presentation-metadata-color-*:``
+    document attribute, letting a profile recolour the generated PDF (e.g. to a
+    DGIWG palette) without a custom Metanorma flavor. Values are hex colours
+    (``#RGB`` or ``#RRGGBB``). See
+    https://www.metanorma.org/author/ogc/ref/document-attributes/#pdf-color-scheme
+    """
+    text: str | None = Field(default=None, description="Body text colour (:presentation-metadata-color-text:)")
+    cover_text: str | None = Field(default=None, description="Cover-page text / section numbers / ToC (:presentation-metadata-color-secondary-shade-1:)")
+    cover_lines: str | None = Field(default=None, description="Preface 'crossing lines' design element (:presentation-metadata-color-secondary-shade-2:)")
+    title: str | None = Field(default=None, description="Clause/table/figure title colour (:presentation-metadata-color-text-title:)")
+    page_background: str | None = Field(default=None, description="Cover and section page background (:presentation-metadata-color-background-page:)")
+    table_header: str | None = Field(default=None, description="Table header background (:presentation-metadata-color-background-table-header:)")
+    table_row_even: str | None = Field(default=None, description="Even table row background (:presentation-metadata-color-background-table-row-even:)")
+    table_row_odd: str | None = Field(default=None, description="Odd table row background (:presentation-metadata-color-background-table-row-odd:)")
+
+    @field_validator("*")
+    @classmethod
+    def _valid_hex(cls, v: str | None) -> str | None:
+        if v is not None and not _HEX_COLOR_RE.match(v):
+            raise ValueError(f"colour '{v}' must be a hex colour like #RRGGBB")
+        return v
+
+    def to_metanorma_attributes(self) -> dict[str, str]:
+        """Map set fields to their Metanorma attribute names → value."""
+        mapping = {
+            "text": "presentation-metadata-color-text",
+            "cover_text": "presentation-metadata-color-secondary-shade-1",
+            "cover_lines": "presentation-metadata-color-secondary-shade-2",
+            "title": "presentation-metadata-color-text-title",
+            "page_background": "presentation-metadata-color-background-page",
+            "table_header": "presentation-metadata-color-background-table-header",
+            "table_row_even": "presentation-metadata-color-background-table-row-even",
+            "table_row_odd": "presentation-metadata-color-background-table-row-odd",
+        }
+        out: dict[str, str] = {}
+        for field, attr in mapping.items():
+            val = getattr(self, field, None)
+            if val:
+                out[attr] = val
+        return out
+
+
+class CoverPage(BaseModel):
+    """Custom PDF cover-page branding (e.g. DGIWG).
+
+    When ``logo`` is set, the builder renders a replacement cover page (logo +
+    the document's title, number, edition and date) and instructs Metanorma to
+    use it in place of the built-in OGC cover, via ``:coverpage-image:`` +
+    ``:presentation-metadata-full-coverpage-replacement:`` (supported for all
+    flavors). Requires Pillow (``pip install oapi-profile-builder[pdf]``).
+    """
+    logo: str = Field(description="Path to the cover logo image (PNG/JPG), relative to the working directory or absolute")
+    tagline: str | None = Field(default=None, description="Optional line rendered under the logo, e.g. an organisation motto")
+    background: str | None = Field(default=None, description="Cover background hex colour (default white)")
+    text_color: str | None = Field(default=None, description="Cover text hex colour (default black)")
+
+    @field_validator("background", "text_color")
+    @classmethod
+    def _valid_hex(cls, v: str | None) -> str | None:
+        if v is not None and not _HEX_COLOR_RE.match(v):
+            raise ValueError(f"colour '{v}' must be a hex colour like #RRGGBB")
+        return v
+
+
+class Boilerplate(BaseModel):
+    """Front-matter legal boilerplate (page ii) — copyright, license, legal notice.
+
+    Replaces the flavor's built-in boilerplate (e.g. the OGC copyright/license/
+    patent notice) via Metanorma's ``:boilerplate-authority:`` mechanism, so a
+    DGIWG (or other SDO) document doesn't carry OGC legal text. Any field left
+    unset is synthesised from ``copyright_holder`` so no flavor default leaks
+    through.
+    """
+    copyright: str | None = Field(default=None, description="Copyright notice paragraph")
+    license: str | None = Field(default=None, description="License agreement paragraph")
+    legal: str | None = Field(default=None, description="Legal/patent notice paragraph")
+    feedback: str | None = Field(default=None, description="Feedback/comments paragraph")
+
 
 class DocumentMetadata(BaseModel):
     """Metanorma/OGC document header metadata for PDF compilation."""
@@ -385,6 +509,39 @@ class DocumentMetadata(BaseModel):
         description="Additional normative references appended to the References section.",
     )
     external_id: str | None = None
+    colors: PdfColors | None = Field(
+        default=None,
+        description="PDF colour-scheme overrides (mapped to Metanorma :presentation-metadata-color-*: attributes).",
+    )
+    cover: CoverPage | None = Field(
+        default=None,
+        description="Custom cover-page branding (logo + generated cover) replacing the built-in OGC cover.",
+    )
+    copyright_holder: str | None = Field(
+        default=None,
+        description=(
+            "Copyright holder organisation (Metanorma :copyright-holder:). Also drives "
+            "the PDF footer organisation name, replacing the flavor default (e.g. 'OPEN "
+            "GEOSPATIAL CONSORTIUM')."
+        ),
+    )
+    boilerplate: Boilerplate | None = Field(
+        default=None,
+        description=(
+            "Front-matter legal boilerplate (copyright/license/legal/feedback) replacing "
+            "the flavor's built-in text via :boilerplate-authority:."
+        ),
+    )
+    suppress_flavor_logo: bool = Field(
+        default=False,
+        description=(
+            "When true, suppress the Metanorma flavor's built-in logo on the preface/"
+            "legal page (e.g. the OGC logo) via a targeted PDF stylesheet override. "
+            "Use when rebranding (e.g. DGIWG) so no OGC logo remains on internal pages. "
+            "Note: this overrides an OGC-flavor XSL template and is coupled to the OGC "
+            "Metanorma flavor."
+        ),
+    )
 
     @field_validator("submission_date", "approval_date", "publication_date")
     @classmethod
@@ -663,6 +820,14 @@ class ServiceProfile(BaseModel):
             vrs = coll.extent.vertical.vrs if coll.extent and coll.extent.vertical else None
             if vrs:
                 _check(f"Collection '{coll.id}' extent.vertical.vrs", vrs, er.extent_vrs)
+
+            # --- extent.vertical.positive required? ---
+            if er.require_vertical_direction and coll.extent and coll.extent.vertical:
+                if getattr(coll.extent.vertical, "positive", None) not in ("up", "down"):
+                    raise ValueError(
+                        f"Collection '{coll.id}' extent.vertical.positive must be "
+                        f"'up' or 'down' (extent_requirements.require_vertical_direction is set)"
+                    )
 
             # --- top-level crs array → supported_crs ---
             if coll.crs and er.supported_crs:

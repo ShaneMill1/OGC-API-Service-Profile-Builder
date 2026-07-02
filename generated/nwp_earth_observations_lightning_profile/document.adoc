@@ -13,6 +13,14 @@
 :role: editor
 :keywords: cube, radius, items, datetime, frequency_of_lightning_flashes_per_unit_area, lightning flashes, lightning
 :submitting-organizations: Met Office; DGIWG
+:presentation-metadata-color-secondary-shade-1: #1F3864
+:presentation-metadata-color-text-title: #1F3864
+:presentation-metadata-color-background-table-header: #1F3864
+:coverpage-image: cover.png
+:presentation-metadata-full-coverpage-replacement: true
+:copyright-holder: DGIWG
+:boilerplate-authority: boilerplate.xml
+:pdf-stylesheet-override: logo_override.xsl
 :mn-document-class: ogc
 :mn-output-extensions: xml,html,pdf
 :local-cache-only:

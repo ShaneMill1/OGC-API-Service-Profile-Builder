@@ -94,7 +94,8 @@
           "values": [
             "0"
           ],
-          "vrs": "https://epsg.org/crs/wkt/id/3855"
+          "vrs": "https://epsg.org/crs/wkt/id/3855",
+          "positive": "up"
         },
         "custom": null
       },
@@ -263,11 +264,12 @@
     },
     {
       "id": "profile-vrs-values",
-      "statement": "Vertical Reference System (vrs) values SHALL be height in metres.",
+      "statement": "Vertical Reference System (vrs) values SHALL be height in metres, with an unambiguous direction of increase declared.",
       "parts": [
         "The service vrs SHALL be in height metres.",
         "The service vrs SHALL be EPSG:3855.",
-        "The service vrs SHALL use the vertical datum EGM2008 geoid as the zero-height reference (orthometric height relative to mean sea level)."
+        "The service vrs SHALL use the vertical datum EGM2008 geoid as the zero-height reference (orthometric height relative to mean sea level).",
+        "The service SHALL declare extent.vertical.positive as \"up\" or \"down\" so vertical interval ordering (e.g. pressure levels ordered top-to-bottom vs. bottom-to-top) is unambiguous."
       ]
     },
     {
@@ -391,7 +393,8 @@
         "Send GET request to /collections/nwp_radar_precipitation",
         "Verify that the vrs is defined in height metres.",
         "Verify that the vrs is defined as WKT2 EPSG:3855.",
-        "Verify that the vrs has the vertical datum EGM2008 geoid as the zero-height reference."
+        "Verify that the vrs has the vertical datum EGM2008 geoid as the zero-height reference.",
+        "Verify that extent.vertical.positive is present and is either \"up\" or \"down\"."
       ]
     },
     {
@@ -537,7 +540,31 @@
     "publication_date": null,
     "notice": null,
     "normative_references": [],
-    "external_id": null
+    "external_id": null,
+    "colors": {
+      "text": null,
+      "cover_text": "#1F3864",
+      "cover_lines": null,
+      "title": "#1F3864",
+      "page_background": null,
+      "table_header": "#1F3864",
+      "table_row_even": null,
+      "table_row_odd": null
+    },
+    "cover": {
+      "logo": "examples/assets/dgiwg_logo.png",
+      "tagline": "Delivering Military Advantage through multi-national geospatial interoperability",
+      "background": null,
+      "text_color": null
+    },
+    "copyright_holder": "DGIWG",
+    "boilerplate": {
+      "copyright": "Copyright © 2026 Defence Geospatial Information Working Group (DGIWG). All rights reserved.",
+      "license": "Use of this document is subject to the DGIWG terms and conditions.",
+      "legal": "Attention is drawn to the possibility that some of the elements of this document may be the subject of patent rights. DGIWG shall not be held responsible for identifying any or all such patent rights.",
+      "feedback": "Comments on this document should be directed to DGIWG."
+    },
+    "suppress_flavor_logo": true
   },
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
@@ -568,6 +595,7 @@
       "pattern": null
     },
     "extent_vrs": null,
+    "require_vertical_direction": true,
     "supported_crs": {
       "allowed": [
         "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
@@ -613,7 +641,7 @@
   ],
   "allow_post_queries": true,
   "collection_id_pattern": null,
-  "spec_uri_base": "http://www.opengis.net/spec/ogcapi-edr-3/1.0",
+  "spec_uri_base": "https://schemas.dgiwg.org/edr/1.0",
   "parameter_name_pattern": "^[a-z][a-z0-9_]*$",
   "parameter_schema": null
 }

@@ -1,0 +1,25 @@
+<boilerplate>
+  <copyright-statement>
+    <clause>
+      <title>Copyright notice</title>
+      <p id="bp-copyright">Copyright © 2026 Defence Geospatial Information Working Group (DGIWG). All rights reserved.</p>
+    </clause>
+  </copyright-statement>
+  <license-statement>
+    <clause>
+      <title>License Agreement</title>
+      <p id="bp-license">Use of this document is subject to the DGIWG terms and conditions.</p>
+    </clause>
+  </license-statement>
+  <legal-statement>
+    <clause>
+      <title>Note</title>
+      <p id="bp-legal">Attention is drawn to the possibility that some of the elements of this document may be the subject of patent rights. DGIWG shall not be held responsible for identifying any or all such patent rights.</p>
+    </clause>
+  </legal-statement>
+  <feedback-statement>
+    <clause>
+      <p id="bp-feedback">Comments on this document should be directed to DGIWG.</p>
+    </clause>
+  </feedback-statement>
+</boilerplate>

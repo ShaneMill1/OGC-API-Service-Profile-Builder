@@ -20,6 +20,9 @@ keywords:
 # enum/pattern constraints so runtime tools can enforce them.
 allow_post_queries: true
 
+# Publish requirement/conformance identifiers under the DGIWG namespace.
+spec_uri_base: "https://schemas.dgiwg.org/edr/1.0"
+
 required_conformance_classes:
   - "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core"
   - "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections"
@@ -129,13 +132,16 @@ collections:
         description: >
           Number of occurrences of a lightning flash event per unit area per unit time.
         observedProperty:
-          id: "http://vocab.nerc.ac.uk/standard_name/lightning_flash_rate"
+          # CF standard name (canonical units m-2 s-1). The cfconventions.org
+          # table does not deep-link to individual names, so we reference the
+          # table itself (matches the approach used in the NWP Radar profile).
+          id: "https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"
           label: Frequency of Lightning Flashes per Unit Area
         unit:
-          label: "Number of oscillations of a wave, or the number of occurrences of an event, per unit time (second): metres squared per second."
+          label: "Number of lightning flash events per unit area per unit time: per square metre per second."
           symbol:
             value: "m-2 s-1"
-            type: "http://www.opengis.net/def/uom/UCUM/"
+            type: "https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"
 
 # ── Normative requirements and abstract tests ─────────────────────────────
 # Drive the AsciiDoc/PDF output. Tests must reference a valid requirement id.
@@ -208,3 +214,21 @@ document_metadata:
     - lightning flashes
     - lightning
   copyright_year: 2026
+  # DGIWG branding: replace the OGC cover with a generated cover (logo + the
+  # title/doc number/edition/date) and recolour the PDF to a DGIWG palette.
+  cover:
+    logo: examples/assets/dgiwg_logo.png
+    tagline: Delivering Military Advantage through multi-national geospatial interoperability
+  colors:
+    cover_text: "#1F3864"
+    title: "#1F3864"
+    table_header: "#1F3864"
+  # Replace OGC copyright/footer/legal boilerplate with DGIWG's.
+  copyright_holder: DGIWG
+  # Remove the OGC logo from the preface/legal page (rebranding).
+  suppress_flavor_logo: true
+  boilerplate:
+    copyright: "Copyright © 2026 Defence Geospatial Information Working Group (DGIWG). All rights reserved."
+    license: "Use of this document is subject to the DGIWG terms and conditions."
+    legal: "Attention is drawn to the possibility that some of the elements of this document may be the subject of patent rights. DGIWG shall not be held responsible for identifying any or all such patent rights."
+    feedback: "Comments on this document should be directed to DGIWG."

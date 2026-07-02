@@ -27,6 +27,65 @@
       "title": "AbstractTest",
       "type": "object"
     },
+    "Boilerplate": {
+      "description": "Front-matter legal boilerplate (page ii) \u2014 copyright, license, legal notice.\n\nReplaces the flavor's built-in boilerplate (e.g. the OGC copyright/license/\npatent notice) via Metanorma's ``:boilerplate-authority:`` mechanism, so a\nDGIWG (or other SDO) document doesn't carry OGC legal text. Any field left\nunset is synthesised from ``copyright_holder`` so no flavor default leaks\nthrough.",
+      "properties": {
+        "copyright": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Copyright notice paragraph",
+          "title": "Copyright"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "License agreement paragraph",
+          "title": "License"
+        },
+        "legal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Legal/patent notice paragraph",
+          "title": "Legal"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Feedback/comments paragraph",
+          "title": "Feedback"
+        }
+      },
+      "title": "Boilerplate",
+      "type": "object"
+    },
     "Category": {
       "additionalProperties": false,
       "properties": {
@@ -367,6 +426,60 @@
         "within_units"
       ],
       "title": "CorridorVariables",
+      "type": "object"
+    },
+    "CoverPage": {
+      "description": "Custom PDF cover-page branding (e.g. DGIWG).\n\nWhen ``logo`` is set, the builder renders a replacement cover page (logo +\nthe document's title, number, edition and date) and instructs Metanorma to\nuse it in place of the built-in OGC cover, via ``:coverpage-image:`` +\n``:presentation-metadata-full-coverpage-replacement:`` (supported for all\nflavors). Requires Pillow (``pip install oapi-profile-builder[pdf]``).",
+      "properties": {
+        "logo": {
+          "description": "Path to the cover logo image (PNG/JPG), relative to the working directory or absolute",
+          "title": "Logo",
+          "type": "string"
+        },
+        "tagline": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional line rendered under the logo, e.g. an organisation motto",
+          "title": "Tagline"
+        },
+        "background": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cover background hex colour (default white)",
+          "title": "Background"
+        },
+        "text_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cover text hex colour (default black)",
+          "title": "Text Color"
+        }
+      },
+      "required": [
+        "logo"
+      ],
+      "title": "CoverPage",
       "type": "object"
     },
     "CrsConstraint": {
@@ -775,6 +888,61 @@
           ],
           "default": null,
           "title": "External Id"
+        },
+        "colors": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PdfColors"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "PDF colour-scheme overrides (mapped to Metanorma :presentation-metadata-color-*: attributes)."
+        },
+        "cover": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CoverPage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Custom cover-page branding (logo + generated cover) replacing the built-in OGC cover."
+        },
+        "copyright_holder": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Copyright holder organisation (Metanorma :copyright-holder:). Also drives the PDF footer organisation name, replacing the flavor default (e.g. 'OPEN GEOSPATIAL CONSORTIUM').",
+          "title": "Copyright Holder"
+        },
+        "boilerplate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Boilerplate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Front-matter legal boilerplate (copyright/license/legal/feedback) replacing the flavor's built-in text via :boilerplate-authority:."
+        },
+        "suppress_flavor_logo": {
+          "default": false,
+          "description": "When true, suppress the Metanorma flavor's built-in logo on the preface/legal page (e.g. the OGC logo) via a targeted PDF stylesheet override. Use when rebranding (e.g. DGIWG) so no OGC logo remains on internal pages. Note: this overrides an OGC-flavor XSL template and is coupled to the OGC Metanorma flavor.",
+          "title": "Suppress Flavor Logo",
+          "type": "boolean"
         }
       },
       "required": [
@@ -995,6 +1163,12 @@
           "default": null,
           "description": "Constraint on extent.vertical.vrs \u2014 the VRS the vertical extent is expressed in"
         },
+        "require_vertical_direction": {
+          "default": false,
+          "description": "When true, every collection with a vertical extent must declare extent.vertical.positive ('up' or 'down'), per the CF Conventions 'positive' attribute. Use this to force a single, unambiguous ordering convention for vertical intervals (e.g. pressure levels) across all collections in the profile.",
+          "title": "Require Vertical Direction",
+          "type": "boolean"
+        },
         "supported_crs": {
           "anyOf": [
             {
@@ -1059,7 +1233,7 @@
         "vertical": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Vertical"
+              "$ref": "#/$defs/VerticalWithDirection"
             },
             {
               "type": "null"
@@ -1479,6 +1653,117 @@
         "observedProperty"
       ],
       "title": "Parameter",
+      "type": "object"
+    },
+    "PdfColors": {
+      "description": "PDF colour-scheme overrides.\n\nEach field maps to a Metanorma OGC ``:presentation-metadata-color-*:``\ndocument attribute, letting a profile recolour the generated PDF (e.g. to a\nDGIWG palette) without a custom Metanorma flavor. Values are hex colours\n(``#RGB`` or ``#RRGGBB``). See\nhttps://www.metanorma.org/author/ogc/ref/document-attributes/#pdf-color-scheme",
+      "properties": {
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Body text colour (:presentation-metadata-color-text:)",
+          "title": "Text"
+        },
+        "cover_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cover-page text / section numbers / ToC (:presentation-metadata-color-secondary-shade-1:)",
+          "title": "Cover Text"
+        },
+        "cover_lines": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Preface 'crossing lines' design element (:presentation-metadata-color-secondary-shade-2:)",
+          "title": "Cover Lines"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Clause/table/figure title colour (:presentation-metadata-color-text-title:)",
+          "title": "Title"
+        },
+        "page_background": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cover and section page background (:presentation-metadata-color-background-page:)",
+          "title": "Page Background"
+        },
+        "table_header": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Table header background (:presentation-metadata-color-background-table-header:)",
+          "title": "Table Header"
+        },
+        "table_row_even": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Even table row background (:presentation-metadata-color-background-table-row-even:)",
+          "title": "Table Row Even"
+        },
+        "table_row_odd": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Odd table row background (:presentation-metadata-color-background-table-row-odd:)",
+          "title": "Table Row Odd"
+        }
+      },
+      "title": "PdfColors",
       "type": "object"
     },
     "Provider": {
@@ -2132,6 +2417,57 @@
         "vrs"
       ],
       "title": "Vertical",
+      "type": "object"
+    },
+    "VerticalWithDirection": {
+      "additionalProperties": false,
+      "description": "Vertical extent with an explicit direction of increasing value.\n\nOGC API - EDR's Vertical extent has no way to state whether the interval\nvalues are ordered \"positive up\" (e.g. height) or \"positive down\" (e.g.\ndepth, or pressure levels \u2014 which increase in magnitude *downward* toward\nthe surface while decreasing in altitude). Different data providers order\npressure-level intervals top-to-bottom or bottom-to-top inconsistently.\n\n``positive`` follows the CF Conventions attribute of the same name\n(https://cfconventions.org/cf-conventions/cf-conventions.html#vertical-coordinate)\nso profiles can require a single, unambiguous convention.",
+      "properties": {
+        "interval": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Interval",
+          "type": "array"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Values",
+          "type": "array"
+        },
+        "vrs": {
+          "title": "Vrs",
+          "type": "string"
+        },
+        "positive": {
+          "anyOf": [
+            {
+              "enum": [
+                "up",
+                "down"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direction in which vertical extent values increase, per the CF Conventions 'positive' attribute. 'up' means values increase with altitude/height (e.g. height above ground); 'down' means values increase toward the surface/downward (e.g. depth, or pressure \u2014 since pressure increases as altitude decreases). Recommended whenever the VRS alone doesn't make the ordering unambiguous (pressure levels are the common case).",
+          "title": "Positive"
+        }
+      },
+      "required": [
+        "interval",
+        "values",
+        "vrs"
+      ],
+      "title": "VerticalWithDirection",
       "type": "object"
     }
   },
