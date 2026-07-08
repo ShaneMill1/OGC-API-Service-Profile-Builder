@@ -1,5 +1,0 @@
-== Terms, Definitions and Abbreviated Terms
-
-This document uses the terms defined in https://portal.ogc.org/public_ogc/directives/directives.php[OGC Policy Directive 49], which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of International Standards. In particular, the word "shall" (not "must") is the verb form used to indicate a requirement to be strictly followed to conform to this standard.
-
-This document also uses terms defined in OGC API - EDR Part 1: Core.
