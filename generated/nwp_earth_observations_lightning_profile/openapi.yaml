@@ -687,6 +687,84 @@ paths:
                     type: string
                   description:
                     type: string
+  /collections/earth_observations_lightning/cube:
+    get:
+      summary: query earth_observations_lightning by cube
+      description: NWP Earth Observations Lightning data providing frequency of lightning
+        flashes per unit area. Supports cube, radius, and items queries. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryCubeEarthObservationsLightning
+      tags:
+      - earth_observations_lightning
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/bbox.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+    post:
+      summary: query (POST) earth_observations_lightning by cube
+      description: NWP Earth Observations Lightning data providing frequency of lightning
+        flashes per unit area. Supports cube, radius, and items queries. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryPostCubeEarthObservationsLightning
+      tags:
+      - earth_observations_lightning
+      requestBody:
+        required: true
+        description: Query parameters for cube request
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - bbox
+              properties:
+                bbox:
+                  type: array
+                  description: Bounding box [minLon, minLat, maxLon, maxLat]
+                  items:
+                    type: number
+                  minItems: 4
+                  maxItems: 6
+                datetime:
+                  type: string
+                  description: RFC 3339 datetime or interval
+                parameter-name:
+                  type: string
+                  description: Comma-separated list of parameter names to return
+                z:
+                  type: string
+                  description: Vertical level(s)
+                f:
+                  type: string
+                  description: Response format
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
   /collections/earth_observations_lightning/radius:
     get:
       summary: query earth_observations_lightning by radius
@@ -751,84 +829,6 @@ paths:
                 within-units:
                   type: string
                   description: Units for the within parameter (e.g. km)
-                datetime:
-                  type: string
-                  description: RFC 3339 datetime or interval
-                parameter-name:
-                  type: string
-                  description: Comma-separated list of parameter names to return
-                z:
-                  type: string
-                  description: Vertical level(s)
-                f:
-                  type: string
-                  description: Response format
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-  /collections/earth_observations_lightning/cube:
-    get:
-      summary: query earth_observations_lightning by cube
-      description: NWP Earth Observations Lightning data providing frequency of lightning
-        flashes per unit area. Supports cube, radius, and items queries. Datetime
-        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
-      operationId: QueryCubeEarthObservationsLightning
-      tags:
-      - earth_observations_lightning
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/bbox.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-    post:
-      summary: query (POST) earth_observations_lightning by cube
-      description: NWP Earth Observations Lightning data providing frequency of lightning
-        flashes per unit area. Supports cube, radius, and items queries. Datetime
-        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
-      operationId: QueryPostCubeEarthObservationsLightning
-      tags:
-      - earth_observations_lightning
-      requestBody:
-        required: true
-        description: Query parameters for cube request
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - bbox
-              properties:
-                bbox:
-                  type: array
-                  description: Bounding box [minLon, minLat, maxLon, maxLat]
-                  items:
-                    type: number
-                  minItems: 4
-                  maxItems: 6
                 datetime:
                   type: string
                   description: RFC 3339 datetime or interval

@@ -9,15 +9,20 @@
 :published-date: 2026-01-01
 :issued-date: 2026-01-01
 :received-date: 2026-01-01
+:status: draft
 :keywords: NWP, earth observations, cube, radius, items, datetime, precipitation_amount, radar
 :presentation-metadata-color-secondary-shade-1: #1F3864
 :presentation-metadata-color-text-title: #1F3864
 :presentation-metadata-color-background-table-header: #1F3864
+:presentation-metadata-color-background-page: #FFFFFF
+:presentation-metadata-color-secondary-shade-2: #FFFFFF
 :coverpage-image: cover.png
 :presentation-metadata-full-coverpage-replacement: true
 :copyright-holder: DGIWG
+:body-font: Source Sans Pro
+:header-font: Source Sans Pro
 :boilerplate-authority: boilerplate.xml
-:pdf-stylesheet-override: logo_override.xsl
+:pdf-stylesheet-override: pdf_override.xsl
 :mn-document-class: ogc
 :mn-output-extensions: xml,html,pdf
 :local-cache-only:
@@ -39,7 +44,13 @@ All questions regarding this document should be directed to the editor or the su
 |===
 h|Name h|Affiliation
 
-| Unknown _(editor)_ |
+| Austria |Institute of Military Geography
+| France |Institut National de l'Information Géographique et Forestière (IGN)
+| Finland |Finnish Defence Forces
+| Germany |Bundeswehr Geoinformation Centre (BGIC)
+| NATO |NATO Maritime GEOMETOC Centre of Excellence
+| United Kingdom |Met Office (MO), UK Strategic Command, DSTL
+| United States |National Geospatial-Intelligence Agency (NGA)
 |===
 
 [.preface]
@@ -78,6 +89,21 @@ The following conformance classes are defined:
 This document uses the terms defined in link:++https://portal.ogc.org/public_ogc/directives/directives.php++[OGC Policy Directive 49], which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of International Standards. In particular, the word "shall" (not "must") is the verb form used to indicate a requirement to be strictly followed to conform to this standard.
 
 This document also uses terms defined in OGC API - EDR Part 1: Core.
+
+=== service profile
+
+A named, referenceable set of constraints and additional requirements applied to an OGC API - EDR implementation to satisfy a specific community or mission need.
+
+
+_SOURCE: OGC API - EDR Part 3: Service Profiles (draft)_
+
+=== coverage
+
+A feature that acts as a function returning values from its range for any position within its spatiotemporal domain.
+
+
+_SOURCE: OGC 19-086r6, OGC API - Environmental Data Retrieval Standard_
+
 
 == Requirements
 

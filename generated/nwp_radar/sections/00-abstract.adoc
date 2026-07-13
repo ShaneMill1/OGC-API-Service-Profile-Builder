@@ -15,5 +15,11 @@ All questions regarding this document should be directed to the editor or the su
 |===
 h|Name h|Affiliation
 
-| Unknown _(editor)_ |
+| Austria |Institute of Military Geography
+| France |Institut National de l'Information Géographique et Forestière (IGN)
+| Finland |Finnish Defence Forces
+| Germany |Bundeswehr Geoinformation Centre (BGIC)
+| NATO |NATO Maritime GEOMETOC Centre of Excellence
+| United Kingdom |Met Office (MO), UK Strategic Command, DSTL
+| United States |National Geospatial-Intelligence Agency (NGA)
 |===

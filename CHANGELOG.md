@@ -1,5 +1,30 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.3.0] - 2026-07-13
+
+### Added
+
+- **PDF design-element suppression (`suppress_design_elements`)**: single switch to strip the OGC flavor's decorative crossing-lines motif, circled clause numbers, and title underlines via a consolidated PDF stylesheet override. Produces a plainer document style suitable for rebranding (e.g. DGIWG). Also available as individual flags: `suppress_crossing_lines`, `plain_section_numbers`, `suppress_title_underlines`.
+- **Every-page PDF watermark (`page_watermark`)**: renders diagonal semi-transparent text (e.g. "DRAFT") on every PDF page via the stylesheet override, distinct from the cover-only watermark.
+- **Section-divider page rebranding**: when debranding or using a custom `page_background`, the section-divider pages switch from the OGC navy to a light background with readable (dark) numbers and titles.
+- **PDF font overrides (`body_font`, `header_font`, `monospace_font`)**: set the body, heading, and monospace typeface (e.g. "Source Sans Pro") without a custom Metanorma flavor. Also available via the structured `fonts` block (maps to `:body-font:`, `:header-font:`, `:monospace-font:`).
+- **Custom cover fonts (`cover.font_regular`, `cover.font_bold`, `cover.font_italic`)**: the generated cover image can now use a profile-specified typeface (file path or fontconfig family name) instead of the bundled DejaVu Sans.
+- **Cover watermark (`cover.watermark`)**: optional diagonal watermark stamped on the generated cover image.
+- **Terms and Definitions (`document_metadata.terms`)**: profile-supplied glossary entries appended to the Terms and Definitions section, each with a definition and optional source.
+- **PyPI publish job** added to the GitHub Actions release workflow (trusted publishing via `pypa/gh-action-pypi-publish`).
+
+### Changed
+
+- **Consolidated PDF stylesheet override**: the previous single-purpose `logo_override.xsl` has been replaced by `pdf_override.xsl`, which merges all XSL template overrides (logo suppression, crossing lines, section numbers, title underlines, watermark, body font) into one file referenced by `:pdf-stylesheet-override:`.
+- **`compile_pdf` now accepts the profile** so custom fonts declared in `document_metadata` can be pre-installed into the fontist cache before Metanorma compilation.
+- **Cover font resolution** refactored: uses fontconfig (`fc-match`) to resolve family names to font files, with cascading fallback to DejaVu Sans.
+- **`profile.schema.json` regenerated** to reflect all new model fields.
+- Regenerated example profile artifacts (`nwp_earth_observations_lightning_profile`, `nwp_radar`) with DGIWG branding updates (design-element suppression, Source Sans Pro fonts, DRAFT watermark, submitters list).
+
+### Fixed
+
+- `cli.py`: `compile_pdf` call now passes the profile object so font pre-installation works correctly.
+
 ## [3.2.1] - 2026-07-02
 
 ### Fixed

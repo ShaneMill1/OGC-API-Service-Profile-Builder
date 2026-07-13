@@ -743,6 +743,126 @@ paths:
                     type: string
                   description:
                     type: string
+  /collections/nwp_radar_precipitation/cube:
+    get:
+      summary: query nwp_radar_precipitation by cube
+      description: NWP Radar Observations providing precipitation information. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryCubeNwpRadarPrecipitation
+      tags:
+      - nwp_radar_precipitation
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/bbox.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - name: f
+        in: query
+        required: false
+        description: The optional f parameter indicates the output format which the
+          server shall provide as part of the response document. Defaults to GeoTIFF
+          for this query.
+        schema:
+          type: string
+          enum:
+          - json
+          - html
+          - application/json
+          - application/grib; edition=2
+          - image/tiff; application=geotiff
+          - application/x-hdf
+          - application/netcdf
+          - image/png
+          default: image/tiff; application=geotiff
+        style: form
+        explode: false
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/grib; edition=2:
+              schema:
+                type: object
+            image/tiff; application=geotiff:
+              schema:
+                type: object
+            application/x-hdf:
+              schema:
+                type: object
+            application/netcdf:
+              schema:
+                type: object
+            image/png:
+              schema:
+                $ref: https://w3c.github.io/png/
+    post:
+      summary: query (POST) nwp_radar_precipitation by cube
+      description: NWP Radar Observations providing precipitation information. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryPostCubeNwpRadarPrecipitation
+      tags:
+      - nwp_radar_precipitation
+      requestBody:
+        required: true
+        description: Query parameters for cube request
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - bbox
+              properties:
+                bbox:
+                  type: array
+                  description: Bounding box [minLon, minLat, maxLon, maxLat]
+                  items:
+                    type: number
+                  minItems: 4
+                  maxItems: 6
+                datetime:
+                  type: string
+                  description: RFC 3339 datetime or interval
+                parameter-name:
+                  type: string
+                  description: Comma-separated list of parameter names to return
+                z:
+                  type: string
+                  description: Vertical level(s)
+                f:
+                  type: string
+                  description: Response format
+                  default: image/tiff; application=geotiff
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+            application/grib; edition=2:
+              schema:
+                type: object
+            image/tiff; application=geotiff:
+              schema:
+                type: object
+            application/x-hdf:
+              schema:
+                type: object
+            application/netcdf:
+              schema:
+                type: object
+            image/png:
+              schema:
+                $ref: https://w3c.github.io/png/
   /collections/nwp_radar_precipitation/radius:
     get:
       summary: query nwp_radar_precipitation by radius
@@ -836,126 +956,6 @@ paths:
                 within-units:
                   type: string
                   description: Units for the within parameter (e.g. km)
-                datetime:
-                  type: string
-                  description: RFC 3339 datetime or interval
-                parameter-name:
-                  type: string
-                  description: Comma-separated list of parameter names to return
-                z:
-                  type: string
-                  description: Vertical level(s)
-                f:
-                  type: string
-                  description: Response format
-                  default: image/tiff; application=geotiff
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/grib; edition=2:
-              schema:
-                type: object
-            image/tiff; application=geotiff:
-              schema:
-                type: object
-            application/x-hdf:
-              schema:
-                type: object
-            application/netcdf:
-              schema:
-                type: object
-            image/png:
-              schema:
-                $ref: https://w3c.github.io/png/
-  /collections/nwp_radar_precipitation/cube:
-    get:
-      summary: query nwp_radar_precipitation by cube
-      description: NWP Radar Observations providing precipitation information. Datetime
-        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
-      operationId: QueryCubeNwpRadarPrecipitation
-      tags:
-      - nwp_radar_precipitation
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/bbox.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - name: f
-        in: query
-        required: false
-        description: The optional f parameter indicates the output format which the
-          server shall provide as part of the response document. Defaults to GeoTIFF
-          for this query.
-        schema:
-          type: string
-          enum:
-          - json
-          - html
-          - application/json
-          - application/grib; edition=2
-          - image/tiff; application=geotiff
-          - application/x-hdf
-          - application/netcdf
-          - image/png
-          default: image/tiff; application=geotiff
-        style: form
-        explode: false
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/grib; edition=2:
-              schema:
-                type: object
-            image/tiff; application=geotiff:
-              schema:
-                type: object
-            application/x-hdf:
-              schema:
-                type: object
-            application/netcdf:
-              schema:
-                type: object
-            image/png:
-              schema:
-                $ref: https://w3c.github.io/png/
-    post:
-      summary: query (POST) nwp_radar_precipitation by cube
-      description: NWP Radar Observations providing precipitation information. Datetime
-        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
-      operationId: QueryPostCubeNwpRadarPrecipitation
-      tags:
-      - nwp_radar_precipitation
-      requestBody:
-        required: true
-        description: Query parameters for cube request
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - bbox
-              properties:
-                bbox:
-                  type: array
-                  description: Bounding box [minLon, minLat, maxLon, maxLat]
-                  items:
-                    type: number
-                  minItems: 4
-                  maxItems: 6
                 datetime:
                   type: string
                   description: RFC 3339 datetime or interval

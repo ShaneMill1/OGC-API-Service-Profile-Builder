@@ -31,6 +31,8 @@ so no system font paths are required.
 
 from __future__ import annotations
 
+import shutil
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -40,25 +42,83 @@ _PAGE_H = 1754
 
 _COVER_FILENAME = "cover.png"
 
+# Default font family (bundled with Pillow, resolved by name).
+_DEFAULT_REGULAR = "DejaVuSans.ttf"
+_DEFAULT_BOLD = "DejaVuSans-Bold.ttf"
+_DEFAULT_ITALIC = "DejaVuSans-Oblique.ttf"
 
-def _load_font(bold: bool, size: int):
-    from PIL import ImageFont
 
-    name = "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"
-    try:
-        return ImageFont.truetype(name, size)
-    except Exception:
-        # Last-resort fallback; not scalable but keeps rendering from failing.
+def _resolve_font_file(spec: str | None, *, bold: bool = False, italic: bool = False) -> str | None:
+    """Resolve a user font spec to a usable font file path.
+
+    ``spec`` may be either a path to a ``.ttf``/``.otf`` file or a font family
+    name (e.g. ``"Source Sans Pro"``). Family names are resolved via
+    ``fc-match`` (fontconfig) when available. Returns ``None`` when the spec is
+    empty or cannot be resolved, so the caller can fall back to a default.
+    """
+    if not spec:
+        return None
+    p = Path(spec).expanduser()
+    if p.is_file():
+        return str(p)
+    if shutil.which("fc-match"):
+        styles = []
+        if bold:
+            styles.append("Bold")
+        if italic:
+            styles.append("Italic")
+        query = spec if not styles else f"{spec}:style={' '.join(styles)}"
+        try:
+            out = subprocess.run(
+                ["fc-match", "-f", "%{file}", query],
+                capture_output=True, text=True, timeout=5, check=False,
+            )
+            path = out.stdout.strip()
+            if path and Path(path).is_file():
+                return path
+        except Exception:
+            pass
+    return None
+
+
+class _FontSet:
+    """Resolves cover fonts from optional profile config, with sane defaults.
+
+    Each of ``regular``/``bold``/``italic`` may be a font-file path or a family
+    name; unset styles are derived from ``regular`` (with the matching style) and
+    ultimately fall back to the bundled DejaVu family.
+    """
+
+    def __init__(self, cover=None):
+        self.regular = getattr(cover, "font_regular", None) if cover else None
+        self.bold = getattr(cover, "font_bold", None) if cover else None
+        self.italic = getattr(cover, "font_italic", None) if cover else None
+
+    def _font(self, size: int, *, bold: bool = False, italic: bool = False):
+        from PIL import ImageFont
+
+        # Prefer an explicit per-style spec, else derive from the regular family.
+        explicit = self.bold if bold else (self.italic if italic else self.regular)
+        candidates = [
+            _resolve_font_file(explicit, bold=bold, italic=italic),
+            _resolve_font_file(self.regular, bold=bold, italic=italic),
+        ]
+        default = _DEFAULT_BOLD if bold else (_DEFAULT_ITALIC if italic else _DEFAULT_REGULAR)
+        candidates.append(default)
+        for cand in candidates:
+            if not cand:
+                continue
+            try:
+                return ImageFont.truetype(cand, size)
+            except Exception:
+                continue
         return ImageFont.load_default()
 
+    def regular_font(self, size: int, bold: bool = False):
+        return self._font(size, bold=bold)
 
-def _italic_font(size: int):
-    from PIL import ImageFont
-
-    try:
-        return ImageFont.truetype("DejaVuSans-Oblique.ttf", size)
-    except Exception:
-        return _load_font(False, size)
+    def italic_font(self, size: int):
+        return self._font(size, italic=True)
 
 
 def _format_date(iso_date: str | None) -> str | None:
@@ -100,6 +160,7 @@ def build_cover_image(profile, output_dir: Path) -> str | None:
 
     bg = cover.background or "#FFFFFF"
     fg = cover.text_color or "#000000"
+    fonts = _FontSet(cover)
 
     page = Image.new("RGB", (_PAGE_W, _PAGE_H), bg)
     draw = ImageDraw.Draw(page)
@@ -129,33 +190,59 @@ def build_cover_image(profile, output_dir: Path) -> str | None:
 
     # --- Tagline (italic) ---
     if cover.tagline:
-        y = centered(cover.tagline, _italic_font(30), y, fg) + 60
+        y = centered(cover.tagline, fonts.italic_font(30), y, fg) + 60
 
     # --- Document number ---
     if m and m.doc_number:
-        y = centered(m.doc_number, _load_font(True, 46), y, fg) + 40
+        y = centered(m.doc_number, fonts.regular_font(46, bold=True), y, fg) + 40
 
     # --- Edition ---
     edition = getattr(profile, "version", None)
     if edition:
-        y = centered(f"Edition {edition}", _load_font(False, 28), y, fg) + 24
+        y = centered(f"Edition {edition}", fonts.regular_font(28), y, fg) + 24
 
     # --- Date ---
     date_str = _format_date(m.publication_date if m else None)
     if date_str:
-        y = centered(f"Dated {date_str}", _load_font(False, 28), y, fg) + 80
+        y = centered(f"Dated {date_str}", fonts.regular_font(28), y, fg) + 80
 
     # --- Title (large, bold, wrapped) ---
     title = getattr(profile, "title", "") or ""
-    title_font = _load_font(True, 54)
+    title_font = fonts.regular_font(54, bold=True)
     for line in _wrap(draw, title, title_font, _PAGE_W - 240):
         y = centered(line, title_font, y, fg) + 16
+
+    # --- Draft watermark (diagonal, semi-transparent) ---
+    if getattr(cover, "watermark", None):
+        _stamp_watermark(page, cover.watermark, fonts)
 
     target = (output_dir / _COVER_FILENAME).resolve()
     if not str(target).startswith(str(output_dir.resolve())):
         raise RuntimeError(f"Refusing to write cover outside output directory: {target}")
     page.save(target)
     return _COVER_FILENAME
+
+
+def _stamp_watermark(page, text: str, fonts: "_FontSet") -> None:
+    """Overlay a large, diagonal, semi-transparent watermark on the cover.
+
+    Rendered on its own RGBA layer and rotated 45°, then alpha-composited onto
+    the (RGB) cover page. Gives a clear 'DRAFT' style indication on the cover;
+    an every-page watermark additionally requires the Metanorma layer.
+    """
+    from PIL import Image, ImageDraw
+
+    layer = Image.new("RGBA", page.size, (0, 0, 0, 0))
+    ldraw = ImageDraw.Draw(layer)
+    font = fonts.regular_font(150, bold=True)
+    bbox = ldraw.textbbox((0, 0), text, font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    ldraw.text(
+        ((page.width - tw) / 2, (page.height - th) / 2),
+        text, font=font, fill=(200, 0, 0, 70),
+    )
+    layer = layer.rotate(45, resample=Image.BICUBIC, center=(page.width / 2, page.height / 2))
+    page.paste(Image.alpha_composite(page.convert("RGBA"), layer).convert("RGB"), (0, 0))
 
 
 def _wrap(draw, text: str, font, max_width: int) -> list[str]:

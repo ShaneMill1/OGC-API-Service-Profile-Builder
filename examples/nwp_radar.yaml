@@ -63,13 +63,18 @@ document_metadata:
     - precipitation_amount
     - radar
   copyright_year: 2026
+  # Draft status drives the Metanorma cover sub-title; combined with the
+  # page_watermark below it clearly marks the document as a draft.
+  status: draft
   # DGIWG branding: replace the OGC cover with a generated cover (logo + the
   # title/doc number/edition/date) and recolour the PDF to a DGIWG palette.
   # `logo` is a path relative to the working directory when running `generate`.
   cover:
-    logo: examples/assets/dgiwg_logo.png
+    logo: examples/assets/DGIWG_logo.png
     tagline: Delivering Military Advantage through multi-national geospatial interoperability
   colors:
+    # DGIWG navy for cover text, clause titles, table headers and the (now
+    # plain, non-circled) section-divider numbers/titles.
     cover_text: "#1F3864"
     title: "#1F3864"
     table_header: "#1F3864"
@@ -77,11 +82,54 @@ document_metadata:
   copyright_holder: DGIWG
   # Remove the OGC logo from the preface/legal page (rebranding).
   suppress_flavor_logo: true
+  # Single switch for a plain, non-OGC page design: removes the blue
+  # 'crossing lines with dots' motif, renders section numbers as plain text
+  # ("1 Scope" instead of a circled number), drops the short rule beneath
+  # section titles, and rebrands the full-blue section-divider pages to a clean
+  # white page with DGIWG-navy number and title.
+  suppress_design_elements: true
+  # Every-page diagonal "DRAFT" watermark (distinct from cover.watermark, which
+  # marks only the cover image). Remove once the profile is approved.
+  page_watermark: DRAFT
+  # DGIWG house font (sans-serif) for the PDF body and headings.
+  # Requires Source Sans Pro installed or present in ~/.fontist/fonts.
+  body_font: Source Sans Pro
+  header_font: Source Sans Pro
   boilerplate:
-    copyright: "Copyright © 2026 Defence Geospatial Information Working Group (DGIWG). All rights reserved."
+    copyright: "© Copyright DGIWG, some rights reserved - CC BY 2.0\nhttps://creativecommons.org/licenses/by/2.0/"
     license: "Use of this document is subject to the DGIWG terms and conditions."
     legal: "Attention is drawn to the possibility that some of the elements of this document may be the subject of patent rights. DGIWG shall not be held responsible for identifying any or all such patent rights."
     feedback: "Comments on this document should be directed to DGIWG."
+  # Profile-supplied terms appended to the Terms and Definitions section. Use
+  # this to extend the vocabulary for EDR Part 3 (Service Profiles) or, when a
+  # profile adopts EDR Part 2, for publish/subscribe terms.
+  terms:
+    - term: service profile
+      definition: >
+        A named, referenceable set of constraints and additional requirements
+        applied to an OGC API - EDR implementation to satisfy a specific
+        community or mission need.
+      source: "SOURCE: OGC API - EDR Part 3: Service Profiles (draft)"
+    - term: coverage
+      definition: >
+        A feature that acts as a function returning values from its range for
+        any position within its spatiotemporal domain.
+      source: "SOURCE: OGC 19-086r6, OGC API - Environmental Data Retrieval Standard"
+  submitters:
+    - name: Austria
+      affiliation: Institute of Military Geography
+    - name: France
+      affiliation: "Institut National de l'Information Géographique et Forestière (IGN)"
+    - name: Finland
+      affiliation: Finnish Defence Forces
+    - name: Germany
+      affiliation: Bundeswehr Geoinformation Centre (BGIC)
+    - name: NATO
+      affiliation: NATO Maritime GEOMETOC Centre of Excellence
+    - name: United Kingdom
+      affiliation: Met Office (MO), UK Strategic Command, DSTL
+    - name: United States
+      affiliation: National Geospatial-Intelligence Agency (NGA)
 
 extent_requirements:
   minimum_bbox: [-180, -90, 180, 90]

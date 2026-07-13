@@ -9,6 +9,7 @@
 :published-date: 2026-01-01
 :issued-date: 2026-01-01
 :received-date: 2026-01-01
+:status: draft
 :fullname: Guy Collins
 :role: editor
 :keywords: cube, radius, items, datetime, frequency_of_lightning_flashes_per_unit_area, lightning flashes, lightning
@@ -16,11 +17,15 @@
 :presentation-metadata-color-secondary-shade-1: #1F3864
 :presentation-metadata-color-text-title: #1F3864
 :presentation-metadata-color-background-table-header: #1F3864
+:presentation-metadata-color-background-page: #FFFFFF
+:presentation-metadata-color-secondary-shade-2: #FFFFFF
 :coverpage-image: cover.png
 :presentation-metadata-full-coverpage-replacement: true
 :copyright-holder: DGIWG
+:body-font: Source Sans Pro
+:header-font: Source Sans Pro
 :boilerplate-authority: boilerplate.xml
-:pdf-stylesheet-override: logo_override.xsl
+:pdf-stylesheet-override: pdf_override.xsl
 :mn-document-class: ogc
 :mn-output-extensions: xml,html,pdf
 :local-cache-only:
@@ -40,7 +45,13 @@ All questions regarding this document should be directed to the editor or the su
 |===
 h|Name h|Affiliation
 
-| Guy Collins _(editor)_ |Met Office
+| Austria |Institute of Military Geography
+| France |Institut National de l'Information Géographique et Forestière (IGN)
+| Finland |Finnish Defence Forces
+| Germany |Bundeswehr Geoinformation Centre (BGIC)
+| NATO |NATO Maritime GEOMETOC Centre of Excellence
+| United Kingdom |Met Office (MO), UK Strategic Command, DSTL
+| United States |National Geospatial-Intelligence Agency (NGA)
 |===
 
 [.preface]

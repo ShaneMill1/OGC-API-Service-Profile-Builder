@@ -353,6 +353,20 @@ class NormativeReference(BaseModel):
     title: str = Field(description="Full reference title")
 
 
+class Term(BaseModel):
+    """A profile-supplied entry for the Terms and Definitions section.
+
+    Appended after the base terms so a profile can extend the vocabulary (e.g.
+    with EDR Part 3 or Pub/Sub terms). Rendered as a Metanorma term clause.
+    """
+    term: str = Field(description="The term being defined, e.g. 'publish/subscribe'")
+    definition: str = Field(description="The definition text")
+    source: str | None = Field(
+        default=None,
+        description="Optional source/authority for the definition, e.g. 'SOURCE: OGC 19-086r6'",
+    )
+
+
 # Metanorma OGC document stages (`:status:` / `:docstage:`). See
 # https://www.metanorma.org/author/ogc/ref/document-attributes/
 DocStatus = Literal[
@@ -435,6 +449,29 @@ class CoverPage(BaseModel):
     tagline: str | None = Field(default=None, description="Optional line rendered under the logo, e.g. an organisation motto")
     background: str | None = Field(default=None, description="Cover background hex colour (default white)")
     text_color: str | None = Field(default=None, description="Cover text hex colour (default black)")
+    font_regular: str | None = Field(
+        default=None,
+        description=(
+            "Cover font for normal text: a font-file path (.ttf/.otf) or an installed "
+            "family name (e.g. 'Source Sans Pro'). Family names are resolved via fontconfig. "
+            "Defaults to DejaVu Sans."
+        ),
+    )
+    font_bold: str | None = Field(
+        default=None,
+        description="Cover font for bold text (doc number/title). Path or family name; derived from font_regular when unset.",
+    )
+    font_italic: str | None = Field(
+        default=None,
+        description="Cover font for the italic tagline. Path or family name; derived from font_regular when unset.",
+    )
+    watermark: str | None = Field(
+        default=None,
+        description=(
+            "Optional watermark text stamped diagonally across the cover (e.g. 'DRAFT'). "
+            "Note: this marks the cover only; an every-page watermark requires the Metanorma layer."
+        ),
+    )
 
     @field_validator("background", "text_color")
     @classmethod
@@ -442,6 +479,25 @@ class CoverPage(BaseModel):
         if v is not None and not _HEX_COLOR_RE.match(v):
             raise ValueError(f"colour '{v}' must be a hex colour like #RRGGBB")
         return v
+
+
+class PdfFonts(BaseModel):
+    """PDF body/heading/monospace font overrides.
+
+    Maps to Metanorma's ``:body-font:``, ``:header-font:`` and
+    ``:monospace-font:`` document attributes, so a profile can set the PDF
+    typeface (e.g. DGIWG's Source Sans Pro) without a custom flavor. The named
+    fonts must be resolvable by the Metanorma container (i.e. present in the
+    mounted ``~/.fontist/fonts``). See
+    https://www.metanorma.org/author/ref/document-attributes/
+    """
+    body: str | None = Field(default=None, description="Body text font family (:body-font:), e.g. 'Source Sans Pro'")
+    header: str | None = Field(default=None, description="Heading font family (:header-font:)")
+    monospace: str | None = Field(default=None, description="Monospace/code font family (:monospace-font:)")
+
+    def to_metanorma_attributes(self) -> dict[str, str]:
+        mapping = {"body": "body-font", "header": "header-font", "monospace": "monospace-font"}
+        return {attr: getattr(self, f) for f, attr in mapping.items() if getattr(self, f, None)}
 
 
 class Boilerplate(BaseModel):
@@ -508,10 +564,21 @@ class DocumentMetadata(BaseModel):
         default_factory=list,
         description="Additional normative references appended to the References section.",
     )
+    terms: list[Term] = Field(
+        default_factory=list,
+        description=(
+            "Profile-supplied terms appended to the Terms and Definitions section "
+            "(e.g. EDR Part 3 / Pub/Sub terms), each with a definition and optional source."
+        ),
+    )
     external_id: str | None = None
     colors: PdfColors | None = Field(
         default=None,
         description="PDF colour-scheme overrides (mapped to Metanorma :presentation-metadata-color-*: attributes).",
+    )
+    fonts: PdfFonts | None = Field(
+        default=None,
+        description="PDF font overrides (body/header/monospace) mapped to Metanorma :body-font:/:header-font:/:monospace-font:.",
     )
     cover: CoverPage | None = Field(
         default=None,
@@ -540,6 +607,62 @@ class DocumentMetadata(BaseModel):
             "Use when rebranding (e.g. DGIWG) so no OGC logo remains on internal pages. "
             "Note: this overrides an OGC-flavor XSL template and is coupled to the OGC "
             "Metanorma flavor."
+        ),
+    )
+    body_font: str | None = Field(
+        default=None,
+        description=(
+            "PDF body-text font family (Metanorma :body-font:), e.g. 'Source Sans Pro'. "
+            "The font must be resolvable by fontist/the Metanorma container."
+        ),
+    )
+    header_font: str | None = Field(
+        default=None,
+        description="PDF heading font family (Metanorma :header-font:).",
+    )
+    monospace_font: str | None = Field(
+        default=None,
+        description="PDF monospace font family (Metanorma :monospace-font:).",
+    )
+    suppress_crossing_lines: bool = Field(
+        default=False,
+        description=(
+            "When true, remove the OGC flavor's 'crossing lines' design element (the "
+            "blue crossed lines with dots on the cover and section-divider pages) via "
+            "the PDF stylesheet override. Coupled to the OGC Metanorma flavor."
+        ),
+    )
+    plain_section_numbers: bool = Field(
+        default=False,
+        description=(
+            "When true, render section-divider numbers as plain text instead of the OGC "
+            "flavor's coloured circles (e.g. '1 Scope' rather than a circled '1'). "
+            "Coupled to the OGC Metanorma flavor."
+        ),
+    )
+    suppress_title_underlines: bool = Field(
+        default=False,
+        description=(
+            "When true, remove the short/long horizontal rule the OGC flavor draws "
+            "beneath section titles. Coupled to the OGC Metanorma flavor."
+        ),
+    )
+    suppress_design_elements: bool = Field(
+        default=False,
+        description=(
+            "When true, strip the OGC flavor's decorative PDF design elements — the "
+            "blue 'crossing lines' motif, the circular badges around clause numbers, and "
+            "the short rule under clause titles — via a targeted PDF stylesheet override. "
+            "Produces a plainer 'i. Abstract' / '1 Scope' heading style for SDOs (e.g. "
+            "DGIWG) that don't use the OGC house style. Coupled to the OGC Metanorma flavor."
+        ),
+    )
+    page_watermark: str | None = Field(
+        default=None,
+        description=(
+            "Optional text (e.g. 'DRAFT') rendered as a light diagonal watermark on every "
+            "PDF page via a PDF stylesheet override. Distinct from cover.watermark, which "
+            "only marks the generated cover image. Coupled to the OGC Metanorma flavor."
         ),
     )
 

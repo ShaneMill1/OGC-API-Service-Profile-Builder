@@ -474,6 +474,58 @@
           "default": null,
           "description": "Cover text hex colour (default black)",
           "title": "Text Color"
+        },
+        "font_regular": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cover font for normal text: a font-file path (.ttf/.otf) or an installed family name (e.g. 'Source Sans Pro'). Family names are resolved via fontconfig. Defaults to DejaVu Sans.",
+          "title": "Font Regular"
+        },
+        "font_bold": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cover font for bold text (doc number/title). Path or family name; derived from font_regular when unset.",
+          "title": "Font Bold"
+        },
+        "font_italic": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cover font for the italic tagline. Path or family name; derived from font_regular when unset.",
+          "title": "Font Italic"
+        },
+        "watermark": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional watermark text stamped diagonally across the cover (e.g. 'DRAFT'). Note: this marks the cover only; an every-page watermark requires the Metanorma layer.",
+          "title": "Watermark"
         }
       },
       "required": [
@@ -901,6 +953,18 @@
           "default": null,
           "description": "PDF colour-scheme overrides (mapped to Metanorma :presentation-metadata-color-*: attributes)."
         },
+        "fonts": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PdfFonts"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "PDF font overrides (body/header/monospace) mapped to Metanorma :body-font:/:header-font:/:monospace-font:."
+        },
         "cover": {
           "anyOf": [
             {
@@ -943,6 +1007,82 @@
           "description": "When true, suppress the Metanorma flavor's built-in logo on the preface/legal page (e.g. the OGC logo) via a targeted PDF stylesheet override. Use when rebranding (e.g. DGIWG) so no OGC logo remains on internal pages. Note: this overrides an OGC-flavor XSL template and is coupled to the OGC Metanorma flavor.",
           "title": "Suppress Flavor Logo",
           "type": "boolean"
+        },
+        "body_font": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "PDF body-text font family (Metanorma :body-font:), e.g. 'Source Sans Pro'. The font must be resolvable by fontist/the Metanorma container.",
+          "title": "Body Font"
+        },
+        "header_font": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "PDF heading font family (Metanorma :header-font:).",
+          "title": "Header Font"
+        },
+        "monospace_font": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "PDF monospace font family (Metanorma :monospace-font:).",
+          "title": "Monospace Font"
+        },
+        "suppress_crossing_lines": {
+          "default": false,
+          "description": "When true, remove the OGC flavor's 'crossing lines' design element (the blue crossed lines with dots on the cover and section-divider pages) via the PDF stylesheet override. Coupled to the OGC Metanorma flavor.",
+          "title": "Suppress Crossing Lines",
+          "type": "boolean"
+        },
+        "plain_section_numbers": {
+          "default": false,
+          "description": "When true, render section-divider numbers as plain text instead of the OGC flavor's coloured circles (e.g. '1 Scope' rather than a circled '1'). Coupled to the OGC Metanorma flavor.",
+          "title": "Plain Section Numbers",
+          "type": "boolean"
+        },
+        "suppress_title_underlines": {
+          "default": false,
+          "description": "When true, remove the short/long horizontal rule the OGC flavor draws beneath section titles. Coupled to the OGC Metanorma flavor.",
+          "title": "Suppress Title Underlines",
+          "type": "boolean"
+        },
+        "suppress_design_elements": {
+          "default": false,
+          "description": "When true, strip the OGC flavor's decorative PDF design elements \u2014 the blue 'crossing lines' motif, the circular badges around clause numbers, and the short rule under clause titles \u2014 via a targeted PDF stylesheet override. Produces a plainer 'i. Abstract' / '1 Scope' heading style for SDOs (e.g. DGIWG) that don't use the OGC house style. Coupled to the OGC Metanorma flavor.",
+          "title": "Suppress Design Elements",
+          "type": "boolean"
+        },
+        "page_watermark": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional text (e.g. 'DRAFT') rendered as a light diagonal watermark on every PDF page via a PDF stylesheet override. Distinct from cover.watermark, which only marks the generated cover image. Coupled to the OGC Metanorma flavor.",
+          "title": "Page Watermark"
         }
       },
       "required": [
@@ -1764,6 +1904,52 @@
         }
       },
       "title": "PdfColors",
+      "type": "object"
+    },
+    "PdfFonts": {
+      "description": "PDF body/heading/monospace font overrides.\n\nMaps to Metanorma's ``:body-font:``, ``:header-font:`` and\n``:monospace-font:`` document attributes, so a profile can set the PDF\ntypeface (e.g. DGIWG's Source Sans Pro) without a custom flavor. The named\nfonts must be resolvable by the Metanorma container (i.e. present in the\nmounted ``~/.fontist/fonts``). See\nhttps://www.metanorma.org/author/ref/document-attributes/",
+      "properties": {
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Body text font family (:body-font:), e.g. 'Source Sans Pro'",
+          "title": "Body"
+        },
+        "header": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Heading font family (:header-font:)",
+          "title": "Header"
+        },
+        "monospace": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Monospace/code font family (:monospace-font:)",
+          "title": "Monospace"
+        }
+      },
+      "title": "PdfFonts",
       "type": "object"
     },
     "Provider": {

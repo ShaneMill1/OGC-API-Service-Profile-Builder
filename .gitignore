@@ -6,6 +6,10 @@ build/
 cite_features_results/
 cite_results/
 
+# Generated PDF build artifacts
+*.pdf.err
+pdf_override.xsl
+
 # Local-only: private correspondence / scratch (never publish to the public repo)
 email_to_guy.txt
 tmp/

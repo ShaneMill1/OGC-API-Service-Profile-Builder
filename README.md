@@ -187,18 +187,20 @@ Everything about the document — cover, title-page metadata, legal page, footer
 
 | What you want to change | Field | Mechanism |
 |---|---|---|
-| Cover logo + tagline (replaces the OGC cover) | `document_metadata.cover` | Generated cover image via `:coverpage-image:` full replacement |
+| Cover logo, tagline, fonts, watermark (replaces the OGC cover) | `document_metadata.cover` | Generated cover image via `:coverpage-image:` full replacement |
 | Title, doc number, edition, dates, sub-title/status | `title`, `version`, `document_metadata.{doc_number, doc_type, doc_subtype, status, *_date}` | Metanorma document attributes |
 | PDF colours (titles, tables, cover, backgrounds) | `document_metadata.colors` | `:presentation-metadata-color-*:` |
 | Page-ii legal text (copyright / license / notice) | `document_metadata.boilerplate` | `:boilerplate-authority:` |
 | Footer organisation name | `document_metadata.copyright_holder` | `:copyright-holder:` |
 | Remove the OGC logo from the legal page | `document_metadata.suppress_flavor_logo` | targeted `:pdf-stylesheet-override:` |
+| Remove OGC design (crossing lines, circled numbers, rules, navy divider pages) | `document_metadata.suppress_design_elements` (or the individual `suppress_crossing_lines` / `plain_section_numbers` / `suppress_title_underlines`) | `:pdf-stylesheet-override:` + colour attributes |
+| Every-page DRAFT-style watermark (over content) | `document_metadata.page_watermark` | `:pdf-stylesheet-override:` (footer overlay) |
 | Requirement / conformance identifier namespace | `spec_uri_base` | derives `req_uri` / `conf_uri` |
-| Submitter table, notice paragraph, normative refs | `document_metadata.{submitters, notice, normative_references}` | Metanorma attributes / sections |
+| Submitter table, notice paragraph, normative refs, extra terms | `document_metadata.{submitters, notice, normative_references, terms}` | Metanorma attributes / sections |
 
-Custom branding requires Pillow for the cover image: `pip install 'oapi-profile-builder[pdf]'`. Field-by-field detail is in the [`document_metadata`](#document_metadata) reference below; [`examples/nwp_radar.yaml`](examples/nwp_radar.yaml) is a complete DGIWG-branded example.
+Custom branding requires Pillow for the cover image: `pip install 'oapi-profile-builder[pdf]'`. Field-by-field detail is in the [`document_metadata`](#document_metadata) reference below; [`examples/nwp_radar.yaml`](examples/nwp_radar.yaml) is a complete DGIWG-branded example. Omit all of these fields and the output keeps the standard OGC house style.
 
-> The `suppress_flavor_logo` override reaches into the OGC Metanorma flavor's XSL (template `insertLogoPreface`) and is coupled to that flavor. Everything else uses documented Metanorma attributes. For long-term SDO adoption, a dedicated Metanorma "taste"/flavor is the most durable path.
+> The `suppress_flavor_logo`, `suppress_design_elements`/`suppress_*`, and `page_watermark` overrides reach into the OGC Metanorma flavor's XSL templates (e.g. `insertLogoPreface`, `insertCrossingLines`, `insertSectionNumInCircle`, `insertFooter`) and are coupled to that flavor. Everything else uses documented Metanorma attributes. mn2pdf merges our same-named templates over the flavor's at equal precedence (via `merge_override.xsl`), which is what makes these work; a future metanorma-ogc release could require refreshing the template names. For long-term SDO adoption, a dedicated Metanorma "taste"/flavor is the most durable path.
 
 ---
 
@@ -654,6 +656,10 @@ document_metadata:
     tagline: Delivering Military Advantage through multi-national geospatial interoperability
     background: "#FFFFFF"          # optional cover background (default white)
     text_color: "#1F3864"          # optional cover text colour (default black)
+    font_regular: "Source Sans Pro" # optional: .ttf/.otf path OR installed family name (fontconfig)
+    font_bold: "Source Sans Pro"    # optional bold face; derived from font_regular when unset
+    font_italic: "Source Sans Pro"  # optional italic face for the tagline
+    watermark: "DRAFT"             # optional diagonal watermark stamped on the cover
   colors:
     text: "#000000"                # body text
     cover_text: "#1F3864"          # cover text / section numbers / ToC
@@ -686,7 +692,41 @@ document_metadata:
     feedback: "Comments on this document should be directed to DGIWG."
 ```
 
-With `cover` + `colors` + `copyright_holder` + `boilerplate` + `suppress_flavor_logo` (and `spec_uri_base` for the requirement/conformance identifiers), the generated PDF carries no OGC branding — only legitimate citations to the OGC standards the profile conforms to. See [`examples/nwp_radar.yaml`](examples/nwp_radar.yaml).
+#### Removing the OGC page design (crossing lines, circled numbers, divider pages)
+
+The OGC flavor also draws decorative design elements: the blue "crossing lines with a dot" motif, circled section-divider numbers, a short rule under section titles, and full-navy section-divider pages. One switch removes them all:
+
+- **`suppress_design_elements: true`** — a consolidated switch that:
+  - removes the blue crossing-lines + dot motif (on divider/cover pages via a template override; on the Contents/preface pages, which draw the lines inline in the flavor's own colour, by whiting that colour out);
+  - renders section numbers as plain text (e.g. `1 Scope`, `i Abstract`) instead of coloured circles;
+  - removes the short rule beneath section titles;
+  - rebrands the full-navy section-divider pages to a clean white page with a DGIWG-navy (from `colors.title`) plain number and title.
+
+  The individual toggles `suppress_crossing_lines`, `plain_section_numbers`, and `suppress_title_underlines` are still available if you want finer control; `suppress_design_elements` simply turns all three on plus the divider rebrand.
+
+- **`page_watermark`** — stamps a light diagonal watermark (e.g. `DRAFT`) on **every page**, rendered *over* the content including tables. This is distinct from `cover.watermark`, which marks only the generated cover image. The cover page is left unmarked.
+
+```yaml
+document_metadata:
+  suppress_design_elements: true   # plain numbers, no crossing lines/rules, white divider pages
+  page_watermark: DRAFT            # every-page diagonal watermark (over content)
+```
+
+With `cover` + `colors` + `copyright_holder` + `boilerplate` + `suppress_flavor_logo` + `suppress_design_elements` (and `spec_uri_base` for the requirement/conformance identifiers), the generated PDF carries no OGC branding — only legitimate citations to the OGC standards the profile conforms to. Omit these fields and you get the standard OGC house style. See [`examples/nwp_radar.yaml`](examples/nwp_radar.yaml).
+
+> These design-element overrides (and the `page_watermark` footer overlay) reach into the OGC Metanorma flavor's XSL template names and are coupled to that flavor; a future metanorma-ogc release could require refreshing them.
+
+#### Extending Terms and Definitions
+
+Add profile-specific terms (e.g. EDR Part 3 or Pub/Sub terms) appended after the base terms in the Terms and Definitions section:
+
+```yaml
+document_metadata:
+  terms:
+    - term: service profile
+      definition: A named, referenceable set of constraints and additional requirements applied to an OGC API - EDR implementation.
+      source: "SOURCE: OGC API - EDR Part 3: Service Profiles (draft)"
+```
 
 ---
 

@@ -164,7 +164,7 @@ def main() -> None:
     generate(profile, args.output)
 
     if args.pdf:
-        compile_pdf(args.output.resolve())
+        compile_pdf(args.output.resolve(), profile=profile)
 
 
 def _run_validate_server(args) -> None:

@@ -1374,17 +1374,248 @@ def _individual_test_adoc(profile: ServiceProfile, test_id: str) -> str:
 # Metanorma root document
 # ---------------------------------------------------------------------------
 
-_LOGO_OVERRIDE_XSL = """<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:fo="http://www.w3.org/1999/XSL/Format"
-                version="1.0">
-  <!-- Rebranding override: suppress the OGC flavor logo on the preface/legal
-       page (and the cover, which is replaced separately). Coupled to the OGC
-       Metanorma flavor's XSL template names. -->
+_PDF_OVERRIDE_FILENAME = "pdf_override.xsl"
+
+# Individual template overrides for the OGC Metanorma flavor's PDF XSL. Each is
+# keyed to a real template name in metanorma-ogc's ogc.standard.xsl and merged
+# in via :pdf-stylesheet-override:. These are coupled to the OGC flavor.
+_OVERRIDE_SUPPRESS_LOGO = """
+  <!-- Suppress the OGC flavor logo on cover/preface (rebranding). -->
   <xsl:template name="insertLogoPreface"/>
   <xsl:template name="insertLogo"/>
-</xsl:stylesheet>
 """
+
+_OVERRIDE_SUPPRESS_CROSSING_LINES = """
+  <!-- Remove the 'crossing lines' design element by making it invisible. -->
+  <xsl:template name="insertCrossingLines">
+    <fo:block-container absolute-position="fixed" width="0mm" height="0mm" font-size="0">
+      <fo:block/>
+    </fo:block-container>
+  </xsl:template>
+"""
+
+_OVERRIDE_SUPPRESS_TITLE_UNDERLINES = """
+  <!-- Remove the horizontal rule drawn beneath section titles. -->
+  <xsl:template name="insertShortHorizontalLine">
+    <fo:block/>
+  </xsl:template>
+  <xsl:template name="insertBigHorizontalLine">
+    <fo:block/>
+  </xsl:template>
+"""
+
+# Render the section-divider number as plain text instead of a coloured circle.
+# Mirrors the flavor's own number computation so annexes still number correctly.
+# The colour is injected so the number stays readable against whatever divider
+# background is in effect (white text on the flavor's navy, or a dark DGIWG
+# colour on a rebranded light page).
+def _plain_section_numbers_override(color: str) -> str:
+    return f"""
+  <!-- Section-divider number as plain text (no OGC circle), coloured {color}. -->
+  <xsl:template name="insertSectionNumInCircle">
+    <xsl:variable name="sectionNum_"><xsl:call-template name="getSection"/></xsl:variable>
+    <xsl:variable name="sectionNum">
+      <xsl:choose>
+        <xsl:when test="normalize-space($sectionNum_) = '' and self::mn:annex">
+          <xsl:number format="A" count="mn:annex[not(@continue = 'true')]" level="any" lang="en"/>
+        </xsl:when>
+        <xsl:otherwise><xsl:value-of select="$sectionNum_"/></xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <fo:block font-size="24pt" font-weight="bold" color="{color}"><xsl:value-of select="$sectionNum"/></fo:block>
+  </xsl:template>
+"""
+
+
+# Force the big section-divider title colour. The flavor's divider page-sequence
+# sets the text colour to white (readable on its navy background); when the
+# divider page is rebranded to a light background that white title becomes
+# invisible, so we set an explicit (dark) colour here.
+def _section_title_color_override(color: str) -> str:
+    return f"""
+  <!-- Section-divider title colour (readable on a rebranded light page). -->
+  <xsl:template name="insertSectionTitleBig">
+    <xsl:param name="title"/>
+    <fo:block font-size="33pt" margin-bottom="6pt" color="{color}">
+      <xsl:apply-templates select="xalan:nodeset($title)" mode="titlebig"/>
+    </fo:block>
+    <xsl:call-template name="insertBigHorizontalLine"/>
+  </xsl:template>
+"""
+
+
+# Every-page watermark (e.g. "DRAFT"). The OGC flavor's region-body flow is
+# painted on top of the header region, so a watermark placed in the header sits
+# behind opaque tables. The footer region is painted after the body, so we
+# reproduce the flavor's footer and prepend a page-fixed, rotated, semi-
+# transparent SVG text mark inside the footer static-content — this overlays
+# every page, including over tables.
+def _page_watermark_override(text: str, color: str = "rgb(200,200,200)") -> str:
+    esc = _xml_escape(text)
+    watermark = f"""
+      <fo:block-container absolute-position="fixed" left="0mm" top="0mm" font-size="0">
+        <fo:block>
+          <fo:instream-foreign-object content-height="{{$pageHeight}}mm" content-width="{{$pageWidth}}mm" fox:alt-text="Watermark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="{{$pageWidth}}mm" height="{{$pageHeight}}mm" viewBox="0 0 210 297">
+              <text x="105" y="150" text-anchor="middle" transform="rotate(-45 105 150)" font-size="38" font-family="Lato" fill="{color}" fill-opacity="0.55">{esc}</text>
+            </svg>
+          </fo:instream-foreign-object>
+        </fo:block>
+      </fo:block-container>"""
+    return f"""
+  <!-- Every-page diagonal watermark, prepended to the footer region (painted
+       over the body, so it also overlays tables). Reproduces the OGC footer. -->
+  <xsl:template name="insertFooter">
+    <xsl:param name="num"/>
+    <xsl:param name="color"/>
+    <fo:static-content flow-name="footer" role="artifact">
+{watermark}
+      <fo:block-container font-size="8pt" color="{{$color}}" padding-top="6mm">
+        <xsl:if test="normalize-space($color) = ''">
+          <xsl:variable name="color_text_title">
+            <xsl:call-template name="getVariable"><xsl:with-param name="variable">color_text_title</xsl:with-param></xsl:call-template>
+          </xsl:variable>
+          <xsl:attribute name="color"><xsl:value-of select="$color_text_title"/></xsl:attribute>
+        </xsl:if>
+        <fo:table table-layout="fixed" width="100%">
+          <fo:table-column column-width="90%"/>
+          <fo:table-column column-width="10%"/>
+          <fo:table-body>
+            <fo:table-row>
+              <fo:table-cell>
+                <fo:block>
+                  <fo:inline font-weight="bold">
+                    <xsl:call-template name="addLetterSpacing">
+                      <xsl:with-param name="text" select="concat($variables/mnx:doc[@num = $num]/copyright-owner, ' ')"/>
+                      <xsl:with-param name="letter-spacing" select="0.2"/>
+                    </xsl:call-template>
+                  </fo:inline>
+                  <xsl:call-template name="addLetterSpacing">
+                    <xsl:with-param name="text" select="$variables/mnx:doc[@num = $num]/docnumber"/>
+                    <xsl:with-param name="letter-spacing" select="0.2"/>
+                  </xsl:call-template>
+                </fo:block>
+              </fo:table-cell>
+              <fo:table-cell text-align="right">
+                <fo:block font-weight="bold">
+                  <fo:page-number/>
+                </fo:block>
+              </fo:table-cell>
+            </fo:table-row>
+          </fo:table-body>
+        </fo:table>
+      </fo:block-container>
+    </fo:static-content>
+  </xsl:template>
+"""
+
+
+def _effective_pdf_config(m) -> dict:
+    """Resolve effective PDF-styling flags and divider colours from metadata.
+
+    ``suppress_design_elements`` is the consolidated "debrand" switch: it turns
+    on crossing-line suppression, plain section numbers and title-underline
+    suppression together, and rebrands the section-divider pages to a light
+    (default white) background with dark, readable numbers/titles so they no
+    longer carry the OGC navy house style.
+    """
+    debrand = bool(getattr(m, "suppress_design_elements", False))
+    crossing = debrand or bool(getattr(m, "suppress_crossing_lines", False))
+    underlines = debrand or bool(getattr(m, "suppress_title_underlines", False))
+    plain_nums = debrand or bool(getattr(m, "plain_section_numbers", False))
+
+    colors = getattr(m, "colors", None)
+    page_bg = getattr(colors, "page_background", None) if colors else None
+    title_c = getattr(colors, "title", None) if colors else None
+    cover_c = getattr(colors, "cover_text", None) if colors else None
+
+    # Divider background + foreground colours.
+    if debrand:
+        # Rebrand: light divider pages (white unless overridden) + dark text.
+        divider_bg = page_bg or "#FFFFFF"
+        divider_fg = title_c or cover_c or "#1F3864"
+    elif page_bg:
+        # Explicit custom background: assume it is light, use a dark foreground.
+        divider_bg = page_bg
+        divider_fg = title_c or cover_c or "#1F3864"
+    else:
+        # Flavor default: navy divider pages, white number/title.
+        divider_bg = None
+        divider_fg = "white"
+
+    return {
+        "logo": bool(getattr(m, "suppress_flavor_logo", False)),
+        "crossing": crossing,
+        "underlines": underlines,
+        "plain_nums": plain_nums,
+        "body_font": getattr(m, "body_font", None),
+        "watermark": getattr(m, "page_watermark", None),
+        "divider_bg": divider_bg,
+        "divider_fg": divider_fg,
+    }
+
+
+def _pdf_override_flags(m) -> list[str]:
+    """Return the override snippets enabled by document_metadata, in order."""
+    if not m:
+        return []
+    cfg = _effective_pdf_config(m)
+    parts: list[str] = []
+    if cfg["logo"]:
+        parts.append(_OVERRIDE_SUPPRESS_LOGO)
+    if cfg["crossing"]:
+        parts.append(_OVERRIDE_SUPPRESS_CROSSING_LINES)
+    if cfg["underlines"]:
+        parts.append(_OVERRIDE_SUPPRESS_TITLE_UNDERLINES)
+    if cfg["plain_nums"]:
+        parts.append(_plain_section_numbers_override(cfg["divider_fg"]))
+    # When the divider background is rebranded (light), force the big title
+    # colour too — the flavor inherits white text, invisible on a light page.
+    if cfg["divider_bg"] is not None:
+        parts.append(_section_title_color_override(cfg["divider_fg"]))
+    if cfg["watermark"]:
+        parts.append(_page_watermark_override(cfg["watermark"]))
+    # Body font override — the OGC flavor hardcodes Lato in the root-style
+    # attribute-set, so :body-font: alone doesn't work; we need an XSL override.
+    body = cfg["body_font"]
+    if body:
+        noto = '<xsl:value-of select="$font_noto_sans"/>'
+        parts.append(
+            f'\n  <!-- Override body font family (OGC default is Lato). -->\n'
+            f'  <xsl:attribute-set name="root-style">\n'
+            f'    <xsl:attribute name="font-family">{body}, STIX Two Math, {noto}</xsl:attribute>\n'
+            f'    <xsl:attribute name="font-family-generic">Sans</xsl:attribute>\n'
+            f'    <xsl:attribute name="font-size">11pt</xsl:attribute>\n'
+            f'  </xsl:attribute-set>\n'
+        )
+    return parts
+
+
+def _build_pdf_override_xsl(m) -> str | None:
+    """Assemble the consolidated PDF stylesheet override, or None when unused.
+
+    :pdf-stylesheet-override: accepts a single file, so all requested template
+    overrides (logo suppression, crossing lines, section-number circles, title
+    underlines, divider rebranding and the every-page watermark) are merged into
+    one stylesheet. mn2pdf splices these named-template bodies over the flavor's
+    at equal import precedence, so they take effect.
+    """
+    parts = _pdf_override_flags(m)
+    if not parts:
+        return None
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"\n'
+        '                xmlns:fo="http://www.w3.org/1999/XSL/Format"\n'
+        '                xmlns:mn="https://www.metanorma.org/ns/standoc"\n'
+        '                xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"\n'
+        '                xmlns:xalan="http://xml.apache.org/xalan"\n'
+        '                xmlns:java="http://xml.apache.org/xalan/java"\n'
+        '                xmlns:mnx="https://www.metanorma.org/ns/xslt"\n'
+        '                version="1.0">\n'
+        + "".join(parts)
+        + "</xsl:stylesheet>\n"
+    )
 
 
 def _xml_escape(text: str) -> str:
@@ -1489,6 +1720,28 @@ def _build_document_adoc(profile: ServiceProfile) -> str:
     if m and m.colors:
         for attr, value in m.colors.to_metanorma_attributes().items():
             lines.append(f":{attr}: {value}")
+    # When debranding (suppress_design_elements) rebrands the section-divider
+    # pages to a light background, emit the background-page colour unless the
+    # profile already set one explicitly via colors.page_background.
+    if m:
+        cfg = _effective_pdf_config(m)
+        explicit_bg = bool(m.colors and m.colors.page_background)
+        if cfg["divider_bg"] is not None and not explicit_bg:
+            lines.append(
+                f":presentation-metadata-color-background-page: {cfg['divider_bg']}"
+            )
+        # The preface/contents pages draw the OGC 'crossing lines with dot'
+        # motif inline (using the secondary-shade-2 / color_design_light colour),
+        # not via a named template, so an XSL override can't remove them. When
+        # crossing lines are being suppressed we white them out via the colour
+        # instead, unless the profile already set colors.cover_lines explicitly.
+        explicit_lines = bool(m.colors and m.colors.cover_lines)
+        if cfg["crossing"] and not explicit_lines:
+            lines.append(":presentation-metadata-color-secondary-shade-2: #FFFFFF")
+    # PDF font overrides (body/header/monospace).
+    if m and m.fonts:
+        for attr, value in m.fonts.to_metanorma_attributes().items():
+            lines.append(f":{attr}: {value}")
     # Custom cover page: replace the built-in OGC cover with our generated image.
     # The image file (cover.png) is written by generate(); this just references it.
     if m and m.cover and m.cover.logo:
@@ -1497,12 +1750,20 @@ def _build_document_adoc(profile: ServiceProfile) -> str:
     # Copyright holder → also sets the PDF footer org name (replaces OGC default).
     if m and m.copyright_holder:
         lines.append(f":copyright-holder: {m.copyright_holder}")
+    # PDF font family overrides (e.g. DGIWG house font 'Source Sans Pro').
+    if m and m.body_font:
+        lines.append(f":body-font: {m.body_font}")
+    if m and m.header_font:
+        lines.append(f":header-font: {m.header_font}")
+    if m and m.monospace_font:
+        lines.append(f":monospace-font: {m.monospace_font}")
     # Custom legal boilerplate (page ii). The XML file is written by generate().
     if m and m.boilerplate:
         lines.append(":boilerplate-authority: boilerplate.xml")
-    # Suppress the flavor's built-in (OGC) logo on the preface page when rebranding.
-    if m and m.suppress_flavor_logo:
-        lines.append(":pdf-stylesheet-override: logo_override.xsl")
+    # Consolidated PDF stylesheet override: logo suppression, crossing lines,
+    # section-number circles, title underlines. The file is written by generate().
+    if _pdf_override_flags(m):
+        lines.append(f":pdf-stylesheet-override: {_PDF_OVERRIDE_FILENAME}")
     lines += [
         ":mn-document-class: ogc",
         ":mn-output-extensions: xml,html,pdf",
@@ -1525,6 +1786,21 @@ def _build_document_adoc(profile: ServiceProfile) -> str:
         "include::sections/07-abstract-tests.adoc[]",
     ]
     return "\n".join(lines) + "\n"
+
+
+def _terms_adoc(profile: ServiceProfile) -> str:
+    """Render profile-supplied terms as Metanorma term clauses, or empty string."""
+    m = profile.document_metadata
+    terms = getattr(m, "terms", None) if m else None
+    if not terms:
+        return ""
+    out = ["\n"]
+    for t in terms:
+        out.append(f"=== {t.term}\n\n{t.definition}\n")
+        if t.source:
+            out.append(f"\n_{t.source}_\n")
+        out.append("\n")
+    return "".join(out)
 
 
 def _build_sections(profile: ServiceProfile) -> dict[str, str]:
@@ -1655,6 +1931,7 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
             "which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of International Standards. "
             "In particular, the word \"shall\" (not \"must\") is the verb form used to indicate a requirement to be strictly followed to conform to this standard.\n\n"
             "This document also uses terms defined in OGC API - EDR Part 1: Core.\n"
+            + _terms_adoc(profile)
         ),
         "sections/06-requirements.adoc": (
             "== Requirements\n\n"
@@ -1738,8 +2015,10 @@ def generate(profile: ServiceProfile, output_dir: Path) -> None:
     if boilerplate_xml:
         safe_write("boilerplate.xml", boilerplate_xml)
 
-    # PDF stylesheet override to suppress the flavor's preface-page logo.
-    if m and m.suppress_flavor_logo:
-        safe_write("logo_override.xsl", _LOGO_OVERRIDE_XSL)
+    # Consolidated PDF stylesheet override (logo, crossing lines, section-number
+    # circles, title underlines) — written when any override flag is set.
+    pdf_override_xsl = _build_pdf_override_xsl(m)
+    if pdf_override_xsl:
+        safe_write(_PDF_OVERRIDE_FILENAME, pdf_override_xsl)
 
     print(f"Profile '{profile.name}' written to {output_dir}")

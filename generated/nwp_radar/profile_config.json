@@ -520,10 +520,46 @@
     "doc_number": "DGIWG-NWP-RADAR-001",
     "doc_type": "draft-standard",
     "doc_subtype": "implementation",
-    "status": null,
+    "status": "draft",
     "editors": [],
     "submitting_orgs": [],
-    "submitters": [],
+    "submitters": [
+      {
+        "name": "Austria",
+        "affiliation": "Institute of Military Geography",
+        "role": null
+      },
+      {
+        "name": "France",
+        "affiliation": "Institut National de l'Information Géographique et Forestière (IGN)",
+        "role": null
+      },
+      {
+        "name": "Finland",
+        "affiliation": "Finnish Defence Forces",
+        "role": null
+      },
+      {
+        "name": "Germany",
+        "affiliation": "Bundeswehr Geoinformation Centre (BGIC)",
+        "role": null
+      },
+      {
+        "name": "NATO",
+        "affiliation": "NATO Maritime GEOMETOC Centre of Excellence",
+        "role": null
+      },
+      {
+        "name": "United Kingdom",
+        "affiliation": "Met Office (MO), UK Strategic Command, DSTL",
+        "role": null
+      },
+      {
+        "name": "United States",
+        "affiliation": "National Geospatial-Intelligence Agency (NGA)",
+        "role": null
+      }
+    ],
     "keywords": [
       "NWP",
       "earth observations",
@@ -540,6 +576,18 @@
     "publication_date": null,
     "notice": null,
     "normative_references": [],
+    "terms": [
+      {
+        "term": "service profile",
+        "definition": "A named, referenceable set of constraints and additional requirements applied to an OGC API - EDR implementation to satisfy a specific community or mission need.\n",
+        "source": "SOURCE: OGC API - EDR Part 3: Service Profiles (draft)"
+      },
+      {
+        "term": "coverage",
+        "definition": "A feature that acts as a function returning values from its range for any position within its spatiotemporal domain.\n",
+        "source": "SOURCE: OGC 19-086r6, OGC API - Environmental Data Retrieval Standard"
+      }
+    ],
     "external_id": null,
     "colors": {
       "text": null,
@@ -551,20 +599,33 @@
       "table_row_even": null,
       "table_row_odd": null
     },
+    "fonts": null,
     "cover": {
-      "logo": "examples/assets/dgiwg_logo.png",
+      "logo": "examples/assets/DGIWG_logo.png",
       "tagline": "Delivering Military Advantage through multi-national geospatial interoperability",
       "background": null,
-      "text_color": null
+      "text_color": null,
+      "font_regular": null,
+      "font_bold": null,
+      "font_italic": null,
+      "watermark": null
     },
     "copyright_holder": "DGIWG",
     "boilerplate": {
-      "copyright": "Copyright © 2026 Defence Geospatial Information Working Group (DGIWG). All rights reserved.",
+      "copyright": "© Copyright DGIWG, some rights reserved - CC BY 2.0\nhttps://creativecommons.org/licenses/by/2.0/",
       "license": "Use of this document is subject to the DGIWG terms and conditions.",
       "legal": "Attention is drawn to the possibility that some of the elements of this document may be the subject of patent rights. DGIWG shall not be held responsible for identifying any or all such patent rights.",
       "feedback": "Comments on this document should be directed to DGIWG."
     },
-    "suppress_flavor_logo": true
+    "suppress_flavor_logo": true,
+    "body_font": "Source Sans Pro",
+    "header_font": "Source Sans Pro",
+    "monospace_font": null,
+    "suppress_crossing_lines": false,
+    "plain_section_numbers": false,
+    "suppress_title_underlines": false,
+    "suppress_design_elements": true,
+    "page_watermark": "DRAFT"
   },
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
