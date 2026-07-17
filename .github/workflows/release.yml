@@ -92,39 +92,54 @@ jobs:
           done
           ls -lh ../*.zip
 
+      - name: Build release notes from CHANGELOG
+        run: |
+          VERSION="${{ steps.version.outputs.pip_version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          # Extract the section for this version from CHANGELOG.md
+          # (everything between "## [VERSION]" and the next "## [" heading).
+          SECTION=$(awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { found=1; print; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md)
+          {
+            if [ -n "$SECTION" ]; then
+              echo "$SECTION"
+            else
+              echo "## ${TAG}"
+              echo
+              echo "See [CHANGELOG.md](CHANGELOG.md) for details."
+            fi
+            echo
+            echo "### Install"
+            echo
+            echo '```bash'
+            echo "pip install oapi-profile-builder==${VERSION}"
+            echo '```'
+            echo
+            echo "### Use in GitHub Actions"
+            echo
+            echo '```yaml'
+            echo "- uses: ShaneMill1/OGC-API-Service-Profile-Builder@${TAG}"
+            echo "    with:"
+            echo "      config: my_profile.yaml"
+            echo "      output: ./profile_output"
+            echo '```'
+            echo
+            echo "### Generated Profile Artifacts"
+            echo
+            echo "The attached zips contain the full set of generated artifacts (openapi.yaml, asyncapi.yaml when pubsub is configured, profile_config.json, document.adoc, requirements/, abstract_tests/, sections/) for each example profile."
+          } > release_notes.md
+          echo "----- release_notes.md -----"
+          cat release_notes.md
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: Release ${{ steps.version.outputs.tag }}
-          body: |
-            ## OGC API Service Profile Builder ${{ steps.version.outputs.tag }}
-
-            ### Generated Profile Artifacts
-
-            Each zip contains the full set of generated artifacts for that example profile:
-            - `openapi.yaml` — OpenAPI 3.1.0 document
-            - `asyncapi.yaml` — AsyncAPI 3.0 document (if pubsub configured)
-            - `profile_config.json` — Round-trip serialized profile
-            - `document.adoc` — Metanorma root document
-            - `requirements/` — Individual requirement AsciiDoc files
-            - `abstract_tests/` — Individual abstract test AsciiDoc files
-            - `sections/` — Boilerplate document sections
-
-            ### Install
-
-            ```bash
-            pip install oapi-profile-builder==${{ steps.version.outputs.pip_version }}
-            ```
-
-            ### Use in GitHub Actions
-
-            ```yaml
-            - uses: ShaneMill1/OGC-API-Service-Profile-Builder@${{ steps.version.outputs.tag }}
-              with:
-                config: my_profile.yaml
-                output: ./profile_output
-            ```
+          body_path: release_notes.md
           files: |
             minimal_profile_artifacts.zip
             insitu_observations_profile_artifacts.zip

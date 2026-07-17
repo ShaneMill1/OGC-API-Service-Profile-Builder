@@ -73,8 +73,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install oapi-profile-builder
-        run: pip install oapi-profile-builder
+      # Install from the checked-out source (not PyPI) so regenerated artifacts
+      # always match the code on main. Installing the published package here
+      # races the Release workflow's PyPI publish and can commit stale output.
+      - name: Install oapi-profile-builder (from source)
+        run: pip install .
 
       - name: Generate all example profiles
         run: |

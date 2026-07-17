@@ -1934,6 +1934,10 @@
     "cover": null,
     "copyright_holder": null,
     "boilerplate": null,
+    "doc_pub_date": null,
+    "suppress_section_divider_pages": false,
+    "inline_section_headers": false,
+    "suppress_bibliography_indent": false,
     "suppress_flavor_logo": false,
     "body_font": null,
     "header_font": null,
@@ -1943,6 +1947,11 @@
     "suppress_title_underlines": false,
     "suppress_design_elements": false,
     "page_watermark": null
+  },
+  "paging": {
+    "enabled": true,
+    "default_limit": 10,
+    "max_limit": 10000
   },
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core",

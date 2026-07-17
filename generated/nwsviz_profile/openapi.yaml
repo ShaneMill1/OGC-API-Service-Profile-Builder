@@ -560,6 +560,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -721,44 +730,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/aigfs0p25_v1p0_global_latlon/instances/{instanceId}/position:
-    get:
-      summary: query aigfs0p25_v1p0_global_latlon instance by position
-      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
-        icechunk format
-      operationId: QueryPositionInstanceAigfs0p25V1p0GlobalLatlon
-      tags:
-      - aigfs0p25_v1p0_global_latlon
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2025-01-20T00:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/aigfs0p25_v1p0_global_latlon/instances/{instanceId}/items:
     get:
       summary: query aigfs0p25_v1p0_global_latlon instance by items
@@ -780,6 +751,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/aigfs0p25_v1p0_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query aigfs0p25_v1p0_global_latlon instance by position
+      description: AIGFS0P25_V1P0_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryPositionInstanceAigfs0p25V1p0GlobalLatlon
+      tags:
+      - aigfs0p25_v1p0_global_latlon
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-01-20T00:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -1143,6 +1161,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -1304,44 +1331,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/air_quality_alaska_polar_stereographic/instances/{instanceId}/position:
-    get:
-      summary: query air_quality_alaska_polar_stereographic instance by position
-      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
-        stored in icechunk format
-      operationId: QueryPositionInstanceAirQualityAlaskaPolarStereographic
-      tags:
-      - air_quality_alaska_polar_stereographic
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2025-11-06T03:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/air_quality_alaska_polar_stereographic/instances/{instanceId}/items:
     get:
       summary: query air_quality_alaska_polar_stereographic instance by items
@@ -1363,6 +1352,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/air_quality_alaska_polar_stereographic/instances/{instanceId}/position:
+    get:
+      summary: query air_quality_alaska_polar_stereographic instance by position
+      description: AIR_QUALITY_ALASKA_POLAR weather data for STEREOGRAPHIC region
+        stored in icechunk format
+      operationId: QueryPositionInstanceAirQualityAlaskaPolarStereographic
+      tags:
+      - air_quality_alaska_polar_stereographic
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-11-06T03:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -1726,6 +1762,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -1887,44 +1932,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/air_quality_conus_lambert/instances/{instanceId}/position:
-    get:
-      summary: query air_quality_conus_lambert instance by position
-      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryPositionInstanceAirQualityConusLambert
-      tags:
-      - air_quality_conus_lambert
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2025-11-06T12:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/air_quality_conus_lambert/instances/{instanceId}/items:
     get:
       summary: query air_quality_conus_lambert instance by items
@@ -1946,6 +1953,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/air_quality_conus_lambert/instances/{instanceId}/position:
+    get:
+      summary: query air_quality_conus_lambert instance by position
+      description: AIR_QUALITY_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionInstanceAirQualityConusLambert
+      tags:
+      - air_quality_conus_lambert
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-11-06T12:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -2309,6 +2363,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -2470,44 +2533,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/air_quality_hawaii_mercator/instances/{instanceId}/position:
-    get:
-      summary: query air_quality_hawaii_mercator instance by position
-      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
-        format
-      operationId: QueryPositionInstanceAirQualityHawaiiMercator
-      tags:
-      - air_quality_hawaii_mercator
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2025-11-06T03:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/air_quality_hawaii_mercator/instances/{instanceId}/items:
     get:
       summary: query air_quality_hawaii_mercator instance by items
@@ -2529,6 +2554,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/air_quality_hawaii_mercator/instances/{instanceId}/position:
+    get:
+      summary: query air_quality_hawaii_mercator instance by position
+      description: AIR_QUALITY_HAWAII weather data for MERCATOR region stored in icechunk
+        format
+      operationId: QueryPositionInstanceAirQualityHawaiiMercator
+      tags:
+      - air_quality_hawaii_mercator
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-11-06T03:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -2892,6 +2964,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -3053,44 +3134,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/gefs0p25_v12p3_global_latlon/instances/{instanceId}/position:
-    get:
-      summary: query gefs0p25_v12p3_global_latlon instance by position
-      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
-        icechunk format
-      operationId: QueryPositionInstanceGefs0p25V12p3GlobalLatlon
-      tags:
-      - gefs0p25_v12p3_global_latlon
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2025-01-01T00:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/gefs0p25_v12p3_global_latlon/instances/{instanceId}/items:
     get:
       summary: query gefs0p25_v12p3_global_latlon instance by items
@@ -3112,6 +3155,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/gefs0p25_v12p3_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query gefs0p25_v12p3_global_latlon instance by position
+      description: GEFS0P25_V12P3_GLOBAL weather data for LATLON region stored in
+        icechunk format
+      operationId: QueryPositionInstanceGefs0p25V12p3GlobalLatlon
+      tags:
+      - gefs0p25_v12p3_global_latlon
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-01-01T00:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -3475,6 +3565,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -3636,44 +3735,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/gefs0p5_v12p3_global_latlon/instances/{instanceId}/position:
-    get:
-      summary: query gefs0p5_v12p3_global_latlon instance by position
-      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
-        format
-      operationId: QueryPositionInstanceGefs0p5V12p3GlobalLatlon
-      tags:
-      - gefs0p5_v12p3_global_latlon
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2025-01-01T00:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/gefs0p5_v12p3_global_latlon/instances/{instanceId}/items:
     get:
       summary: query gefs0p5_v12p3_global_latlon instance by items
@@ -3695,6 +3756,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/gefs0p5_v12p3_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query gefs0p5_v12p3_global_latlon instance by position
+      description: GEFS0P5_V12P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionInstanceGefs0p5V12p3GlobalLatlon
+      tags:
+      - gefs0p5_v12p3_global_latlon
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-01-01T00:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -4058,6 +4166,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -4219,44 +4336,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/gfs0p25_v16p3_global_latlon/instances/{instanceId}/position:
-    get:
-      summary: query gfs0p25_v16p3_global_latlon instance by position
-      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
-        format
-      operationId: QueryPositionInstanceGfs0p25V16p3GlobalLatlon
-      tags:
-      - gfs0p25_v16p3_global_latlon
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2025-12-18T00:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/gfs0p25_v16p3_global_latlon/instances/{instanceId}/items:
     get:
       summary: query gfs0p25_v16p3_global_latlon instance by items
@@ -4278,6 +4357,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/gfs0p25_v16p3_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query gfs0p25_v16p3_global_latlon instance by position
+      description: GFS0P25_V16P3_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionInstanceGfs0p25V16p3GlobalLatlon
+      tags:
+      - gfs0p25_v16p3_global_latlon
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-12-18T00:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -4641,6 +4767,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -4802,44 +4937,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/gfs0p25_v17_global_latlon/instances/{instanceId}/position:
-    get:
-      summary: query gfs0p25_v17_global_latlon instance by position
-      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
-        format
-      operationId: QueryPositionInstanceGfs0p25V17GlobalLatlon
-      tags:
-      - gfs0p25_v17_global_latlon
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2025-12-16T00:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/gfs0p25_v17_global_latlon/instances/{instanceId}/items:
     get:
       summary: query gfs0p25_v17_global_latlon instance by items
@@ -4861,6 +4958,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/gfs0p25_v17_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query gfs0p25_v17_global_latlon instance by position
+      description: GFS0P25_V17_GLOBAL weather data for LATLON region stored in icechunk
+        format
+      operationId: QueryPositionInstanceGfs0p25V17GlobalLatlon
+      tags:
+      - gfs0p25_v17_global_latlon
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-12-16T00:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -5224,6 +5368,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -5385,44 +5538,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/nbm_v5p0_conus_lambert/instances/{instanceId}/position:
-    get:
-      summary: query nbm_v5p0_conus_lambert instance by position
-      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryPositionInstanceNbmV5p0ConusLambert
-      tags:
-      - nbm_v5p0_conus_lambert
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2025-11-18T00:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/nbm_v5p0_conus_lambert/instances/{instanceId}/items:
     get:
       summary: query nbm_v5p0_conus_lambert instance by items
@@ -5444,6 +5559,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/nbm_v5p0_conus_lambert/instances/{instanceId}/position:
+    get:
+      summary: query nbm_v5p0_conus_lambert instance by position
+      description: NBM_V5P0_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionInstanceNbmV5p0ConusLambert
+      tags:
+      - nbm_v5p0_conus_lambert
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-11-18T00:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -5807,6 +5969,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -5968,44 +6139,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/processed_gefs0p25_v12p3_global_latlon/instances/{instanceId}/position:
-    get:
-      summary: query processed_gefs0p25_v12p3_global_latlon instance by position
-      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
-        stored in icechunk format
-      operationId: QueryPositionInstanceProcessedGefs0p25V12p3GlobalLatlon
-      tags:
-      - processed_gefs0p25_v12p3_global_latlon
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2021-01-01T00:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/processed_gefs0p25_v12p3_global_latlon/instances/{instanceId}/items:
     get:
       summary: query processed_gefs0p25_v12p3_global_latlon instance by items
@@ -6027,6 +6160,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/processed_gefs0p25_v12p3_global_latlon/instances/{instanceId}/position:
+    get:
+      summary: query processed_gefs0p25_v12p3_global_latlon instance by position
+      description: PROCESSED_GEFS0P25_V12P3_GLOBAL weather data for LATLON region
+        stored in icechunk format
+      operationId: QueryPositionInstanceProcessedGefs0p25V12p3GlobalLatlon
+      tags:
+      - processed_gefs0p25_v12p3_global_latlon
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2021-01-01T00:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -6390,6 +6570,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -6551,44 +6740,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/rtma2p5_v2p10_conus_lambert/instances/{instanceId}/position:
-    get:
-      summary: query rtma2p5_v2p10_conus_lambert instance by position
-      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryPositionInstanceRtma2p5V2p10ConusLambert
-      tags:
-      - rtma2p5_v2p10_conus_lambert
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2021-01-01T00:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/rtma2p5_v2p10_conus_lambert/instances/{instanceId}/items:
     get:
       summary: query rtma2p5_v2p10_conus_lambert instance by items
@@ -6610,6 +6761,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/rtma2p5_v2p10_conus_lambert/instances/{instanceId}/position:
+    get:
+      summary: query rtma2p5_v2p10_conus_lambert instance by position
+      description: RTMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionInstanceRtma2p5V2p10ConusLambert
+      tags:
+      - rtma2p5_v2p10_conus_lambert
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2021-01-01T00:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -6973,6 +7171,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -7134,44 +7341,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/urma2p5_v2p10_conus_lambert/instances/{instanceId}/position:
-    get:
-      summary: query urma2p5_v2p10_conus_lambert instance by position
-      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
-        format
-      operationId: QueryPositionInstanceUrma2p5V2p10ConusLambert
-      tags:
-      - urma2p5_v2p10_conus_lambert
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: 2025-12-01T00:00Z
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/urma2p5_v2p10_conus_lambert/instances/{instanceId}/items:
     get:
       summary: query urma2p5_v2p10_conus_lambert instance by items
@@ -7193,6 +7362,53 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/urma2p5_v2p10_conus_lambert/instances/{instanceId}/position:
+    get:
+      summary: query urma2p5_v2p10_conus_lambert instance by position
+      description: URMA2P5_V2P10_CONUS weather data for LAMBERT region stored in icechunk
+        format
+      operationId: QueryPositionInstanceUrma2p5V2p10ConusLambert
+      tags:
+      - urma2p5_v2p10_conus_lambert
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: 2025-12-01T00:00Z
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
@@ -7554,6 +7770,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
       responses:
         '200':
           description: Coverage data response
@@ -7712,43 +7937,6 @@ paths:
                     type: array
                     items:
                       type: object
-  /collections/petss_test/instances/{instanceId}/position:
-    get:
-      summary: query petss_test instance by position
-      description: P-ETSS test data collection from local filesystem
-      operationId: QueryPositionInstancePetssTest
-      tags:
-      - petss_test
-      parameters:
-      - name: instanceId
-        in: path
-        required: true
-        description: Instance identifier
-        schema:
-          type: string
-        example: '2025-04-02T00:00:00Z'
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/netcdf:
-              schema:
-                type: string
-                format: binary
   /collections/petss_test/instances/{instanceId}/items:
     get:
       summary: query petss_test instance by items
@@ -7769,6 +7957,52 @@ paths:
         description: Bounding box filter
         schema:
           type: string
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/vnd.cov+json:
+              schema:
+                $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/schemas/coverageJSON.yaml
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/netcdf:
+              schema:
+                type: string
+                format: binary
+  /collections/petss_test/instances/{instanceId}/position:
+    get:
+      summary: query petss_test instance by position
+      description: P-ETSS test data collection from local filesystem
+      operationId: QueryPositionInstancePetssTest
+      tags:
+      - petss_test
+      parameters:
+      - name: instanceId
+        in: path
+        required: true
+        description: Instance identifier
+        schema:
+          type: string
+        example: '2025-04-02T00:00:00Z'
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
