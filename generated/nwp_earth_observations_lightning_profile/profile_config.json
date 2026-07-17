@@ -174,7 +174,9 @@
       "provider": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "resource_default_locale": null,
+      "conformance_classes": [],
+      "parameter_schema": null
     }
   ],
   "collection_examples": {},
@@ -186,7 +188,8 @@
         "The service SHALL return GeoJSON FeatureCollection.",
         "Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.",
         "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "cube-endpoint",
@@ -195,7 +198,8 @@
         "The service SHALL return CoverageJSON FeatureCollection.",
         "Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.",
         "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "radius-endpoint",
@@ -204,7 +208,8 @@
         "The service SHALL return CoverageJSON FeatureCollection.",
         "Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.",
         "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z."
-      ]
+      ],
+      "conformance_class": null
     }
   ],
   "abstract_tests": [
@@ -420,5 +425,12 @@
   "collection_id_pattern": null,
   "spec_uri_base": "http://www.dgiwg.org/std/edr/1.0",
   "parameter_name_pattern": null,
-  "parameter_schema": null
+  "parameter_schema": null,
+  "collection_title_max_length": null,
+  "require_license_link": false,
+  "license_link_type": "text/html",
+  "required_data_queries": [],
+  "radius_within_units_required": [],
+  "locations_feature_required_properties": [],
+  "conformance_class_requirements": {}
 }

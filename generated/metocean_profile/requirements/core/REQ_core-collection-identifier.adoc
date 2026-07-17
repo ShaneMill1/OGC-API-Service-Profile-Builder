@@ -1,0 +1,10 @@
+[[req_core_core_collection_identifier]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-identifier
+statement:: A collection identifier SHALL NOT convey structured metadata and SHOULD use the fixed value list.
+part:: A collection identifier SHALL NOT be used to convey structured metadata.
+part:: A collection identifier SHOULD use one of insitu-observations, climate_data, radar_observations, weather_warnings, weather_forecast.
+part:: The identifier string MAY include a postfix to the listed values if needed.
+====

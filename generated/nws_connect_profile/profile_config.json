@@ -143,7 +143,9 @@
       "provider": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "resource_default_locale": null,
+      "conformance_classes": [],
+      "parameter_schema": null
     },
     {
       "id": "wwa",
@@ -297,7 +299,9 @@
       "provider": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "resource_default_locale": null,
+      "conformance_classes": [],
+      "parameter_schema": null
     },
     {
       "id": "cwa",
@@ -368,7 +372,9 @@
       "provider": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "resource_default_locale": null,
+      "conformance_classes": [],
+      "parameter_schema": null
     },
     {
       "id": "states",
@@ -439,7 +445,9 @@
       "provider": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "resource_default_locale": null,
+      "conformance_classes": [],
+      "parameter_schema": null
     }
   ],
   "collection_examples": {},
@@ -451,7 +459,8 @@
         "The service SHALL provide a /conformance endpoint.",
         "The response SHALL include http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.",
         "The response SHALL include http://www.opengis.net/spec/ogcapi-edr-2/1.0/conf/pubsub."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "collections-endpoint",
@@ -460,7 +469,8 @@
         "The service SHALL provide a /collections endpoint.",
         "The response SHALL include water_gauge, wwa, cwa, and states collections.",
         "Each collection SHALL have id, title, description, extent, and links properties."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "water-gauge-collection",
@@ -471,7 +481,8 @@
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL include flood_stage, feet_above_stage, and value properties.",
         "Each feature geometry SHALL be a GeoJSON Point."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "wwa-collection",
@@ -482,7 +493,8 @@
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL include CAP_info_event, CAP_info_severity, CAP_info_urgency, and CAP_status properties.",
         "Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "cwa-collection",
@@ -493,7 +505,8 @@
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL include a CWA identifier property.",
         "Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "states-collection",
@@ -504,7 +517,8 @@
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL include a state identifier property.",
         "Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "items-by-id",
@@ -513,7 +527,8 @@
         "Each collection SHALL provide a /collections/{collectionId}/items/{featureId} endpoint.",
         "The response SHALL return a single GeoJSON feature.",
         "The response SHALL return 404 if the feature does not exist."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "pubsub-amqp",
@@ -523,7 +538,8 @@
         "Clients SHALL be able to subscribe to collections/water_gauge/items/# channel.",
         "Clients SHALL be able to subscribe to collections/wwa/items/# channel.",
         "Notifications SHALL be published as GeoJSON features."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "pubsub-websocket",
@@ -532,7 +548,8 @@
         "The service SHALL provide a WebSocket endpoint at ws://205.156.8.80:15670 for local development.",
         "The service SHALL provide a secure WebSocket endpoint at wss://edr-api-c.mdl.nws.noaa.gov/wifs_wss/ for production.",
         "WebSocket connections SHALL support AMQP protocol over WebSocket."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "pubsub-filters-water-gauge",
@@ -542,7 +559,8 @@
         "Subscriptions SHALL accept stations filter (comma-separated station IDs or 'all').",
         "Subscriptions SHALL accept wfo filter (Weather Forecast Office codes).",
         "Subscriptions SHALL accept email filter for notification delivery."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "pubsub-filters-wwa",
@@ -552,7 +570,8 @@
         "Subscriptions SHALL accept state filter (state code or blank for all).",
         "Subscriptions SHALL accept cwa filter (County Warning Area code).",
         "Subscriptions SHALL accept email filter for notification delivery."
-      ]
+      ],
+      "conformance_class": null
     }
   ],
   "abstract_tests": [
@@ -854,5 +873,12 @@
   "collection_id_pattern": null,
   "spec_uri_base": "http://www.opengis.net/spec/ogcapi-edr-3/1.0",
   "parameter_name_pattern": null,
-  "parameter_schema": null
+  "parameter_schema": null,
+  "collection_title_max_length": null,
+  "require_license_link": false,
+  "license_link_type": "text/html",
+  "required_data_queries": [],
+  "radius_within_units_required": [],
+  "locations_feature_required_properties": [],
+  "conformance_class_requirements": {}
 }

@@ -57,6 +57,29 @@ extent_requirements:
 parameter_name_pattern: "^[a-z][a-z0-9\\-]*$"
 
 # ---------------------------------------------------------------------------
+# Collection-level conformance constraints (MetOcean EDR Profile "Core")
+# Each is validated at build time. They are opt-in: omit them for profiles
+# that don't need the MetOcean core rules.
+# ---------------------------------------------------------------------------
+# /req/core/collection_title — title required, <= 50 characters.
+collection_title_max_length: 50
+# /req/core/collection_license — a rel=license link with type=text/html.
+require_license_link: true
+license_link_type: text/html
+# /req/*/collection_data_queries — every collection SHALL support these queries.
+required_data_queries:
+  - locations
+  - area
+  - radius
+# /req/core/collection_radius_data_query — within_units SHALL contain 'm'.
+radius_within_units_required:
+  - m
+# /req/core/locations_query_response_format — each location feature SHALL carry
+# a string id (always required) and a properties.name.
+locations_feature_required_properties:
+  - name
+
+# ---------------------------------------------------------------------------
 # Parameter schema
 # JSON Schema fragment used as the additionalProperties definition for
 # parameter_names in the generated OpenAPI. This replaces the default

@@ -1,0 +1,3 @@
+== Scope
+
+This standard defines the MetOcean Profile for OGC API - EDR. It specifies requirements and conformance tests for implementations of this profile.

@@ -1,0 +1,12 @@
+[[ats_core_core_openapi]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-openapi
+target:: /req/core/core-openapi
+test-purpose:: Validate that core openapi is correctly implemented.
+test-method::
+step:: Retrieve the API landing page.
+step:: Verify a link with rel=service-desc references an OpenAPI 3.1 document.
+step:: Verify a link with rel=service-doc has type text/html.
+====

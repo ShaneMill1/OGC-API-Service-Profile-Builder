@@ -1,0 +1,11 @@
+[[req_core_core_collection_license]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-license
+statement:: A collection SHALL link to a license of its data with rel=license and type=text/html.
+part:: The links property in a collection SHALL contain a link to a license of its data.
+part:: The license link SHALL set the rel property to license.
+part:: The type property SHALL be set to text/html.
+part:: If the data is open data, the license SHALL be CC BY 4.0 with href https://creativecommons.org/licenses/by/4.0/.
+====

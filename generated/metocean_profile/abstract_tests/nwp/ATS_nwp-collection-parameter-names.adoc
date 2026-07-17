@@ -1,0 +1,11 @@
+[[ats_nwp_nwp_collection_parameter_names]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp/nwp-collection-parameter-names
+target:: /req/nwp/nwp-collection-parameter-names
+test-purpose:: Validate that nwp collection parameter names is correctly implemented.
+test-method::
+step:: Retrieve the NWP collection.
+step:: Verify parameter ids use ECMWF short names from Annex D and descriptions carry the parameter name.
+====

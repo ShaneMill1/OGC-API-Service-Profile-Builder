@@ -1,0 +1,1085 @@
+# =============================================================================
+# MetOcean Profile for OGC API - Environmental Data Retrieval
+# Reverse-engineered from the authoritative source of OGC 26-027 (Draft):
+#   github.com/opengeospatial/metocean-ogcapi-environmental-data-retrieval-profile
+#
+# ONE profile document modelling all four MetOcean requirements classes as
+# EDR Part 3 conformance classes:
+#   - core                        (applies to every collection)
+#   - insitu-observations         (the insitu-observations collection)
+#   - nwp                         (the weather_forecast collection)
+#   - data-query-response-format  (CoverageJSON on every data query)
+#
+# See docs/metocean-profile-differences.md for a record of every point where
+# this config diverges from the source document (and why).
+# =============================================================================
+
+name: metocean_profile
+title: MetOcean Profile for OGC API - EDR
+version: "1.0"
+description: >
+  An EDR profile in support of providing access to meteorological datasets in
+  the MetOcean community of practice, covering in-situ observations and
+  Numerical Weather Prediction output. Profile of OGC API - EDR Part 1: Core.
+keywords:
+  - metocean
+  - ogc
+  - api
+  - edr
+  - weather
+  - meteorology
+  - high value datasets
+
+# Official profile namespace (OGC 26-027). Requirement/conformance identifiers
+# derive from this base.
+spec_uri_base: "http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0"
+
+# ── Conformance classes declared at /conformance ───────────────────────────
+# EDR Part 1: Core is a hard dependency; the four MetOcean classes follow.
+required_conformance_classes:
+  - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
+  - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/collections"
+  - "http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/core"
+  - "http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/insitu-observations"
+  - "http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/nwp"
+  - "http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/data-query-response-format"
+
+# ── Core class constraints — apply to EVERY collection ─────────────────────
+# /req/core/collection_title  (A: required, B: <= 50 chars, C: English)
+collection_title_max_length: 50
+# /req/core/collection_license (A-D: rel=license, type=text/html, CC BY 4.0 if open)
+require_license_link: true
+license_link_type: text/html
+# /req/core/locations_query_response_format (B: feature id + properties.name)
+locations_feature_required_properties:
+  - name
+# /req/core/collection_identifier (B: SHOULD use fixed value list; C: optional postfix)
+collection_id_pattern: "^(insitu-observations|climate_data|radar_observations|weather_warnings|weather_forecast)(-[A-Za-z0-9_]+)?$"
+
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  # /req/core/collection_spatial_extent (A: extent.spatial.crs SHALL be OGC:CRS84)
+  extent_crs:
+    allowed:
+      - "OGC:CRS84"
+  # /req/core/collection_temporal_extent (A: trs SHALL be Gregorian)
+  extent_trs:
+    allowed:
+      - "Gregorian"
+
+# ── Per-conformance-class constraints ──────────────────────────────────────
+conformance_class_requirements:
+  # /req/insitu-observations/collection_data_queries (A: locations, area, radius)
+  insitu-observations:
+    required_data_queries:
+      - locations
+      - area
+      - radius
+    # /req/core/collection_radius_data_query (A: within_units SHALL contain m)
+    radius_within_units_required:
+      - m
+  # /req/nwp/collection_data_queries (A: position and cube)
+  nwp:
+    required_data_queries:
+      - position
+      - cube
+  # Declared so collections may reference it; no mandatory query set of its own.
+  data-query-response-format: {}
+
+# Parameter key convention: accept insitu descriptive keys (air-temperature-2m)
+# and ECMWF short names from Annex D (2t, 10u, mn2t3). Keys carry no structured
+# metadata per /req/core/collection_parameter_names A.
+parameter_name_pattern: "^[a-z0-9][a-z0-9\\-]*$"
+
+# ── Output formats ─────────────────────────────────────────────────────────
+# /req/data-query-response-format/encoding (A: CoverageJSON on all data queries)
+output_formats:
+  - name: CoverageJSON
+    media_type: application/prs.coverage+json
+    schema_ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+  - name: GeoJSON
+    media_type: application/geo+json
+    schema_ref: https://geojson.org/schema/FeatureCollection.json
+
+# ── Shared parameter schema (Core /req/core/collection_parameter_names) ─────
+# NOTE: the builder applies ONE parameter_schema profile-wide, so this encodes
+# only the Core-level required fields (label/description/unit/observedProperty).
+# The insitu-only required fields (metocean:standard_name / metocean:level /
+# measurementType) are present as data on the insitu parameters but cannot be
+# marked "required" for insitu without also forcing them on NWP. See the
+# differences doc.
+parameter_schema:
+  type: object
+  title: Parameter name
+  description: Definition of a data parameter in this collection
+  required:
+    - type
+    - label
+    - description
+    - unit
+    - observedProperty
+  properties:
+    type:
+      type: string
+      enum:
+        - Parameter
+    id:
+      type: string
+      description: Parameter identifier (e.g. ECMWF short name for NWP)
+    label:
+      type: string
+      description: Human-readable parameter name (max 50 characters, English)
+    description:
+      type: string
+    unit:
+      type: object
+      required:
+        - symbol
+      properties:
+        label:
+          type: string
+        symbol:
+          type: object
+          required:
+            - type
+            - value
+          properties:
+            type:
+              type: string
+              pattern: "^https://qudt\\.org/vocab/unit/.*$"
+            value:
+              type: string
+    observedProperty:
+      type: object
+      required:
+        - id
+        - label
+      properties:
+        id:
+          type: string
+          pattern: "^https://vocab\\.nerc\\.ac\\.uk/standard_name/.*$"
+        label:
+          type: string
+    "metocean:standard_name":
+      type: string
+    "metocean:level":
+      type: number
+  additionalProperties: true
+
+# ── Document metadata (OGC 26-027) ─────────────────────────────────────────
+document_metadata:
+  doc_number: "26-027"
+  doc_type: standard
+  doc_subtype: profile
+  status: draft
+  external_id: "http://www.opengis.net/doc/profile/metocean-ogcapi-environmental-data-retrieval/1.0"
+  editors:
+    - "Håvard Futsæter"
+    - "Tom Kralidis"
+  submitting_orgs:
+    - "Norwegian Meteorological Institute"
+    - "Meteorological Service of Canada"
+  submitters:
+    - name: "Håvard Futsæter"
+      affiliation: "MET Norway"
+      role: editor
+    - name: "Tom Kralidis"
+      affiliation: "Meteorological Service of Canada"
+      role: editor
+  keywords:
+    - metocean
+    - ogc
+    - api
+    - edr
+    - weather
+    - meteorology
+    - high value datasets
+  submission_date: "2026-05-08"
+  approval_date: "2026-05-08"
+  publication_date: "2026-05-08"
+  copyright_year: 2026
+
+collections:
+  # ==========================================================================
+  # Collection 1 — In-situ observations
+  #   classes: core, insitu-observations, data-query-response-format
+  # ==========================================================================
+  - id: insitu-observations
+    title: In-situ meteorological observations
+    description: >
+      Real-time in-situ meteorological surface observations (air temperature,
+      wind, humidity, pressure) from land stations.
+    conformance_classes:
+      - core
+      - insitu-observations
+      - data-query-response-format
+    keywords:
+      - meteorology
+      - observations
+      - in-situ
+    links:
+      - href: https://example.com/collections/insitu-observations
+        rel: self
+        type: application/json
+      # /req/core/collection_license — open data → CC BY 4.0, text/html
+      - href: https://creativecommons.org/licenses/by/4.0/
+        rel: license
+        type: text/html
+        title: CC BY 4.0
+    extent:
+      spatial:
+        bbox:
+          - [-180, -90, 180, 90]
+        crs: "OGC:CRS84"
+      temporal:
+        interval:
+          - ["2020-01-01T00:00:00Z", null]
+        values:
+          - "2020-01-01T00:00:00Z/.."
+        trs: "Gregorian"
+      # /req/insitu-observations/collection_custom_dimensions
+      custom:
+        - id: standard_name
+          interval: []
+          reference: "https://vocab.nerc.ac.uk/standard_name/"
+          values:
+            - air_temperature
+            - wind_speed
+            - wind_from_direction
+            - relative_humidity
+            - air_pressure_at_mean_sea_level
+        - id: level
+          interval: []
+          reference: "Height of measurement above ground level in meters"
+          values:
+            - "0"
+            - "2"
+            - "10"
+    crs:
+      - "OGC:CRS84"
+    output_formats:
+      - CoverageJSON
+      - GeoJSON
+    data_queries:
+      locations:
+        link:
+          href: https://example.com/collections/insitu-observations/locations
+          rel: data
+          variables:
+            query_type: locations
+            output_formats:
+              - CoverageJSON
+              - GeoJSON
+      area:
+        link:
+          href: https://example.com/collections/insitu-observations/area
+          rel: data
+          variables:
+            query_type: area
+            output_formats:
+              - CoverageJSON
+      radius:
+        link:
+          href: https://example.com/collections/insitu-observations/radius
+          rel: data
+          variables:
+            query_type: radius
+            output_formats:
+              - CoverageJSON
+            within_units:
+              - m
+              - km
+    # Per-collection schema: insitu adds the insitu-observations required fields
+    # (/req/insitu-observations/collection_parameter_names) on top of Core.
+    parameter_schema:
+      type: object
+      title: In-situ parameter
+      required:
+        - type
+        - label
+        - description
+        - unit
+        - observedProperty
+        - measurementType
+        - "metocean:standard_name"
+        - "metocean:level"
+      properties:
+        type:
+          type: string
+          enum:
+            - Parameter
+        label:
+          type: string
+          description: Human-readable parameter name (max 50 characters, English)
+        description:
+          type: string
+        unit:
+          type: object
+          required:
+            - symbol
+          properties:
+            label:
+              type: string
+            symbol:
+              type: object
+              required:
+                - type
+                - value
+              properties:
+                type:
+                  type: string
+                  pattern: "^https://qudt\\.org/vocab/unit/.*$"
+                value:
+                  type: string
+        observedProperty:
+          type: object
+          required:
+            - id
+            - label
+          properties:
+            id:
+              type: string
+              pattern: "^https://vocab\\.nerc\\.ac\\.uk/standard_name/.*$"
+            label:
+              type: string
+        measurementType:
+          type: object
+          required:
+            - method
+            - duration
+          properties:
+            method:
+              type: string
+            duration:
+              type: string
+              pattern: "^P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?$"
+        "metocean:standard_name":
+          type: string
+          description: CF standard name; SHALL match a value in the standard_name custom dimension
+        "metocean:level":
+          type: number
+          description: Height above ground in metres; SHALL match a value in the level custom dimension
+      additionalProperties: true
+    parameter_names:
+      air-temperature-2m-instantaneous:
+        type: Parameter
+        label: Air Temperature at 2m (instantaneous)
+        description: Instantaneous air temperature at 2 metres above ground level
+        unit:
+          label: Kelvin
+          symbol:
+            value: K
+            type: "https://qudt.org/vocab/unit/K"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/air_temperature"
+          label: Air Temperature
+        measurementType:
+          method: point
+          duration: PT0S
+        metocean:standard_name: air_temperature
+        metocean:level: 2
+      wind-speed-10m-mean:
+        type: Parameter
+        label: Wind Speed at 10m (10min mean)
+        description: Mean wind speed over 10 minutes at 10 metres above ground level
+        unit:
+          label: Metre per Second
+          symbol:
+            value: m/s
+            type: "https://qudt.org/vocab/unit/M-PER-SEC"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/wind_speed"
+          label: Wind Speed
+        measurementType:
+          method: mean
+          duration: PT10M
+        metocean:standard_name: wind_speed
+        metocean:level: 10
+      wind-from-direction-10m-mean:
+        type: Parameter
+        label: Wind Direction at 10m (10min mean)
+        description: Mean wind direction over 10 minutes at 10 metres above ground level
+        unit:
+          label: Degree
+          symbol:
+            value: deg
+            type: "https://qudt.org/vocab/unit/DEG"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/wind_from_direction"
+          label: Wind From Direction
+        measurementType:
+          method: mean
+          duration: PT10M
+        metocean:standard_name: wind_from_direction
+        metocean:level: 10
+      relative-humidity-2m-instantaneous:
+        type: Parameter
+        label: Relative Humidity at 2m (instantaneous)
+        description: Instantaneous relative humidity at 2 metres above ground level
+        unit:
+          label: Percent
+          symbol:
+            value: "%"
+            type: "https://qudt.org/vocab/unit/PERCENT"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/relative_humidity"
+          label: Relative Humidity
+        measurementType:
+          method: point
+          duration: PT0S
+        metocean:standard_name: relative_humidity
+        metocean:level: 2
+      air-pressure-at-sea-level-instantaneous:
+        type: Parameter
+        label: Air Pressure at Sea Level (instantaneous)
+        description: Instantaneous air pressure reduced to mean sea level
+        unit:
+          label: Pascal
+          symbol:
+            value: Pa
+            type: "https://qudt.org/vocab/unit/PA"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/air_pressure_at_mean_sea_level"
+          label: Air Pressure at Mean Sea Level
+        measurementType:
+          method: point
+          duration: PT0S
+        metocean:standard_name: air_pressure_at_mean_sea_level
+        metocean:level: 0
+
+  # ==========================================================================
+  # Collection 2 — NWP Global Deterministic forecast   (id from fixed list)
+  #   classes: core, nwp, data-query-response-format
+  # ==========================================================================
+  - id: weather_forecast
+    title: Global deterministic NWP model forecast
+    description: >
+      Global deterministic Numerical Weather Prediction output. Each model run
+      is exposed as an EDR instance (/instances/{instanceId}) identified by an
+      RFC3339 datestamp; a data query with no instance targets the latest run.
+    conformance_classes:
+      - core
+      - nwp
+      - data-query-response-format
+    keywords:
+      - NWP
+      - forecast
+      - global deterministic
+    links:
+      - href: https://example.com/collections/weather_forecast
+        rel: self
+        type: application/json
+      - href: https://creativecommons.org/licenses/by/4.0/
+        rel: license
+        type: text/html
+        title: CC BY 4.0
+    extent:
+      spatial:
+        bbox:
+          - [-180, -90, 180, 90]
+        crs: "OGC:CRS84"
+      temporal:
+        interval:
+          - ["2026-01-01T00:00:00Z", null]
+        values:
+          - "2026-01-01T00:00:00Z/.."
+        trs: "Gregorian"
+      vertical:
+        interval:
+          - ["1000", "100"]
+        values:
+          - "1000"
+          - "850"
+          - "500"
+          - "250"
+          - "100"
+        # /rec/core/collection_vertical_extent — recommended VRS vocabulary
+        vrs: "Pressure level in hPa"
+        # Pressure increases downward toward the surface (CF 'positive').
+        positive: down
+    crs:
+      - "OGC:CRS84"
+    output_formats:
+      - CoverageJSON
+    # /req/nwp/collection_granularity + /req/nwp/collection_data_queries
+    data_queries:
+      instances:
+        link:
+          href: https://example.com/collections/weather_forecast/instances
+          rel: data
+          variables:
+            query_type: instances
+      position:
+        link:
+          href: https://example.com/collections/weather_forecast/position
+          rel: data
+          variables:
+            query_type: position
+            output_formats:
+              - CoverageJSON
+      cube:
+        link:
+          href: https://example.com/collections/weather_forecast/cube
+          rel: data
+          variables:
+            query_type: cube
+            output_formats:
+              - CoverageJSON
+    # /req/nwp/collection_parameter_names — ECMWF short names from Annex D.
+    # id = ECMWF short name; description = parameter name.
+    # NOTE: Annex D lists "Total solid precipitation" with short name "TODO fix"
+    # in the source document — omitted here as it is not yet defined upstream.
+    # Per-collection schema: NWP requires id (ECMWF short name) + description
+    # (/req/nwp/collection_parameter_names), not the insitu metocean:* fields.
+    parameter_schema:
+      type: object
+      title: NWP parameter
+      required:
+        - type
+        - id
+        - label
+        - description
+        - unit
+        - observedProperty
+      properties:
+        type:
+          type: string
+          enum:
+            - Parameter
+        id:
+          type: string
+          description: ECMWF short name from Annex D
+        label:
+          type: string
+          description: Human-readable parameter name (max 50 characters, English)
+        description:
+          type: string
+          description: Parameter name as listed in Annex D
+        unit:
+          type: object
+          required:
+            - symbol
+          properties:
+            label:
+              type: string
+            symbol:
+              type: object
+              required:
+                - type
+                - value
+              properties:
+                type:
+                  type: string
+                  pattern: "^https://qudt\\.org/vocab/unit/.*$"
+                value:
+                  type: string
+        observedProperty:
+          type: object
+          required:
+            - id
+            - label
+          properties:
+            id:
+              type: string
+            label:
+              type: string
+      additionalProperties: true
+    parameter_names:
+      gh:
+        type: Parameter
+        id: gh
+        label: Geopotential Height
+        description: Geopotential Height
+        unit:
+          label: Geopotential metre
+          symbol:
+            value: gpm
+            type: "https://qudt.org/vocab/unit/M"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/geopotential_height"
+          label: Geopotential Height
+      t:
+        type: Parameter
+        id: t
+        label: Temperature
+        description: Temperature
+        unit:
+          label: Kelvin
+          symbol:
+            value: K
+            type: "https://qudt.org/vocab/unit/K"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/air_temperature"
+          label: Air Temperature
+      u:
+        type: Parameter
+        id: u
+        label: Wind zonal velocity (u)
+        description: Wind zonal velocity (u)
+        unit:
+          label: Metre per Second
+          symbol:
+            value: m/s
+            type: "https://qudt.org/vocab/unit/M-PER-SEC"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/eastward_wind"
+          label: Eastward Wind
+      v:
+        type: Parameter
+        id: v
+        label: Wind meridional velocity (v)
+        description: Wind meridional velocity (v)
+        unit:
+          label: Metre per Second
+          symbol:
+            value: m/s
+            type: "https://qudt.org/vocab/unit/M-PER-SEC"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/northward_wind"
+          label: Northward Wind
+      r:
+        type: Parameter
+        id: r
+        label: Relative Humidity
+        description: Relative Humidity
+        unit:
+          label: Percent
+          symbol:
+            value: "%"
+            type: "https://qudt.org/vocab/unit/PERCENT"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/relative_humidity"
+          label: Relative Humidity
+      msl:
+        type: Parameter
+        id: msl
+        label: Mean Sea Level Pressure (MSLP)
+        description: Mean Sea Level Pressure (MSLP)
+        unit:
+          label: Pascal
+          symbol:
+            value: Pa
+            type: "https://qudt.org/vocab/unit/PA"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/air_pressure_at_mean_sea_level"
+          label: Air Pressure at Mean Sea Level
+      2t:
+        type: Parameter
+        id: 2t
+        label: 2-m Temperature
+        description: 2-m Temperature
+        unit:
+          label: Kelvin
+          symbol:
+            value: K
+            type: "https://qudt.org/vocab/unit/K"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/air_temperature"
+          label: Air Temperature
+      mn2t3:
+        type: Parameter
+        id: mn2t3
+        label: 2-m minimum temperature last 3 hours
+        description: 2-m minimum temperature in the last 3 hours
+        unit:
+          label: Kelvin
+          symbol:
+            value: K
+            type: "https://qudt.org/vocab/unit/K"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/air_temperature"
+          label: Air Temperature
+      mx2t3:
+        type: Parameter
+        id: mx2t3
+        label: 2-m maximum temperature last 3 hours
+        description: 2-m maximum temperature in the last 3 hours
+        unit:
+          label: Kelvin
+          symbol:
+            value: K
+            type: "https://qudt.org/vocab/unit/K"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/air_temperature"
+          label: Air Temperature
+      mn2t6:
+        type: Parameter
+        id: mn2t6
+        label: 2-m minimum temperature last 6 hours
+        description: 2-m minimum temperature in the last 6 hours
+        unit:
+          label: Kelvin
+          symbol:
+            value: K
+            type: "https://qudt.org/vocab/unit/K"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/air_temperature"
+          label: Air Temperature
+      mx2t6:
+        type: Parameter
+        id: mx2t6
+        label: 2-m maximum temperature last 6 hours
+        description: 2-m maximum temperature in the last 6 hours
+        unit:
+          label: Kelvin
+          symbol:
+            value: K
+            type: "https://qudt.org/vocab/unit/K"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/air_temperature"
+          label: Air Temperature
+      2d:
+        type: Parameter
+        id: 2d
+        label: 2m dewpoint temperature
+        description: 2m dewpoint temperature
+        unit:
+          label: Kelvin
+          symbol:
+            value: K
+            type: "https://qudt.org/vocab/unit/K"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/dew_point_temperature"
+          label: Dew Point Temperature
+      10u:
+        type: Parameter
+        id: 10u
+        label: 10m u
+        description: 10m u
+        unit:
+          label: Metre per Second
+          symbol:
+            value: m/s
+            type: "https://qudt.org/vocab/unit/M-PER-SEC"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/eastward_wind"
+          label: Eastward Wind
+      10v:
+        type: Parameter
+        id: 10v
+        label: 10m v
+        description: 10m v
+        unit:
+          label: Metre per Second
+          symbol:
+            value: m/s
+            type: "https://qudt.org/vocab/unit/M-PER-SEC"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/northward_wind"
+          label: Northward Wind
+      10fg:
+        type: Parameter
+        id: 10fg
+        label: 10m wind gust
+        description: 10m wind gust
+        unit:
+          label: Metre per Second
+          symbol:
+            value: m/s
+            type: "https://qudt.org/vocab/unit/M-PER-SEC"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/wind_speed_of_gust"
+          label: Wind Speed of Gust
+      tp:
+        type: Parameter
+        id: tp
+        label: Total Precipitation
+        description: Total Precipitation
+        unit:
+          label: Metre
+          symbol:
+            value: m
+            type: "https://qudt.org/vocab/unit/M"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/lwe_thickness_of_precipitation_amount"
+          label: Total Precipitation
+      cape:
+        type: Parameter
+        id: cape
+        label: CAPE
+        description: Convective Available Potential Energy
+        unit:
+          label: Joule per Kilogram
+          symbol:
+            value: J/kg
+            type: "https://qudt.org/vocab/unit/J-PER-KiloGM"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/atmosphere_convective_available_potential_energy"
+          label: CAPE
+      tcw:
+        type: Parameter
+        id: tcw
+        label: Total precipitable water
+        description: Total precipitable water
+        unit:
+          label: Kilogram per Square Metre
+          symbol:
+            value: kg/m2
+            type: "https://qudt.org/vocab/unit/KiloGM-PER-M2"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/atmosphere_mass_content_of_water_vapor"
+          label: Total Column Water
+      tcc:
+        type: Parameter
+        id: tcc
+        label: Total cloud cover
+        description: Total cloud cover
+        unit:
+          label: Dimensionless
+          symbol:
+            value: "1"
+            type: "https://qudt.org/vocab/unit/UNITLESS"
+        observedProperty:
+          id: "https://vocab.nerc.ac.uk/standard_name/cloud_area_fraction"
+          label: Cloud Area Fraction
+
+# ── Normative requirements (transcribed from OGC 26-027, grouped by class) ──
+requirements:
+  # ---------- Core ----------
+  - id: core-openapi
+    conformance_class: core
+    statement: An API definition SHALL be described using an OpenAPI 3.1 document.
+    parts:
+      - The API definition SHALL be described using an OpenAPI document (version 3.1 or higher).
+      - The OpenAPI document SHALL be encoded as one of the OpenAPI JSON/YAML media types.
+      - The landing page SHALL link the OpenAPI document with rel=service-desc.
+      - The landing page SHALL link API documentation with rel=service-doc and type text/html.
+  - id: core-collection-identifier
+    conformance_class: core
+    statement: A collection identifier SHALL NOT convey structured metadata and SHOULD use the fixed value list.
+    parts:
+      - A collection identifier SHALL NOT be used to convey structured metadata.
+      - A collection identifier SHOULD use one of insitu-observations, climate_data, radar_observations, weather_warnings, weather_forecast.
+      - The identifier string MAY include a postfix to the listed values if needed.
+  - id: core-collection-title
+    conformance_class: core
+    statement: A title SHALL be set for all collections and SHALL NOT exceed 50 characters.
+    parts:
+      - A title SHALL be set for all collections.
+      - A title SHALL NOT have more than 50 characters.
+      - A title SHOULD be written in English.
+      - A title SHOULD place the most important information first to guard against truncation.
+      - A title SHOULD describe the collection understandably for non-experts (topic/domain and geographical area).
+  - id: core-collection-license
+    conformance_class: core
+    statement: A collection SHALL link to a license of its data with rel=license and type=text/html.
+    parts:
+      - The links property in a collection SHALL contain a link to a license of its data.
+      - The license link SHALL set the rel property to license.
+      - The type property SHALL be set to text/html.
+      - If the data is open data, the license SHALL be CC BY 4.0 with href https://creativecommons.org/licenses/by/4.0/.
+  - id: core-collection-spatial-extent
+    conformance_class: core
+    statement: The collection spatial extent and CRS list SHALL use OGC:CRS84.
+    parts:
+      - The value of extent.spatial.crs SHALL be OGC:CRS84.
+      - The value of crs SHALL include the element OGC:CRS84.
+      - If crs_details is specified for a data_queries object, it SHALL include an object whose crs value is OGC:CRS84.
+      - Additional CRSs SHOULD be presented as EPSG:<code> in crs and data_queries.*.crs_details.crs.
+  - id: core-collection-temporal-extent
+    conformance_class: core
+    statement: The value of extent.temporal.trs SHALL be Gregorian.
+    parts:
+      - The value of extent.temporal.trs SHALL be Gregorian.
+  - id: core-collection-parameter-names
+    conformance_class: core
+    statement: Parameter objects SHALL specify label, description and unit using the profile conventions.
+    parts:
+      - The keys in parameter_names and id in the parameter object SHALL NOT convey structured metadata.
+      - A parameter object SHALL specify the fields label, description and unit.
+      - label SHALL NOT have more than 50 characters.
+      - label SHALL be written in English.
+      - unit SHALL use QUDT; unit.symbol.type SHALL be https://qudt.org/vocab/unit/<unit> and unit.symbol.value the qudt symbol.
+      - observedProperty SHALL use the CF-convention (observedProperty.id = https://vocab.nerc.ac.uk/standard_name/<name>) when available; otherwise use observedProperty.description.
+  - id: core-collection-radius-data-query
+    conformance_class: core
+    statement: A radius data query within_units array SHALL contain m (SI unit of length).
+    parts:
+      - The within_units array in a variables object for a radius data query SHALL contain m.
+      - within_units MAY contain more values, each defined as a unit at https://qudt.org using the unit symbol.
+      - A radius query with a limit parameter SHOULD return the closest items to the radius centre.
+  - id: core-locations-query-response-format
+    conformance_class: core
+    statement: A /locations response SHALL be a GeoJSON FeatureCollection with id and properties.name per feature.
+    parts:
+      - The /locations response SHALL be a GeoJSON document with a FeatureCollection object.
+      - Each Feature SHALL have id of type string and properties.name of type string.
+      - If not all collection parameters are provided, properties.parameter-name SHALL list a subset of the parameter_names keys.
+      - Links with more information SHALL be included in properties.links as OGC API - Common link objects.
+      - A more detailed description MAY be provided via properties.description.
+      - All strings SHALL be in English.
+  - id: core-error-handling
+    conformance_class: core
+    statement: Empty results SHALL return HTTP 204 and 4xx responses SHOULD comply with RFC 9457.
+    parts:
+      - A query for data inside the extent that results in no data SHALL return HTTP 204 with no content.
+      - A query partially within the extent SHALL respond as within the extent, returning only the in-extent portion.
+      - Any 4xx response SHOULD comply with RFC 9457 Problem Details for HTTP APIs.
+
+  # ---------- Insitu observations ----------
+  - id: insitu-collection-data-queries
+    conformance_class: insitu-observations
+    statement: An insitu-observations collection SHALL support locations, area and radius.
+    parts:
+      - A collection SHALL support locations, area and radius.
+  - id: insitu-collection-parameter-names
+    conformance_class: insitu-observations
+    statement: Insitu parameters SHALL specify metocean:standard_name, metocean:level and measurementType.
+    parts:
+      - Each parameter SHALL specify metocean:standard_name set to a value from the standard_name custom dimension.
+      - Each parameter SHALL specify metocean:level set to a value from the level custom dimension.
+      - Each parameter SHALL specify measurementType.
+  - id: insitu-collection-custom-dimensions
+    conformance_class: insitu-observations
+    statement: An insitu-observations collection SHALL define standard_name and level custom dimensions.
+    parts:
+      - The collection SHALL have an extent.custom object with id standard_name.
+      - Custom dimension standard_name SHALL list CF standard names in values.
+      - Custom dimension standard_name SHALL specify reference https://vocab.nerc.ac.uk/standard_name/.
+      - The collection SHALL have an extent.custom object with id level.
+      - Custom dimension level SHALL specify reference "Height of measurement above ground level in meters".
+  - id: insitu-coveragejson-parameters
+    conformance_class: insitu-observations
+    statement: CoverageJSON parameters SHALL carry metocean:measurementType, metocean:standard_name and metocean:level.
+    parts:
+      - Each object in parameters in a coverage SHALL have metocean:measurementType with the same properties as measurementType.
+      - Each object in parameters SHALL have metocean:standard_name.
+      - Each object in parameters SHALL have metocean:level.
+
+  # ---------- Numerical Weather Prediction ----------
+  - id: nwp-collection-parameter-names
+    conformance_class: nwp
+    statement: NWP parameters SHALL use ECMWF short names per Annex D for id and description.
+    parts:
+      - WIPPS Manual Global Deterministic NWP parameters SHALL be provided using ECMWF short names per Annex D.
+      - The parameter name SHALL be provided in the description property.
+      - The ECMWF short name SHALL be provided in the id property.
+  - id: nwp-collection-granularity
+    conformance_class: nwp
+    statement: An NWP collection represents a model; instances represent model runs identified by RFC3339 datestamps.
+    parts:
+      - A collection SHALL represent and describe a model.
+      - A collection instance SHALL represent and describe a model run.
+      - A collection instance identifier SHALL be represented by an RFC3339 datestamp.
+      - A collection temporal instance or interval SHALL represent a timestep or timesteps of a model run.
+  - id: nwp-collection-data-queries
+    conformance_class: nwp
+    statement: An NWP collection SHALL support position and cube; no instance means latest.
+    parts:
+      - A collection SHALL support position and cube queries.
+      - Data queries without an instance SHALL be interpreted as the latest instance of a collection.
+      - A datetime parameter between two timestamps SHALL trigger an HTTP 400 Bad Request.
+
+  # ---------- Data query response format ----------
+  - id: dqrf-encoding
+    conformance_class: data-query-response-format
+    statement: All data queries SHALL support CoverageJSON as a response format.
+    parts:
+      - All data queries SHALL support CoverageJSON as a response format.
+  - id: dqrf-referencing
+    conformance_class: data-query-response-format
+    statement: CoverageJSON domain.referencing system id SHALL reflect the crs query parameter (default OGC:CRS84).
+    parts:
+      - With no crs query param, domain.referencing.* system SHALL have type GeographicCRS and id OGC:CRS84.
+      - With a crs query param, the system object with type GeographicCRS SHALL set id to the crs query param value.
+
+# ── Abstract Test Suite (transcribed/derived from Annex A) ──────────────────
+abstract_tests:
+  - id: core-openapi
+    requirement_id: core-openapi
+    steps:
+      - Retrieve the API landing page.
+      - Verify a link with rel=service-desc references an OpenAPI 3.1 document.
+      - Verify a link with rel=service-doc has type text/html.
+  - id: core-collection-identifier
+    requirement_id: core-collection-identifier
+    steps:
+      - Retrieve /collections.
+      - Verify each collection id matches the fixed value list (optionally with a postfix).
+  - id: core-collection-title
+    requirement_id: core-collection-title
+    steps:
+      - Retrieve /collections.
+      - Verify each collection has a title of at most 50 characters.
+  - id: core-collection-license
+    requirement_id: core-collection-license
+    steps:
+      - Retrieve a collection.
+      - Verify links contains a rel=license link with type text/html.
+  - id: core-collection-spatial-extent
+    requirement_id: core-collection-spatial-extent
+    steps:
+      - Retrieve a collection.
+      - Verify extent.spatial.crs is OGC:CRS84 and crs includes OGC:CRS84.
+  - id: core-collection-temporal-extent
+    requirement_id: core-collection-temporal-extent
+    steps:
+      - Retrieve a collection.
+      - Verify extent.temporal.trs equals Gregorian.
+  - id: core-collection-parameter-names
+    requirement_id: core-collection-parameter-names
+    steps:
+      - Retrieve a collection.
+      - For each parameter verify label, description and unit are present.
+      - Verify unit.symbol.type is a QUDT unit URI and observedProperty.id is a CF standard name URI when present.
+  - id: core-collection-radius-data-query
+    requirement_id: core-collection-radius-data-query
+    steps:
+      - Retrieve a collection that supports radius.
+      - Verify the radius variables within_units array contains m.
+  - id: core-locations-query-response-format
+    requirement_id: core-locations-query-response-format
+    steps:
+      - Send a GET /locations query.
+      - Verify the response is a GeoJSON FeatureCollection.
+      - Verify each Feature has a string id and a string properties.name.
+  - id: core-error-handling
+    requirement_id: core-error-handling
+    steps:
+      - Send a query inside the extent that returns no data; verify HTTP 204 with no content.
+      - Send a request that yields a 4xx; verify the body complies with RFC 9457 (application/problem+json).
+  - id: insitu-collection-data-queries
+    requirement_id: insitu-collection-data-queries
+    steps:
+      - Retrieve the insitu-observations collection.
+      - Verify data_queries contains locations, area and radius.
+  - id: insitu-collection-parameter-names
+    requirement_id: insitu-collection-parameter-names
+    steps:
+      - Retrieve the insitu-observations collection.
+      - Verify each parameter has metocean:standard_name, metocean:level and measurementType.
+  - id: insitu-collection-custom-dimensions
+    requirement_id: insitu-collection-custom-dimensions
+    steps:
+      - Retrieve the insitu-observations collection.
+      - Verify extent.custom includes standard_name (with the nerc reference) and level.
+  - id: insitu-coveragejson-parameters
+    requirement_id: insitu-coveragejson-parameters
+    steps:
+      - Request insitu data as CoverageJSON.
+      - Verify each parameters object has metocean:measurementType, metocean:standard_name and metocean:level.
+  - id: nwp-collection-parameter-names
+    requirement_id: nwp-collection-parameter-names
+    steps:
+      - Retrieve the NWP collection.
+      - Verify parameter ids use ECMWF short names from Annex D and descriptions carry the parameter name.
+  - id: nwp-collection-granularity
+    requirement_id: nwp-collection-granularity
+    steps:
+      - Retrieve /collections/weather_forecast/instances.
+      - Verify each instance id is an RFC3339 datestamp representing a model run.
+  - id: nwp-collection-data-queries
+    requirement_id: nwp-collection-data-queries
+    steps:
+      - Retrieve the NWP collection.
+      - Verify data_queries contains position and cube.
+      - Verify a datetime range request triggers HTTP 400.
+  - id: dqrf-encoding
+    requirement_id: dqrf-encoding
+    steps:
+      - For each data query, verify CoverageJSON is an offered response format.
+  - id: dqrf-referencing
+    requirement_id: dqrf-referencing
+    steps:
+      - Request data without a crs param; verify domain.referencing system id is OGC:CRS84.
+      - Request data with a crs param; verify the system id matches the crs param.

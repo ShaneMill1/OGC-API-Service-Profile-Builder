@@ -1,0 +1,11 @@
+[[ats_core_core_collection_license]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-license
+target:: /req/core/core-collection-license
+test-purpose:: Validate that core collection license is correctly implemented.
+test-method::
+step:: Retrieve a collection.
+step:: Verify links contains a rel=license link with type text/html.
+====

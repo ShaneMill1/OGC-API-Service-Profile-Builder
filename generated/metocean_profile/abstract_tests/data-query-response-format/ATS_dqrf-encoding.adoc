@@ -1,0 +1,10 @@
+[[ats_data_query_response_format_dqrf_encoding]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/data-query-response-format/dqrf-encoding
+target:: /req/data-query-response-format/dqrf-encoding
+test-purpose:: Validate that dqrf encoding is correctly implemented.
+test-method::
+step:: For each data query, verify CoverageJSON is an offered response format.
+====

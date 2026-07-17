@@ -1,0 +1,11 @@
+[[ats_insitu_observations_insitu_collection_custom_dimensions]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu-observations/insitu-collection-custom-dimensions
+target:: /req/insitu-observations/insitu-collection-custom-dimensions
+test-purpose:: Validate that insitu collection custom dimensions is correctly implemented.
+test-method::
+step:: Retrieve the insitu-observations collection.
+step:: Verify extent.custom includes standard_name (with the nerc reference) and level.
+====

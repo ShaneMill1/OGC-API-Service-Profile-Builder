@@ -232,7 +232,9 @@
       "provider": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "resource_default_locale": null,
+      "conformance_classes": [],
+      "parameter_schema": null
     }
   ],
   "collection_examples": {},
@@ -244,7 +246,8 @@
         "The service bbox SHALL have a geometry defined in WGS84.",
         "The service bounding box coordinates SHALL be returned with geographical latitude, then longitude.",
         "The service bounding box coordinates SHALL be returned in decimal degrees."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "profile-bbox-coordinates",
@@ -252,7 +255,8 @@
       "parts": [
         "The 2D bounding box boundary SHALL be for the extent [-180, -90, 180, 90].",
         "The coordinate reference system for the bounding box SHALL be EPSG:4326 (WGS84)."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "profile-trs-values",
@@ -260,7 +264,8 @@
       "parts": [
         "The service trs SHALL be in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.",
         "The service trs SHALL be the time format specified in RFC 3339."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "profile-vrs-values",
@@ -270,7 +275,8 @@
         "The service vrs SHALL be EPSG:3855.",
         "The service vrs SHALL use the vertical datum EGM2008 geoid as the zero-height reference (orthometric height relative to mean sea level).",
         "The service SHALL declare extent.vertical.positive as \"up\" or \"down\" so vertical interval ordering (e.g. pressure levels ordered top-to-bottom vs. bottom-to-top) is unambiguous."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "profile-keywords",
@@ -278,7 +284,8 @@
       "parts": [
         "The collection keywords array SHALL include \"cube\", \"radius\", and \"items\".",
         "The collection keywords array SHALL include \"precipitation_amount\" and \"radar\"."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "profile-links",
@@ -286,14 +293,16 @@
       "parts": [
         "Each link object SHALL include a non-empty href attribute.",
         "Each link object SHALL include rel, title and type attributes."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "profile-query-types",
       "statement": "The following data queries SHALL be supported: \"cube\", \"items\", \"radius\".",
       "parts": [
         "The collection SHALL advertise cube, items and radius data queries."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "items-endpoint",
@@ -308,7 +317,8 @@
         "The items data queries SHALL return GRIB2 which complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.",
         "The items data queries SHALL return HDF5 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.",
         "The items data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "cube-endpoint",
@@ -323,7 +333,8 @@
         "The cube data queries SHALL return GRIB2 which complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.",
         "The cube data queries SHALL return HDF5 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.",
         "The cube data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "radius-endpoint",
@@ -338,7 +349,8 @@
         "The radius data queries SHALL return GRIB2 which complies with the WMO Manual On Codes - https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes.",
         "The radius data queries SHALL return HDF5 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.",
         "The radius data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "profile-nwp-parameters",
@@ -347,14 +359,16 @@
         "The parameter datetime SHALL be in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.",
         "The parameter datetime SHALL be the time format specified in RFC 3339.",
         "The parameter precipitation_amount SHALL return values in kg m-2 units."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "http-methods",
       "statement": "The service SHALL be configured to return data for both GET and POST HTTP Method Requests.",
       "parts": [
         "The service SHALL support both GET and POST HTTP Methods for queries."
-      ]
+      ],
+      "conformance_class": null
     }
   ],
   "abstract_tests": [
@@ -718,5 +732,12 @@
   "collection_id_pattern": null,
   "spec_uri_base": "http://www.dgiwg.org/std/edr/1.0",
   "parameter_name_pattern": "^[a-z][a-z0-9_]*$",
-  "parameter_schema": null
+  "parameter_schema": null,
+  "collection_title_max_length": null,
+  "require_license_link": false,
+  "license_link_type": "text/html",
+  "required_data_queries": [],
+  "radius_within_units_required": [],
+  "locations_feature_required_properties": [],
+  "conformance_class_requirements": {}
 }

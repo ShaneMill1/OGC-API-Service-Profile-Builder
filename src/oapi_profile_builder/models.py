@@ -177,6 +177,45 @@ class Collection(EDRCollection):
     metadata_date: Optional[str] = None
     resource_service_publish_date: Optional[str] = None
     resource_default_locale: Optional[str] = None
+    conformance_classes: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Short keys of the profile's conformance classes this collection "
+            "implements (e.g. ['core', 'insitu-observations']). Drives which "
+            "entries in ServiceProfile.conformance_class_requirements are enforced "
+            "for this collection, so a single profile document can hold collections "
+            "of different EDR Part 3 requirements classes. Round-tripped into "
+            "profile_config.json and surfaced as x-conformance-classes in the "
+            "generated OpenAPI."
+        ),
+    )
+    parameter_schema: Optional[dict] = Field(
+        default=None,
+        description=(
+            "Per-collection JSON Schema fragment used as the additionalProperties "
+            "definition for this collection's parameter_names in the generated "
+            "OpenAPI. Overrides the profile-level parameter_schema for this "
+            "collection only. Use this when collections in one profile need "
+            "different parameter constraints — e.g. an insitu collection requiring "
+            "metocean:standard_name / metocean:level / measurementType while an NWP "
+            "collection uses ECMWF short-name conventions. Must be a valid JSON "
+            "Schema object."
+        ),
+    )
+
+    @field_validator("parameter_schema")
+    @classmethod
+    def _valid_parameter_schema(cls, v: dict | None) -> dict | None:
+        if v is None:
+            return v
+        if not isinstance(v, dict):
+            raise ValueError("parameter_schema must be a JSON Schema object (dict)")
+        if not any(k in v for k in ("type", "properties", "$ref", "allOf", "anyOf", "oneOf")):
+            raise ValueError(
+                "parameter_schema must contain at least one of: "
+                "type, properties, $ref, allOf, anyOf, oneOf"
+            )
+        return v
 
 
 # ---------------------------------------------------------------------------
@@ -198,6 +237,17 @@ class Requirement(BaseModel):
     id: Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9\-]*$")]
     statement: str
     parts: list[str] = Field(min_length=1)
+    conformance_class: str | None = Field(
+        default=None,
+        description=(
+            "Short key of the requirements/conformance class this requirement "
+            "belongs to (e.g. 'core', 'insitu-observations', 'nwp'). When any "
+            "requirement sets this, the generated AsciiDoc/PDF groups requirements "
+            "and abstract tests into one requirements class per key (each with its "
+            "own class URI under spec_uri_base). When unset on all requirements, "
+            "the generator keeps its single-class behaviour."
+        ),
+    )
 
     @field_validator("id")
     @classmethod
@@ -729,6 +779,38 @@ class PagingConfig(BaseModel):
     max_limit: int = Field(default=10000, description="Maximum allowed limit for features returned", ge=1)
 
 
+class ConformanceClassConstraints(BaseModel):
+    """Constraints scoped to a single OGC API - EDR Part 3 conformance class.
+
+    A profile document (e.g. the MetOcean EDR Profile) defines several
+    requirements/conformance classes — Core, Insitu observations, NWP, Data
+    query response format — and different collections in the same service may
+    implement different classes. These per-class constraints are applied only
+    to collections whose ``conformance_classes`` list includes the matching
+    class key, so one profile can enforce, say, ``[locations, area, radius]``
+    on its insitu collections and ``[position, cube]`` on its NWP collections.
+
+    The equivalent profile-level fields (``required_data_queries``,
+    ``radius_within_units_required``) remain a shorthand that applies to *every*
+    collection; class-scoped constraints are additive on top of them.
+    """
+    required_data_queries: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Data query types every collection implementing this conformance class "
+            "must define (e.g. ['locations', 'area', 'radius'] for insitu, "
+            "['position', 'cube'] for NWP)."
+        ),
+    )
+    radius_within_units_required: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Unit tokens each radius query's within_units array must contain for "
+            "collections implementing this conformance class (e.g. ['m'])."
+        ),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Root model — the authoritative profile definition
 # ---------------------------------------------------------------------------
@@ -849,6 +931,75 @@ class ServiceProfile(BaseModel):
             "schema, allowing full control over required fields, patterns, and custom "
             "extension properties (e.g. metocean:standard_name). Must be a valid JSON "
             "Schema object."
+        ),
+    )
+
+    # --- Collection-level conformance constraints ---------------------------
+    # Optional profile-level rules that mirror MetOcean EDR Profile core
+    # requirements. Each is off by default so existing profiles are unaffected;
+    # set them to opt a profile into the corresponding validation.
+
+    collection_title_max_length: int | None = Field(
+        default=None,
+        ge=1,
+        description=(
+            "When set, every collection title must be present and no longer than this "
+            "many characters. Implements the MetOcean /req/core/collection_title rule "
+            "(title required, <= 50 characters)."
+        ),
+    )
+    require_license_link: bool = Field(
+        default=False,
+        description=(
+            "When true, every collection must declare a link with rel='license'. "
+            "The link's type must equal license_link_type when that field is set. "
+            "Implements the MetOcean /req/core/collection_license rule."
+        ),
+    )
+    license_link_type: str | None = Field(
+        default="text/html",
+        description=(
+            "Expected media type of the rel='license' link when require_license_link "
+            "is true. Set to null to accept any type. Defaults to 'text/html' per the "
+            "MetOcean profile."
+        ),
+    )
+    required_data_queries: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Data query types (e.g. 'locations', 'area', 'radius', 'position', 'cube') "
+            "that every collection with data_queries must define. Implements the "
+            "'array must contain value' rule for the mandatory data-query sets "
+            "(MetOcean /req/*/collection_data_queries)."
+        ),
+    )
+    radius_within_units_required: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Unit tokens that every radius query's within_units array must contain "
+            "(e.g. ['m']). Implements the MetOcean /req/core/collection_radius_data_query "
+            "rule that within_units SHALL contain 'm'."
+        ),
+    )
+    locations_feature_required_properties: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Feature properties (e.g. ['name']) that the generated /locations response "
+            "schema marks as required on each GeoJSON feature, in addition to the always-"
+            "required string 'id'. Implements the MetOcean "
+            "/req/core/locations_query_response_format rule."
+        ),
+    )
+    conformance_class_requirements: dict[str, ConformanceClassConstraints] = Field(
+        default_factory=dict,
+        description=(
+            "Per-conformance-class constraints keyed by class short name (e.g. "
+            "'insitu-observations', 'nwp'). Applied only to collections whose "
+            "conformance_classes list includes the key. Lets one profile document "
+            "model several EDR Part 3 requirements classes with different mandatory "
+            "data-query sets. The flat required_data_queries / "
+            "radius_within_units_required fields still apply to every collection; "
+            "class-scoped constraints are additive on top of them."
         ),
     )
 
@@ -1076,6 +1227,160 @@ class ServiceProfile(BaseModel):
                     "parameter_schema must contain at least one of: "
                     "type, properties, $ref, allOf, anyOf, oneOf"
                 )
+        return self
+
+    @model_validator(mode="after")
+    def validate_collection_title_length(self) -> ServiceProfile:
+        """Enforce collection_title_max_length (MetOcean /req/core/collection_title)."""
+        if self.collection_title_max_length is None:
+            return self
+        limit = self.collection_title_max_length
+        for coll in self.collections:
+            title = getattr(coll, "title", None)
+            if not title:
+                raise ValueError(
+                    f"Collection '{coll.id}' must declare a title "
+                    f"(collection_title_max_length is set to {limit})"
+                )
+            if len(title) > limit:
+                raise ValueError(
+                    f"Collection '{coll.id}' title is {len(title)} characters; "
+                    f"exceeds the maximum of {limit} "
+                    f"(collection_title_max_length)"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def validate_license_link(self) -> ServiceProfile:
+        """Require a rel='license' link per MetOcean /req/core/collection_license."""
+        if not self.require_license_link:
+            return self
+        for coll in self.collections:
+            links = getattr(coll, "links", None) or []
+            license_links = [
+                lk for lk in links if getattr(lk, "rel", None) == "license"
+            ]
+            if not license_links:
+                raise ValueError(
+                    f"Collection '{coll.id}' must declare a link with rel='license' "
+                    f"(require_license_link is set)"
+                )
+            if self.license_link_type is not None:
+                if not any(
+                    getattr(lk, "type", None) == self.license_link_type
+                    for lk in license_links
+                ):
+                    raise ValueError(
+                        f"Collection '{coll.id}' rel='license' link must have "
+                        f"type='{self.license_link_type}' "
+                        f"(license_link_type)"
+                    )
+        return self
+
+    def _effective_required_data_queries(self, coll: "Collection") -> set[str]:
+        """Mandatory data-query types for a collection.
+
+        Combines the profile-wide required_data_queries (applies to every
+        collection) with the required_data_queries of every conformance class
+        the collection declares via conformance_classes.
+        """
+        required: set[str] = set(self.required_data_queries)
+        for cls_name in getattr(coll, "conformance_classes", []) or []:
+            cls = self.conformance_class_requirements.get(cls_name)
+            if cls:
+                required.update(cls.required_data_queries)
+        return required
+
+    def _effective_radius_within_units(self, coll: "Collection") -> set[str]:
+        """Required radius within_units tokens for a collection (flat + class-scoped)."""
+        required: set[str] = set(self.radius_within_units_required)
+        for cls_name in getattr(coll, "conformance_classes", []) or []:
+            cls = self.conformance_class_requirements.get(cls_name)
+            if cls:
+                required.update(cls.radius_within_units_required)
+        return required
+
+    @model_validator(mode="after")
+    def validate_required_data_queries(self) -> ServiceProfile:
+        """Ensure each collection defines its mandatory data query types.
+
+        Mandatory sets come from the profile-wide required_data_queries plus any
+        conformance-class-scoped requirements the collection opts into.
+        """
+        for coll in self.collections:
+            required = self._effective_required_data_queries(coll)
+            if not required:
+                continue
+            if not coll.data_queries:
+                raise ValueError(
+                    f"Collection '{coll.id}' must define data_queries including "
+                    f"{sorted(required)} (required_data_queries)"
+                )
+            present = {
+                name for name, val in coll.data_queries if val is not None
+            }
+            missing = required - present
+            if missing:
+                raise ValueError(
+                    f"Collection '{coll.id}' data_queries is missing required "
+                    f"query type(s) {sorted(missing)} (required by "
+                    f"required_data_queries / conformance_class_requirements)"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def validate_radius_within_units(self) -> ServiceProfile:
+        """Ensure each radius query's within_units contains the required unit tokens."""
+        for coll in self.collections:
+            required = self._effective_radius_within_units(coll)
+            if not required or not coll.data_queries:
+                continue
+            for qt_name, qt_val in coll.data_queries:
+                if qt_name != "radius" or qt_val is None:
+                    continue
+                variables = qt_val.link.variables if qt_val.link else None
+                extra = (
+                    variables.model_extra
+                    if variables is not None and hasattr(variables, "model_extra")
+                    else {}
+                ) or {}
+                within_units = (
+                    getattr(variables, "within_units", None)
+                    or extra.get("within_units")
+                    or []
+                )
+                missing = [u for u in sorted(required) if u not in within_units]
+                if missing:
+                    raise ValueError(
+                        f"Collection '{coll.id}' radius data query within_units "
+                        f"{list(within_units)} must contain {missing} "
+                        f"(radius_within_units_required / conformance_class_requirements)"
+                    )
+        return self
+
+    @model_validator(mode="after")
+    def validate_collection_conformance_classes(self) -> ServiceProfile:
+        """Flag conformance_classes keys that have no matching requirements entry.
+
+        A collection may legitimately declare a pure conformance class (e.g.
+        'core') that carries no extra constraints, so this only errors when a
+        class key looks like a typo: it is referenced by a collection, is not a
+        key in conformance_class_requirements, AND conformance_class_requirements
+        is non-empty (i.e. the profile author is using the class-scoped model).
+        """
+        if not self.conformance_class_requirements:
+            return self
+        known = set(self.conformance_class_requirements)
+        # 'core' is always acceptable as a bare class even without constraints.
+        known.add("core")
+        for coll in self.collections:
+            for cls_name in getattr(coll, "conformance_classes", []) or []:
+                if cls_name not in known:
+                    raise ValueError(
+                        f"Collection '{coll.id}' declares conformance class "
+                        f"'{cls_name}' which is not defined in "
+                        f"conformance_class_requirements {sorted(self.conformance_class_requirements)}"
+                    )
         return self
 
 

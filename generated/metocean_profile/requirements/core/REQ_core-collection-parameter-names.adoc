@@ -1,0 +1,13 @@
+[[req_core_core_collection_parameter_names]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-parameter-names
+statement:: Parameter objects SHALL specify label, description and unit using the profile conventions.
+part:: The keys in parameter_names and id in the parameter object SHALL NOT convey structured metadata.
+part:: A parameter object SHALL specify the fields label, description and unit.
+part:: label SHALL NOT have more than 50 characters.
+part:: label SHALL be written in English.
+part:: unit SHALL use QUDT; unit.symbol.type SHALL be https://qudt.org/vocab/unit/<unit> and unit.symbol.value the qudt symbol.
+part:: observedProperty SHALL use the CF-convention (observedProperty.id = https://vocab.nerc.ac.uk/standard_name/<name>) when available; otherwise use observedProperty.description.
+====

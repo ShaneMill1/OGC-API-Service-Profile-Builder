@@ -1,0 +1,12 @@
+[[ats_core_core_locations_query_response_format]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-locations-query-response-format
+target:: /req/core/core-locations-query-response-format
+test-purpose:: Validate that core locations query response format is correctly implemented.
+test-method::
+step:: Send a GET /locations query.
+step:: Verify the response is a GeoJSON FeatureCollection.
+step:: Verify each Feature has a string id and a string properties.name.
+====

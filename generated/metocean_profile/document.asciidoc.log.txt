@@ -1,0 +1,597 @@
+= MetOcean Profile for OGC API - EDR
+:doctype: standard
+:docsubtype: profile
+:edition: 1.0
+:language: en
+:committee: technical
+:docnumber: 26-027
+:copyright-year: 2026
+:published-date: 2026-05-08
+:issued-date: 2026-05-08
+:received-date: 2026-05-08
+:status: draft
+:external-id: http://www.opengis.net/doc/profile/metocean-ogcapi-environmental-data-retrieval/1.0
+:fullname: Håvard Futsæter
+:role: editor
+:fullname_2: Tom Kralidis
+:role_2: editor
+:keywords: metocean, ogc, api, edr, weather, meteorology, high value datasets
+:submitting-organizations: Norwegian Meteorological Institute; Meteorological Service of Canada
+:mn-document-class: ogc
+:mn-output-extensions: xml,html,pdf
+:local-cache-only:
+
+[abstract]
+== Abstract
+
+This document defines the MetOcean Profile for OGC API - EDR, an OGC API - Environmental Data Retrieval (EDR) Part 3 Service Profile. It specifies normative requirements and conformance tests for server implementations conforming to this profile.
+
+[.preface]
+== Submitters
+
+All questions regarding this document should be directed to the editor or the submitters:
+
+[%unnumbered]
+.Submitters
+|===
+h|Name h|Affiliation
+
+| Håvard Futsæter _(editor)_ |MET Norway
+| Tom Kralidis _(editor)_ |Meteorological Service of Canada
+|===
+
+[.preface]
+== Preface
+
+This document was prepared by Norwegian Meteorological Institute, Meteorological Service of Canada.
+
+== Scope
+
+This standard defines the MetOcean Profile for OGC API - EDR. It specifies requirements and conformance tests for implementations of this profile.
+
+== Conformance
+
+Conformance with this standard shall be checked using the Abstract Test Suite in Annex A.
+
+The following conformance classes are defined:
+
+* link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/core++[]
+* link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/insitu-observations++[]
+* link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/nwp++[]
+* link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/data-query-response-format++[]
+
+[bibliography]
+== References
+
+* [[[OGC-EDR-1,OGC 19-086r6]]], OGC API - Environmental Data Retrieval Standard
+* [[[OGC-EDR-3,nofetch(OGC ogcapi-edr-3)]]], OGC API - EDR Part 3: Service Profiles (draft)
+
+== Terms, Definitions and Abbreviated Terms
+
+This document uses the terms defined in link:++https://portal.ogc.org/public_ogc/directives/directives.php++[OGC Policy Directive 49], which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of International Standards. In particular, the word "shall" (not "must") is the verb form used to indicate a requirement to be strictly followed to conform to this standard.
+
+This document also uses terms defined in OGC API - EDR Part 1: Core.
+
+== Requirements
+
+[[req_class_core]]
+[requirements_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/core++[]
+target-type:: MetOcean Profile for OGC API - EDR Profile Standard
+requirement:: /req/core/core-openapi
+requirement:: /req/core/core-collection-identifier
+requirement:: /req/core/core-collection-title
+requirement:: /req/core/core-collection-license
+requirement:: /req/core/core-collection-spatial-extent
+requirement:: /req/core/core-collection-temporal-extent
+requirement:: /req/core/core-collection-parameter-names
+requirement:: /req/core/core-collection-radius-data-query
+requirement:: /req/core/core-locations-query-response-format
+requirement:: /req/core/core-error-handling
+====
+
+[[req_core_core_openapi]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-openapi
+statement:: An API definition SHALL be described using an OpenAPI 3.1 document.
+part:: The API definition SHALL be described using an OpenAPI document (version 3.1 or higher).
+part:: The OpenAPI document SHALL be encoded as one of the OpenAPI JSON/YAML media types.
+part:: The landing page SHALL link the OpenAPI document with rel=service-desc.
+part:: The landing page SHALL link API documentation with rel=service-doc and type text/html.
+====
+[[req_core_core_collection_identifier]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-identifier
+statement:: A collection identifier SHALL NOT convey structured metadata and SHOULD use the fixed value list.
+part:: A collection identifier SHALL NOT be used to convey structured metadata.
+part:: A collection identifier SHOULD use one of insitu-observations, climate_data, radar_observations, weather_warnings, weather_forecast.
+part:: The identifier string MAY include a postfix to the listed values if needed.
+====
+[[req_core_core_collection_title]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-title
+statement:: A title SHALL be set for all collections and SHALL NOT exceed 50 characters.
+part:: A title SHALL be set for all collections.
+part:: A title SHALL NOT have more than 50 characters.
+part:: A title SHOULD be written in English.
+part:: A title SHOULD place the most important information first to guard against truncation.
+part:: A title SHOULD describe the collection understandably for non-experts (topic/domain and geographical area).
+====
+[[req_core_core_collection_license]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-license
+statement:: A collection SHALL link to a license of its data with rel=license and type=text/html.
+part:: The links property in a collection SHALL contain a link to a license of its data.
+part:: The license link SHALL set the rel property to license.
+part:: The type property SHALL be set to text/html.
+part:: If the data is open data, the license SHALL be CC BY 4.0 with href link:++https://creativecommons.org/licenses/by/4.0/++[].
+====
+[[req_core_core_collection_spatial_extent]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-spatial-extent
+statement:: The collection spatial extent and CRS list SHALL use OGC:CRS84.
+part:: The value of extent.spatial.crs SHALL be OGC:CRS84.
+part:: The value of crs SHALL include the element OGC:CRS84.
+part:: If crs_details is specified for a data_queries object, it SHALL include an object whose crs value is OGC:CRS84.
+part:: Additional CRSs SHOULD be presented as EPSG:<code> in crs and data_queries.*.crs_details.crs.
+====
+[[req_core_core_collection_temporal_extent]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-temporal-extent
+statement:: The value of extent.temporal.trs SHALL be Gregorian.
+part:: The value of extent.temporal.trs SHALL be Gregorian.
+====
+[[req_core_core_collection_parameter_names]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-parameter-names
+statement:: Parameter objects SHALL specify label, description and unit using the profile conventions.
+part:: The keys in parameter_names and id in the parameter object SHALL NOT convey structured metadata.
+part:: A parameter object SHALL specify the fields label, description and unit.
+part:: label SHALL NOT have more than 50 characters.
+part:: label SHALL be written in English.
+part:: unit SHALL use QUDT; unit.symbol.type SHALL be link:++https://qudt.org/vocab/unit/<unit>++[] and unit.symbol.value the qudt symbol.
+part:: observedProperty SHALL use the CF-convention (observedProperty.id = link:++https://vocab.nerc.ac.uk/standard_name/<name>++[]) when available; otherwise use observedProperty.description.
+====
+[[req_core_core_collection_radius_data_query]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-radius-data-query
+statement:: A radius data query within_units array SHALL contain m (SI unit of length).
+part:: The within_units array in a variables object for a radius data query SHALL contain m.
+part:: within_units MAY contain more values, each defined as a unit at link:++https://qudt.org++[] using the unit symbol.
+part:: A radius query with a limit parameter SHOULD return the closest items to the radius centre.
+====
+[[req_core_core_locations_query_response_format]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-locations-query-response-format
+statement:: A /locations response SHALL be a GeoJSON FeatureCollection with id and properties.name per feature.
+part:: The /locations response SHALL be a GeoJSON document with a FeatureCollection object.
+part:: Each Feature SHALL have id of type string and properties.name of type string.
+part:: If not all collection parameters are provided, properties.parameter-name SHALL list a subset of the parameter_names keys.
+part:: Links with more information SHALL be included in properties.links as OGC API - Common link objects.
+part:: A more detailed description MAY be provided via properties.description.
+part:: All strings SHALL be in English.
+====
+[[req_core_core_error_handling]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-error-handling
+statement:: Empty results SHALL return HTTP 204 and 4xx responses SHOULD comply with RFC 9457.
+part:: A query for data inside the extent that results in no data SHALL return HTTP 204 with no content.
+part:: A query partially within the extent SHALL respond as within the extent, returning only the in-extent portion.
+part:: Any 4xx response SHOULD comply with RFC 9457 Problem Details for HTTP APIs.
+====
+
+[[req_class_insitu_observations]]
+[requirements_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/insitu-observations++[]
+target-type:: MetOcean Profile for OGC API - EDR Profile Standard
+requirement:: /req/insitu-observations/insitu-collection-data-queries
+requirement:: /req/insitu-observations/insitu-collection-parameter-names
+requirement:: /req/insitu-observations/insitu-collection-custom-dimensions
+requirement:: /req/insitu-observations/insitu-coveragejson-parameters
+====
+
+[[req_insitu_observations_insitu_collection_data_queries]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu-observations/insitu-collection-data-queries
+statement:: An insitu-observations collection SHALL support locations, area and radius.
+part:: A collection SHALL support locations, area and radius.
+====
+[[req_insitu_observations_insitu_collection_parameter_names]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu-observations/insitu-collection-parameter-names
+statement:: Insitu parameters SHALL specify metocean:standard_name, metocean:level and measurementType.
+part:: Each parameter SHALL specify metocean:standard_name set to a value from the standard_name custom dimension.
+part:: Each parameter SHALL specify metocean:level set to a value from the level custom dimension.
+part:: Each parameter SHALL specify measurementType.
+====
+[[req_insitu_observations_insitu_collection_custom_dimensions]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu-observations/insitu-collection-custom-dimensions
+statement:: An insitu-observations collection SHALL define standard_name and level custom dimensions.
+part:: The collection SHALL have an extent.custom object with id standard_name.
+part:: Custom dimension standard_name SHALL list CF standard names in values.
+part:: Custom dimension standard_name SHALL specify reference link:++https://vocab.nerc.ac.uk/standard_name/++[].
+part:: The collection SHALL have an extent.custom object with id level.
+part:: Custom dimension level SHALL specify reference "Height of measurement above ground level in meters".
+====
+[[req_insitu_observations_insitu_coveragejson_parameters]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu-observations/insitu-coveragejson-parameters
+statement:: CoverageJSON parameters SHALL carry metocean:measurementType, metocean:standard_name and metocean:level.
+part:: Each object in parameters in a coverage SHALL have metocean:measurementType with the same properties as measurementType.
+part:: Each object in parameters SHALL have metocean:standard_name.
+part:: Each object in parameters SHALL have metocean:level.
+====
+
+[[req_class_nwp]]
+[requirements_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/nwp++[]
+target-type:: MetOcean Profile for OGC API - EDR Profile Standard
+requirement:: /req/nwp/nwp-collection-parameter-names
+requirement:: /req/nwp/nwp-collection-granularity
+requirement:: /req/nwp/nwp-collection-data-queries
+====
+
+[[req_nwp_nwp_collection_parameter_names]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp/nwp-collection-parameter-names
+statement:: NWP parameters SHALL use ECMWF short names per Annex D for id and description.
+part:: WIPPS Manual Global Deterministic NWP parameters SHALL be provided using ECMWF short names per Annex D.
+part:: The parameter name SHALL be provided in the description property.
+part:: The ECMWF short name SHALL be provided in the id property.
+====
+[[req_nwp_nwp_collection_granularity]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp/nwp-collection-granularity
+statement:: An NWP collection represents a model; instances represent model runs identified by RFC3339 datestamps.
+part:: A collection SHALL represent and describe a model.
+part:: A collection instance SHALL represent and describe a model run.
+part:: A collection instance identifier SHALL be represented by an RFC3339 datestamp.
+part:: A collection temporal instance or interval SHALL represent a timestep or timesteps of a model run.
+====
+[[req_nwp_nwp_collection_data_queries]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp/nwp-collection-data-queries
+statement:: An NWP collection SHALL support position and cube; no instance means latest.
+part:: A collection SHALL support position and cube queries.
+part:: Data queries without an instance SHALL be interpreted as the latest instance of a collection.
+part:: A datetime parameter between two timestamps SHALL trigger an HTTP 400 Bad Request.
+====
+
+[[req_class_data_query_response_format]]
+[requirements_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/data-query-response-format++[]
+target-type:: MetOcean Profile for OGC API - EDR Profile Standard
+requirement:: /req/data-query-response-format/dqrf-encoding
+requirement:: /req/data-query-response-format/dqrf-referencing
+====
+
+[[req_data_query_response_format_dqrf_encoding]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/data-query-response-format/dqrf-encoding
+statement:: All data queries SHALL support CoverageJSON as a response format.
+part:: All data queries SHALL support CoverageJSON as a response format.
+====
+[[req_data_query_response_format_dqrf_referencing]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/data-query-response-format/dqrf-referencing
+statement:: CoverageJSON domain.referencing system id SHALL reflect the crs query parameter (default OGC:CRS84).
+part:: With no crs query param, domain.referencing.* system SHALL have type GeographicCRS and id OGC:CRS84.
+part:: With a crs query param, the system object with type GeographicCRS SHALL set id to the crs query param value.
+====
+
+[appendix,obligation=normative]
+== Abstract Test Suite
+
+[[ats_class_core]]
+[conformance_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/core++[]
+target:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/core++[]
+abstract-test:: /conf/core/core-openapi
+abstract-test:: /conf/core/core-collection-identifier
+abstract-test:: /conf/core/core-collection-title
+abstract-test:: /conf/core/core-collection-license
+abstract-test:: /conf/core/core-collection-spatial-extent
+abstract-test:: /conf/core/core-collection-temporal-extent
+abstract-test:: /conf/core/core-collection-parameter-names
+abstract-test:: /conf/core/core-collection-radius-data-query
+abstract-test:: /conf/core/core-locations-query-response-format
+abstract-test:: /conf/core/core-error-handling
+====
+
+[[ats_core_core_openapi]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-openapi
+target:: /req/core/core-openapi
+test-purpose:: Validate that core openapi is correctly implemented.
+test-method::
+step:: Retrieve the API landing page.
+step:: Verify a link with rel=service-desc references an OpenAPI 3.1 document.
+step:: Verify a link with rel=service-doc has type text/html.
+====
+[[ats_core_core_collection_identifier]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-identifier
+target:: /req/core/core-collection-identifier
+test-purpose:: Validate that core collection identifier is correctly implemented.
+test-method::
+step:: Retrieve /collections.
+step:: Verify each collection id matches the fixed value list (optionally with a postfix).
+====
+[[ats_core_core_collection_title]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-title
+target:: /req/core/core-collection-title
+test-purpose:: Validate that core collection title is correctly implemented.
+test-method::
+step:: Retrieve /collections.
+step:: Verify each collection has a title of at most 50 characters.
+====
+[[ats_core_core_collection_license]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-license
+target:: /req/core/core-collection-license
+test-purpose:: Validate that core collection license is correctly implemented.
+test-method::
+step:: Retrieve a collection.
+step:: Verify links contains a rel=license link with type text/html.
+====
+[[ats_core_core_collection_spatial_extent]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-spatial-extent
+target:: /req/core/core-collection-spatial-extent
+test-purpose:: Validate that core collection spatial extent is correctly implemented.
+test-method::
+step:: Retrieve a collection.
+step:: Verify extent.spatial.crs is OGC:CRS84 and crs includes OGC:CRS84.
+====
+[[ats_core_core_collection_temporal_extent]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-temporal-extent
+target:: /req/core/core-collection-temporal-extent
+test-purpose:: Validate that core collection temporal extent is correctly implemented.
+test-method::
+step:: Retrieve a collection.
+step:: Verify extent.temporal.trs equals Gregorian.
+====
+[[ats_core_core_collection_parameter_names]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-parameter-names
+target:: /req/core/core-collection-parameter-names
+test-purpose:: Validate that core collection parameter names is correctly implemented.
+test-method::
+step:: Retrieve a collection.
+step:: For each parameter verify label, description and unit are present.
+step:: Verify unit.symbol.type is a QUDT unit URI and observedProperty.id is a CF standard name URI when present.
+====
+[[ats_core_core_collection_radius_data_query]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-radius-data-query
+target:: /req/core/core-collection-radius-data-query
+test-purpose:: Validate that core collection radius data query is correctly implemented.
+test-method::
+step:: Retrieve a collection that supports radius.
+step:: Verify the radius variables within_units array contains m.
+====
+[[ats_core_core_locations_query_response_format]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-locations-query-response-format
+target:: /req/core/core-locations-query-response-format
+test-purpose:: Validate that core locations query response format is correctly implemented.
+test-method::
+step:: Send a GET /locations query.
+step:: Verify the response is a GeoJSON FeatureCollection.
+step:: Verify each Feature has a string id and a string properties.name.
+====
+[[ats_core_core_error_handling]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-error-handling
+target:: /req/core/core-error-handling
+test-purpose:: Validate that core error handling is correctly implemented.
+test-method::
+step:: Send a query inside the extent that returns no data; verify HTTP 204 with no content.
+step:: Send a request that yields a 4xx; verify the body complies with RFC 9457 (application/problem+json).
+====
+
+[[ats_class_insitu_observations]]
+[conformance_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/insitu-observations++[]
+target:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/insitu-observations++[]
+abstract-test:: /conf/insitu-observations/insitu-collection-data-queries
+abstract-test:: /conf/insitu-observations/insitu-collection-parameter-names
+abstract-test:: /conf/insitu-observations/insitu-collection-custom-dimensions
+abstract-test:: /conf/insitu-observations/insitu-coveragejson-parameters
+====
+
+[[ats_insitu_observations_insitu_collection_data_queries]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu-observations/insitu-collection-data-queries
+target:: /req/insitu-observations/insitu-collection-data-queries
+test-purpose:: Validate that insitu collection data queries is correctly implemented.
+test-method::
+step:: Retrieve the insitu-observations collection.
+step:: Verify data_queries contains locations, area and radius.
+====
+[[ats_insitu_observations_insitu_collection_parameter_names]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu-observations/insitu-collection-parameter-names
+target:: /req/insitu-observations/insitu-collection-parameter-names
+test-purpose:: Validate that insitu collection parameter names is correctly implemented.
+test-method::
+step:: Retrieve the insitu-observations collection.
+step:: Verify each parameter has metocean:standard_name, metocean:level and measurementType.
+====
+[[ats_insitu_observations_insitu_collection_custom_dimensions]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu-observations/insitu-collection-custom-dimensions
+target:: /req/insitu-observations/insitu-collection-custom-dimensions
+test-purpose:: Validate that insitu collection custom dimensions is correctly implemented.
+test-method::
+step:: Retrieve the insitu-observations collection.
+step:: Verify extent.custom includes standard_name (with the nerc reference) and level.
+====
+[[ats_insitu_observations_insitu_coveragejson_parameters]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu-observations/insitu-coveragejson-parameters
+target:: /req/insitu-observations/insitu-coveragejson-parameters
+test-purpose:: Validate that insitu coveragejson parameters is correctly implemented.
+test-method::
+step:: Request insitu data as CoverageJSON.
+step:: Verify each parameters object has metocean:measurementType, metocean:standard_name and metocean:level.
+====
+
+[[ats_class_nwp]]
+[conformance_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/nwp++[]
+target:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/nwp++[]
+abstract-test:: /conf/nwp/nwp-collection-parameter-names
+abstract-test:: /conf/nwp/nwp-collection-granularity
+abstract-test:: /conf/nwp/nwp-collection-data-queries
+====
+
+[[ats_nwp_nwp_collection_parameter_names]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp/nwp-collection-parameter-names
+target:: /req/nwp/nwp-collection-parameter-names
+test-purpose:: Validate that nwp collection parameter names is correctly implemented.
+test-method::
+step:: Retrieve the NWP collection.
+step:: Verify parameter ids use ECMWF short names from Annex D and descriptions carry the parameter name.
+====
+[[ats_nwp_nwp_collection_granularity]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp/nwp-collection-granularity
+target:: /req/nwp/nwp-collection-granularity
+test-purpose:: Validate that nwp collection granularity is correctly implemented.
+test-method::
+step:: Retrieve /collections/weather_forecast/instances.
+step:: Verify each instance id is an RFC3339 datestamp representing a model run.
+====
+[[ats_nwp_nwp_collection_data_queries]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp/nwp-collection-data-queries
+target:: /req/nwp/nwp-collection-data-queries
+test-purpose:: Validate that nwp collection data queries is correctly implemented.
+test-method::
+step:: Retrieve the NWP collection.
+step:: Verify data_queries contains position and cube.
+step:: Verify a datetime range request triggers HTTP 400.
+====
+
+[[ats_class_data_query_response_format]]
+[conformance_class]
+====
+[%metadata]
+identifier:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/data-query-response-format++[]
+target:: link:++http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/data-query-response-format++[]
+abstract-test:: /conf/data-query-response-format/dqrf-encoding
+abstract-test:: /conf/data-query-response-format/dqrf-referencing
+====
+
+[[ats_data_query_response_format_dqrf_encoding]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/data-query-response-format/dqrf-encoding
+target:: /req/data-query-response-format/dqrf-encoding
+test-purpose:: Validate that dqrf encoding is correctly implemented.
+test-method::
+step:: For each data query, verify CoverageJSON is an offered response format.
+====
+[[ats_data_query_response_format_dqrf_referencing]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/data-query-response-format/dqrf-referencing
+target:: /req/data-query-response-format/dqrf-referencing
+test-purpose:: Validate that dqrf referencing is correctly implemented.
+test-method::
+step:: Request data without a crs param; verify domain.referencing system id is OGC:CRS84.
+step:: Request data with a crs param; verify the system id matches the crs param.
+====

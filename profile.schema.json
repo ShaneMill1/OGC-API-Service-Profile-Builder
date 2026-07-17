@@ -348,6 +348,27 @@
           ],
           "default": null,
           "title": "Resource Default Locale"
+        },
+        "conformance_classes": {
+          "description": "Short keys of the profile's conformance classes this collection implements (e.g. ['core', 'insitu-observations']). Drives which entries in ServiceProfile.conformance_class_requirements are enforced for this collection, so a single profile document can hold collections of different EDR Part 3 requirements classes. Round-tripped into profile_config.json and surfaced as x-conformance-classes in the generated OpenAPI.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Conformance Classes",
+          "type": "array"
+        },
+        "parameter_schema": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Per-collection JSON Schema fragment used as the additionalProperties definition for this collection's parameter_names in the generated OpenAPI. Overrides the profile-level parameter_schema for this collection only. Use this when collections in one profile need different parameter constraints \u2014 e.g. an insitu collection requiring metocean:standard_name / metocean:level / measurementType while an NWP collection uses ECMWF short-name conventions. Must be a valid JSON Schema object.",
+          "title": "Parameter Schema"
         }
       },
       "required": [
@@ -369,6 +390,29 @@
         }
       },
       "title": "CollectionPubSub",
+      "type": "object"
+    },
+    "ConformanceClassConstraints": {
+      "description": "Constraints scoped to a single OGC API - EDR Part 3 conformance class.\n\nA profile document (e.g. the MetOcean EDR Profile) defines several\nrequirements/conformance classes \u2014 Core, Insitu observations, NWP, Data\nquery response format \u2014 and different collections in the same service may\nimplement different classes. These per-class constraints are applied only\nto collections whose ``conformance_classes`` list includes the matching\nclass key, so one profile can enforce, say, ``[locations, area, radius]``\non its insitu collections and ``[position, cube]`` on its NWP collections.\n\nThe equivalent profile-level fields (``required_data_queries``,\n``radius_within_units_required``) remain a shorthand that applies to *every*\ncollection; class-scoped constraints are additive on top of them.",
+      "properties": {
+        "required_data_queries": {
+          "description": "Data query types every collection implementing this conformance class must define (e.g. ['locations', 'area', 'radius'] for insitu, ['position', 'cube'] for NWP).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Data Queries",
+          "type": "array"
+        },
+        "radius_within_units_required": {
+          "description": "Unit tokens each radius query's within_units array must contain for collections implementing this conformance class (e.g. ['m']).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Radius Within Units Required",
+          "type": "array"
+        }
+      },
+      "title": "ConformanceClassConstraints",
       "type": "object"
     },
     "CorridorVariables": {
@@ -2375,6 +2419,19 @@
           "minItems": 1,
           "title": "Parts",
           "type": "array"
+        },
+        "conformance_class": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Short key of the requirements/conformance class this requirement belongs to (e.g. 'core', 'insitu-observations', 'nwp'). When any requirement sets this, the generated AsciiDoc/PDF groups requirements and abstract tests into one requirements class per key (each with its own class URI under spec_uri_base). When unset on all requirements, the generator keeps its single-class behaviour.",
+          "title": "Conformance Class"
         }
       },
       "required": [
@@ -3039,6 +3096,71 @@
       "default": null,
       "description": "JSON Schema fragment used as the additionalProperties definition for parameter_names in the generated OpenAPI. Replaces the default parameter schema, allowing full control over required fields, patterns, and custom extension properties (e.g. metocean:standard_name). Must be a valid JSON Schema object.",
       "title": "Parameter Schema"
+    },
+    "collection_title_max_length": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "When set, every collection title must be present and no longer than this many characters. Implements the MetOcean /req/core/collection_title rule (title required, <= 50 characters).",
+      "title": "Collection Title Max Length"
+    },
+    "require_license_link": {
+      "default": false,
+      "description": "When true, every collection must declare a link with rel='license'. The link's type must equal license_link_type when that field is set. Implements the MetOcean /req/core/collection_license rule.",
+      "title": "Require License Link",
+      "type": "boolean"
+    },
+    "license_link_type": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": "text/html",
+      "description": "Expected media type of the rel='license' link when require_license_link is true. Set to null to accept any type. Defaults to 'text/html' per the MetOcean profile.",
+      "title": "License Link Type"
+    },
+    "required_data_queries": {
+      "description": "Data query types (e.g. 'locations', 'area', 'radius', 'position', 'cube') that every collection with data_queries must define. Implements the 'array must contain value' rule for the mandatory data-query sets (MetOcean /req/*/collection_data_queries).",
+      "items": {
+        "type": "string"
+      },
+      "title": "Required Data Queries",
+      "type": "array"
+    },
+    "radius_within_units_required": {
+      "description": "Unit tokens that every radius query's within_units array must contain (e.g. ['m']). Implements the MetOcean /req/core/collection_radius_data_query rule that within_units SHALL contain 'm'.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Radius Within Units Required",
+      "type": "array"
+    },
+    "locations_feature_required_properties": {
+      "description": "Feature properties (e.g. ['name']) that the generated /locations response schema marks as required on each GeoJSON feature, in addition to the always-required string 'id'. Implements the MetOcean /req/core/locations_query_response_format rule.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Locations Feature Required Properties",
+      "type": "array"
+    },
+    "conformance_class_requirements": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConformanceClassConstraints"
+      },
+      "description": "Per-conformance-class constraints keyed by class short name (e.g. 'insitu-observations', 'nwp'). Applied only to collections whose conformance_classes list includes the key. Lets one profile document model several EDR Part 3 requirements classes with different mandatory data-query sets. The flat required_data_queries / radius_within_units_required fields still apply to every collection; class-scoped constraints are additive on top of them.",
+      "title": "Conformance Class Requirements",
+      "type": "object"
     }
   },
   "required": [

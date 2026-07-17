@@ -1,0 +1,11 @@
+[[ats_core_core_collection_identifier]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-identifier
+target:: /req/core/core-collection-identifier
+test-purpose:: Validate that core collection identifier is correctly implemented.
+test-method::
+step:: Retrieve /collections.
+step:: Verify each collection id matches the fixed value list (optionally with a postfix).
+====

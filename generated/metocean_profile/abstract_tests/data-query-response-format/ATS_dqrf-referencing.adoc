@@ -1,0 +1,11 @@
+[[ats_data_query_response_format_dqrf_referencing]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/data-query-response-format/dqrf-referencing
+target:: /req/data-query-response-format/dqrf-referencing
+test-purpose:: Validate that dqrf referencing is correctly implemented.
+test-method::
+step:: Request data without a crs param; verify domain.referencing system id is OGC:CRS84.
+step:: Request data with a crs param; verify the system id matches the crs param.
+====

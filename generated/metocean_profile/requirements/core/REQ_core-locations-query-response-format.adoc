@@ -1,0 +1,13 @@
+[[req_core_core_locations_query_response_format]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-locations-query-response-format
+statement:: A /locations response SHALL be a GeoJSON FeatureCollection with id and properties.name per feature.
+part:: The /locations response SHALL be a GeoJSON document with a FeatureCollection object.
+part:: Each Feature SHALL have id of type string and properties.name of type string.
+part:: If not all collection parameters are provided, properties.parameter-name SHALL list a subset of the parameter_names keys.
+part:: Links with more information SHALL be included in properties.links as OGC API - Common link objects.
+part:: A more detailed description MAY be provided via properties.description.
+part:: All strings SHALL be in English.
+====

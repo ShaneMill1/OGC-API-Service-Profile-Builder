@@ -1,0 +1,11 @@
+[[ats_nwp_nwp_collection_granularity]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp/nwp-collection-granularity
+target:: /req/nwp/nwp-collection-granularity
+test-purpose:: Validate that nwp collection granularity is correctly implemented.
+test-method::
+step:: Retrieve /collections/weather_forecast/instances.
+step:: Verify each instance id is an RFC3339 datestamp representing a model run.
+====

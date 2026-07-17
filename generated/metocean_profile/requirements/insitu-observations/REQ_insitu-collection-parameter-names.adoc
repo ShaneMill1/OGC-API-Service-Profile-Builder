@@ -1,0 +1,10 @@
+[[req_insitu_observations_insitu_collection_parameter_names]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu-observations/insitu-collection-parameter-names
+statement:: Insitu parameters SHALL specify metocean:standard_name, metocean:level and measurementType.
+part:: Each parameter SHALL specify metocean:standard_name set to a value from the standard_name custom dimension.
+part:: Each parameter SHALL specify metocean:level set to a value from the level custom dimension.
+part:: Each parameter SHALL specify measurementType.
+====

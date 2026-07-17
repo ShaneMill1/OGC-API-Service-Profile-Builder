@@ -295,6 +295,13 @@ abstract_tests: []
 | `spec_uri_base` | string | no | Base URI for the requirements/conformance class identifiers. Defaults to the OGC EDR Part 3 namespace; override to publish under another SDO namespace (e.g. DGIWG) |
 | `parameter_name_pattern` | string | no | Regex all `parameter_names` keys must match |
 | `parameter_schema` | object | no | JSON Schema for parameter objects — replaces the default schema in the generated OpenAPI (see below) |
+| `collection_title_max_length` | int | no | When set, every collection title must be present and within this many characters (MetOcean `/req/core/collection_title`) |
+| `require_license_link` | bool | no | When `true`, every collection must declare a `rel='license'` link (MetOcean `/req/core/collection_license`). Defaults to `false` |
+| `license_link_type` | string | no | Expected media type of the `rel='license'` link when `require_license_link` is set. Defaults to `text/html`; set to null to accept any type |
+| `required_data_queries` | list | no | Data-query types every collection must define (e.g. `[locations, area, radius]`) — enforces the mandatory data-query sets |
+| `radius_within_units_required` | list | no | Unit tokens each radius query's `within_units` must contain (e.g. `[m]`) (MetOcean `/req/core/collection_radius_data_query`) |
+| `locations_feature_required_properties` | list | no | Feature properties (e.g. `[name]`) marked required in the generated `/locations` GeoJSON response schema, in addition to the always-required string `id` |
+| `conformance_class_requirements` | object | no | Map of conformance-class short name → constraints (`required_data_queries`, `radius_within_units_required`) applied only to collections that declare the class. Lets one profile document model several EDR Part 3 requirements classes (see below) |
 | `processes` | list | no | OGC API Processes to expose in the OpenAPI |
 | `requirements` | list | no | Normative requirements for the AsciiDoc/PDF |
 | `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id` |
@@ -334,6 +341,8 @@ Uses the [edr-pydantic](https://github.com/KNMI/edr-pydantic) `Collection` model
 | `output_formats` | no | Format names this collection supports (e.g. `[CoverageJSON, GeoJSON]`) |
 | `data_queries` | no | EDR query types: `position`, `area`, `radius`, `cube`, `trajectory`, `corridor`, `locations`, `items`, `instances` |
 | `parameter_names` | no | Map of parameter id → Parameter object. All parameters must have `unit` and `observedProperty` |
+| `conformance_classes` | no | Profile conformance-class short names this collection implements (e.g. `[core, insitu-observations]`). Selects which `conformance_class_requirements` are enforced; surfaced as `x-conformance-classes` in the OpenAPI |
+| `parameter_schema` | no | Per-collection JSON Schema for parameter objects, overriding the profile-level `parameter_schema` for this collection only (precedence: collection → profile → default) |
 
 #### `data_queries` example
 
@@ -463,6 +472,38 @@ extent_requirements:
     allowed: ["http://www.opengis.net/def/crs/OGC/1.3/CRS84"]
   require_vertical_direction: true
 ```
+
+---
+
+### Multiple conformance classes in one profile
+
+OGC API - EDR Part 3 profiles are modular: a single profile document can define several requirements/conformance classes, and different collections in the same service may implement different classes. The MetOcean EDR Profile is a good example — Core applies everywhere, but only in-situ collections must offer `locations`/`area`/`radius` while NWP collections must offer `position`/`cube`.
+
+Model this with `conformance_class_requirements` (profile level) plus `conformance_classes` (per collection):
+
+```yaml
+# Core-level rules apply to every collection:
+collection_title_max_length: 50
+require_license_link: true
+
+# Class-scoped rules apply only where a collection opts in:
+conformance_class_requirements:
+  insitu-observations:
+    required_data_queries: [locations, area, radius]
+    radius_within_units_required: [m]
+  nwp:
+    required_data_queries: [position, cube]
+
+collections:
+  - id: insitu-observations
+    conformance_classes: [core, insitu-observations]   # must have locations/area/radius
+    # ...
+  - id: nwp-forecast
+    conformance_classes: [core, nwp]                    # must have position/cube
+    # ...
+```
+
+The flat `required_data_queries` / `radius_within_units_required` fields still apply to *every* collection (the Core-applies-to-all shorthand); class-scoped rules are additive. See `examples/metocean_profile.yaml` for a full worked profile spanning all four MetOcean classes.
 
 ---
 
@@ -851,6 +892,12 @@ The tool enforces these rules at build time. Violations produce clear error mess
 | Parameters need `unit` + `observedProperty` | Required by OGC API - EDR Part 3 |
 | `parameter_name_pattern` enforced | All `parameter_names` keys must match if set |
 | `collection_id_pattern` enforced | All collection IDs must match if set |
+| `collection_title_max_length` enforced | If set, every collection title must be present and within the limit |
+| `require_license_link` enforced | If set, every collection must have a `rel='license'` link (of `license_link_type` when specified) |
+| `required_data_queries` enforced | If set, every collection with `data_queries` must define each listed query type |
+| `radius_within_units_required` enforced | If set, each radius query's `within_units` must contain every listed unit token |
+| `conformance_class_requirements` enforced | Class-scoped `required_data_queries` / `radius_within_units_required` applied to collections whose `conformance_classes` include the class key |
+| `conformance_classes` references known class | When `conformance_class_requirements` is set, a collection's `conformance_classes` may only use `core` or a defined class key (catches typos) |
 | Abstract test IDs match requirements | `requirement_id` must reference an existing requirement |
 | Requirement IDs | Must match `^[a-z0-9][a-z0-9\-]*$`, no trailing hyphen |
 

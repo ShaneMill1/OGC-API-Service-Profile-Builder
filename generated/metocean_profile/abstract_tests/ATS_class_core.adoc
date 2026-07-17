@@ -1,0 +1,17 @@
+[[ats_class_core]]
+[conformance_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/core
+target:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/core
+abstract-test:: /conf/core/core-openapi
+abstract-test:: /conf/core/core-collection-identifier
+abstract-test:: /conf/core/core-collection-title
+abstract-test:: /conf/core/core-collection-license
+abstract-test:: /conf/core/core-collection-spatial-extent
+abstract-test:: /conf/core/core-collection-temporal-extent
+abstract-test:: /conf/core/core-collection-parameter-names
+abstract-test:: /conf/core/core-collection-radius-data-query
+abstract-test:: /conf/core/core-locations-query-response-format
+abstract-test:: /conf/core/core-error-handling
+====

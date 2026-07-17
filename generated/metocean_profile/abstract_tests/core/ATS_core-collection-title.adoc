@@ -1,0 +1,11 @@
+[[ats_core_core_collection_title]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-title
+target:: /req/core/core-collection-title
+test-purpose:: Validate that core collection title is correctly implemented.
+test-method::
+step:: Retrieve /collections.
+step:: Verify each collection has a title of at most 50 characters.
+====

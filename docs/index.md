@@ -173,6 +173,12 @@ oapi-profile-builder cite-test-features \
 | `collection_id_pattern` | string | no | Regex all collection IDs must match |
 | `parameter_name_pattern` | string | no | Regex all `parameter_names` keys must match |
 | `parameter_schema` | object | no | JSON Schema for parameter objects — replaces the default in the generated OpenAPI |
+| `collection_title_max_length` | int | no | Require every collection title present and within N characters |
+| `require_license_link` / `license_link_type` | bool / string | no | Require a `rel=license` link (of `license_link_type`, default `text/html`) on every collection |
+| `required_data_queries` | list | no | Data-query types every collection must define |
+| `radius_within_units_required` | list | no | Unit tokens every radius query's `within_units` must contain (e.g. `[m]`) |
+| `locations_feature_required_properties` | list | no | Feature properties marked required in the generated `/locations` response (in addition to string `id`) |
+| `conformance_class_requirements` | object | no | Per-conformance-class constraints applied only to collections declaring the class (see multi-class section) |
 | `processes` | list | no | OGC API Processes to expose in the OpenAPI |
 | `requirements` | list | no | Normative requirements for the AsciiDoc/PDF |
 | `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id` |
@@ -200,6 +206,8 @@ Each collection uses the [edr-pydantic](https://github.com/KNMI/edr-pydantic) `C
 | `output_formats` | no | Format names this collection supports |
 | `data_queries` | no | EDR query types (see below) |
 | `parameter_names` | no | Map of parameter id → Parameter object (each needs `unit` + `observedProperty`) |
+| `conformance_classes` | no | Profile conformance-class short names this collection implements; surfaced as `x-conformance-classes` in the OpenAPI |
+| `parameter_schema` | no | Per-collection JSON Schema for parameter objects, overriding the profile-level `parameter_schema` for this collection only |
 
 `provider`, `classification`, `metadata_date`, `resource_service_publish_date`, and `resource_default_locale` may also be set per-collection to override the profile-root value for that collection.
 
@@ -275,6 +283,42 @@ vertical:
 
 ---
 
+### Multiple conformance classes in one profile
+
+EDR Part 3 profiles are modular: one profile document can define several requirements/conformance classes, and different collections may implement different classes. The MetOcean profile is the canonical example — Core applies everywhere, but only in-situ collections must offer `locations`/`area`/`radius` while NWP collections must offer `position`/`cube`.
+
+Model this with `conformance_class_requirements` (profile level) + `conformance_classes` (per collection). Set `Requirement.conformance_class` to additionally group the generated AsciiDoc/PDF into one requirements class and conformance class per key.
+
+```yaml
+collection_title_max_length: 50          # Core rule — applies to every collection
+require_license_link: true
+
+conformance_class_requirements:
+  insitu-observations:
+    required_data_queries: [locations, area, radius]
+    radius_within_units_required: [m]
+  nwp:
+    required_data_queries: [position, cube]
+
+collections:
+  - id: insitu-observations
+    conformance_classes: [core, insitu-observations]
+    parameter_schema: { ... }            # insitu-specific parameter constraints
+  - id: weather_forecast
+    conformance_classes: [core, nwp]
+    parameter_schema: { ... }            # NWP-specific parameter constraints
+
+requirements:
+  - id: insitu-collection-data-queries
+    conformance_class: insitu-observations
+    statement: ...
+    parts: [ ... ]
+```
+
+When any requirement sets `conformance_class`, the generated document is organised into one requirements class + conformance class per key, each with its own URI and `requirements/<class>/` and `abstract_tests/<class>/` folders. When no requirement sets it, the single-class layout is used. The flat `required_data_queries` / `radius_within_units_required` fields still apply to every collection; class-scoped constraints are additive. See [`examples/metocean_profile.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/metocean_profile.yaml) for a full profile spanning all four MetOcean classes, and [`docs/metocean-profile-differences.md`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/metocean-profile-differences.md) for how it maps to OGC 26-027.
+
+---
+
 ### `output_formats`
 
 Maps format names (used in `data_queries.*.variables.output_formats`) to media types and optional schema references. The `schema_ref` flows into the generated OpenAPI response content — use it to point GeoJSON/CoverageJSON/GeoTIFF at a specific (e.g. DGIWG) schema.
@@ -345,7 +389,7 @@ spec_uri_base: "https://schemas.dgiwg.org/edr/1.0"
 
 ### `requirements[]` and `abstract_tests[]`
 
-Requirements drive the AsciiDoc/PDF output. Each requirement needs `id` (lowercase, hyphenated), `statement`, and at least one `parts` entry. Every abstract test `requirement_id` must reference an existing requirement, and its `id` must equal the `requirement_id`.
+Requirements drive the AsciiDoc/PDF output. Each requirement needs `id` (lowercase, hyphenated), `statement`, and at least one `parts` entry. Every abstract test `requirement_id` must reference an existing requirement, and its `id` must equal the `requirement_id`. An optional `conformance_class` groups requirements (and their abstract tests) into separate requirements/conformance classes in the generated document — see the multi-class section above.
 
 ```yaml
 requirements:

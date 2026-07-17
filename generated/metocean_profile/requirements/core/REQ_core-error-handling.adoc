@@ -1,0 +1,10 @@
+[[req_core_core_error_handling]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-error-handling
+statement:: Empty results SHALL return HTTP 204 and 4xx responses SHOULD comply with RFC 9457.
+part:: A query for data inside the extent that results in no data SHALL return HTTP 204 with no content.
+part:: A query partially within the extent SHALL respond as within the extent, returning only the in-extent portion.
+part:: Any 4xx response SHOULD comply with RFC 9457 Problem Details for HTTP APIs.
+====

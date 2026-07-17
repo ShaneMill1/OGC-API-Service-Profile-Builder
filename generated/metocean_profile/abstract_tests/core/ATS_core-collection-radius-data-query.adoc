@@ -1,0 +1,11 @@
+[[ats_core_core_collection_radius_data_query]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-radius-data-query
+target:: /req/core/core-collection-radius-data-query
+test-purpose:: Validate that core collection radius data query is correctly implemented.
+test-method::
+step:: Retrieve a collection that supports radius.
+step:: Verify the radius variables within_units array contains m.
+====

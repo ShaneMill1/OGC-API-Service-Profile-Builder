@@ -1,0 +1,10 @@
+== Conformance
+
+Conformance with this standard shall be checked using the Abstract Test Suite in Annex A.
+
+The following conformance classes are defined:
+
+* http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/core
+* http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/insitu-observations
+* http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/nwp
+* http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/data-query-response-format

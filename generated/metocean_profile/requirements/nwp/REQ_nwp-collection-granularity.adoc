@@ -1,0 +1,11 @@
+[[req_nwp_nwp_collection_granularity]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp/nwp-collection-granularity
+statement:: An NWP collection represents a model; instances represent model runs identified by RFC3339 datestamps.
+part:: A collection SHALL represent and describe a model.
+part:: A collection instance SHALL represent and describe a model run.
+part:: A collection instance identifier SHALL be represented by an RFC3339 datestamp.
+part:: A collection temporal instance or interval SHALL represent a timestep or timesteps of a model run.
+====

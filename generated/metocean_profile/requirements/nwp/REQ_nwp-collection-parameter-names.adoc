@@ -1,0 +1,10 @@
+[[req_nwp_nwp_collection_parameter_names]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp/nwp-collection-parameter-names
+statement:: NWP parameters SHALL use ECMWF short names per Annex D for id and description.
+part:: WIPPS Manual Global Deterministic NWP parameters SHALL be provided using ECMWF short names per Annex D.
+part:: The parameter name SHALL be provided in the description property.
+part:: The ECMWF short name SHALL be provided in the id property.
+====

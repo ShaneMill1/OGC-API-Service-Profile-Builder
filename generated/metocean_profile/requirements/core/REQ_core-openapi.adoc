@@ -1,0 +1,11 @@
+[[req_core_core_openapi]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-openapi
+statement:: An API definition SHALL be described using an OpenAPI 3.1 document.
+part:: The API definition SHALL be described using an OpenAPI document (version 3.1 or higher).
+part:: The OpenAPI document SHALL be encoded as one of the OpenAPI JSON/YAML media types.
+part:: The landing page SHALL link the OpenAPI document with rel=service-desc.
+part:: The landing page SHALL link API documentation with rel=service-doc and type text/html.
+====

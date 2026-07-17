@@ -1,0 +1,11 @@
+[[ats_insitu_observations_insitu_coveragejson_parameters]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu-observations/insitu-coveragejson-parameters
+target:: /req/insitu-observations/insitu-coveragejson-parameters
+test-purpose:: Validate that insitu coveragejson parameters is correctly implemented.
+test-method::
+step:: Request insitu data as CoverageJSON.
+step:: Verify each parameters object has metocean:measurementType, metocean:standard_name and metocean:level.
+====

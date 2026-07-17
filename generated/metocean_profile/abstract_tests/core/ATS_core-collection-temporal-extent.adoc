@@ -1,0 +1,11 @@
+[[ats_core_core_collection_temporal_extent]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-temporal-extent
+target:: /req/core/core-collection-temporal-extent
+test-purpose:: Validate that core collection temporal extent is correctly implemented.
+test-method::
+step:: Retrieve a collection.
+step:: Verify extent.temporal.trs equals Gregorian.
+====

@@ -404,7 +404,9 @@
       "provider": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
-      "resource_default_locale": null
+      "resource_default_locale": null,
+      "conformance_classes": [],
+      "parameter_schema": null
     }
   ],
   "collection_examples": {},
@@ -416,7 +418,8 @@
         "The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.",
         "The /conformance endpoint SHALL include https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/core.",
         "The /conformance endpoint SHALL include https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/insitu-observations."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "collections-endpoint",
@@ -424,7 +427,8 @@
       "parts": [
         "The /collections endpoint SHALL return the insitu-observations collection.",
         "Each collection SHALL include extent, data_queries, output_formats, and parameter_names."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "collection-crs",
@@ -432,7 +436,8 @@
       "parts": [
         "The extent.spatial.crs SHALL be http://www.opengis.net/def/crs/OGC/1.3/CRS84.",
         "The crs array SHALL include http://www.opengis.net/def/crs/OGC/1.3/CRS84."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "collection-temporal-extent",
@@ -440,7 +445,8 @@
       "parts": [
         "The extent.temporal.trs SHALL be Gregorian.",
         "The extent.temporal.interval SHALL contain at least one valid ISO 8601 interval."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "collection-custom-dimensions",
@@ -448,7 +454,8 @@
       "parts": [
         "extent.custom SHALL contain an object with id standard_name and reference https://vocab.nerc.ac.uk/standard_name/.",
         "extent.custom SHALL contain an object with id level and reference describing measurement height in meters."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "data-queries",
@@ -458,7 +465,8 @@
         "The collection SHALL provide a /collections/insitu-observations/area endpoint.",
         "The collection SHALL provide a /collections/insitu-observations/radius endpoint.",
         "The radius query variables SHALL include within_units containing at least m."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "output-formats",
@@ -466,7 +474,8 @@
       "parts": [
         "All data queries SHALL support application/vnd.cov+json.",
         "The locations query SHALL additionally support application/geo+json."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "parameter-names",
@@ -477,7 +486,8 @@
         "observedProperty.id SHALL be a CF standard name URI of the form https://vocab.nerc.ac.uk/standard_name/<name>.",
         "Each parameter SHALL specify metocean:standard_name matching a value in extent.custom standard_name.",
         "Each parameter SHALL specify metocean:level matching a value in extent.custom level."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "locations-response",
@@ -486,7 +496,8 @@
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL have an id property of type string.",
         "Each feature SHALL have a properties.name property of type string."
-      ]
+      ],
+      "conformance_class": null
     },
     {
       "id": "error-handling",
@@ -494,7 +505,8 @@
       "parts": [
         "A 4xx response SHALL include a body conforming to RFC 9457 Problem Details.",
         "A query for data inside the extent that returns no data SHALL respond with HTTP 204."
-      ]
+      ],
+      "conformance_class": null
     }
   ],
   "abstract_tests": [
@@ -753,5 +765,20 @@
       }
     },
     "additionalProperties": true
-  }
+  },
+  "collection_title_max_length": 50,
+  "require_license_link": true,
+  "license_link_type": "text/html",
+  "required_data_queries": [
+    "locations",
+    "area",
+    "radius"
+  ],
+  "radius_within_units_required": [
+    "m"
+  ],
+  "locations_feature_required_properties": [
+    "name"
+  ],
+  "conformance_class_requirements": {}
 }

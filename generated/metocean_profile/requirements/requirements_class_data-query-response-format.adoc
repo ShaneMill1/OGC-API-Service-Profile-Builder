@@ -1,0 +1,9 @@
+[[req_class_data_query_response_format]]
+[requirements_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/data-query-response-format
+target-type:: MetOcean Profile for OGC API - EDR Profile Standard
+requirement:: /req/data-query-response-format/dqrf-encoding
+requirement:: /req/data-query-response-format/dqrf-referencing
+====

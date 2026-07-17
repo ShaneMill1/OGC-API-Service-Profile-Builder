@@ -1,0 +1,11 @@
+[[ats_insitu_observations_insitu_collection_parameter_names]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu-observations/insitu-collection-parameter-names
+target:: /req/insitu-observations/insitu-collection-parameter-names
+test-purpose:: Validate that insitu collection parameter names is correctly implemented.
+test-method::
+step:: Retrieve the insitu-observations collection.
+step:: Verify each parameter has metocean:standard_name, metocean:level and measurementType.
+====

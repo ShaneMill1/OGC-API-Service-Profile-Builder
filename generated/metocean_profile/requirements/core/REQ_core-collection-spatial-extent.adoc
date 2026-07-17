@@ -1,0 +1,11 @@
+[[req_core_core_collection_spatial_extent]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-spatial-extent
+statement:: The collection spatial extent and CRS list SHALL use OGC:CRS84.
+part:: The value of extent.spatial.crs SHALL be OGC:CRS84.
+part:: The value of crs SHALL include the element OGC:CRS84.
+part:: If crs_details is specified for a data_queries object, it SHALL include an object whose crs value is OGC:CRS84.
+part:: Additional CRSs SHOULD be presented as EPSG:<code> in crs and data_queries.*.crs_details.crs.
+====

@@ -1,0 +1,38 @@
+= MetOcean Profile for OGC API - EDR
+:doctype: standard
+:docsubtype: profile
+:edition: 1.0
+:language: en
+:committee: technical
+:docnumber: 26-027
+:copyright-year: 2026
+:published-date: 2026-05-08
+:issued-date: 2026-05-08
+:received-date: 2026-05-08
+:status: draft
+:external-id: http://www.opengis.net/doc/profile/metocean-ogcapi-environmental-data-retrieval/1.0
+:fullname: Håvard Futsæter
+:role: editor
+:fullname_2: Tom Kralidis
+:role_2: editor
+:keywords: metocean, ogc, api, edr, weather, meteorology, high value datasets
+:submitting-organizations: Norwegian Meteorological Institute; Meteorological Service of Canada
+:mn-document-class: ogc
+:mn-output-extensions: xml,html,pdf
+:local-cache-only:
+
+include::sections/00-abstract.adoc[]
+
+include::sections/01-preface.adoc[]
+
+include::sections/02-scope.adoc[]
+
+include::sections/03-conformance.adoc[]
+
+include::sections/04-references.adoc[]
+
+include::sections/05-terms.adoc[]
+
+include::sections/06-requirements.adoc[]
+
+include::sections/07-abstract-tests.adoc[]

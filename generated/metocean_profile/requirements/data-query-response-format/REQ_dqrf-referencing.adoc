@@ -1,0 +1,9 @@
+[[req_data_query_response_format_dqrf_referencing]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/data-query-response-format/dqrf-referencing
+statement:: CoverageJSON domain.referencing system id SHALL reflect the crs query parameter (default OGC:CRS84).
+part:: With no crs query param, domain.referencing.* system SHALL have type GeographicCRS and id OGC:CRS84.
+part:: With a crs query param, the system object with type GeographicCRS SHALL set id to the crs query param value.
+====

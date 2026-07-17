@@ -1,0 +1,10 @@
+[[req_insitu_observations_insitu_coveragejson_parameters]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu-observations/insitu-coveragejson-parameters
+statement:: CoverageJSON parameters SHALL carry metocean:measurementType, metocean:standard_name and metocean:level.
+part:: Each object in parameters in a coverage SHALL have metocean:measurementType with the same properties as measurementType.
+part:: Each object in parameters SHALL have metocean:standard_name.
+part:: Each object in parameters SHALL have metocean:level.
+====

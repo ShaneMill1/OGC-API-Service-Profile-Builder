@@ -1,0 +1,11 @@
+[[req_class_insitu_observations]]
+[requirements_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/insitu-observations
+target-type:: MetOcean Profile for OGC API - EDR Profile Standard
+requirement:: /req/insitu-observations/insitu-collection-data-queries
+requirement:: /req/insitu-observations/insitu-collection-parameter-names
+requirement:: /req/insitu-observations/insitu-collection-custom-dimensions
+requirement:: /req/insitu-observations/insitu-coveragejson-parameters
+====

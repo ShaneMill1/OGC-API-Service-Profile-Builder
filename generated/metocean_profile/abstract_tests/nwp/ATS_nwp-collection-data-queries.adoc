@@ -1,0 +1,12 @@
+[[ats_nwp_nwp_collection_data_queries]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nwp/nwp-collection-data-queries
+target:: /req/nwp/nwp-collection-data-queries
+test-purpose:: Validate that nwp collection data queries is correctly implemented.
+test-method::
+step:: Retrieve the NWP collection.
+step:: Verify data_queries contains position and cube.
+step:: Verify a datetime range request triggers HTTP 400.
+====

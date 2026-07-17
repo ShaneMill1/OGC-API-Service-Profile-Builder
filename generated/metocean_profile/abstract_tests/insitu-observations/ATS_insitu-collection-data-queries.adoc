@@ -1,0 +1,11 @@
+[[ats_insitu_observations_insitu_collection_data_queries]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/insitu-observations/insitu-collection-data-queries
+target:: /req/insitu-observations/insitu-collection-data-queries
+test-purpose:: Validate that insitu collection data queries is correctly implemented.
+test-method::
+step:: Retrieve the insitu-observations collection.
+step:: Verify data_queries contains locations, area and radius.
+====

@@ -1,0 +1,10 @@
+[[req_core_core_collection_radius_data_query]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-radius-data-query
+statement:: A radius data query within_units array SHALL contain m (SI unit of length).
+part:: The within_units array in a variables object for a radius data query SHALL contain m.
+part:: within_units MAY contain more values, each defined as a unit at https://qudt.org using the unit symbol.
+part:: A radius query with a limit parameter SHOULD return the closest items to the radius centre.
+====

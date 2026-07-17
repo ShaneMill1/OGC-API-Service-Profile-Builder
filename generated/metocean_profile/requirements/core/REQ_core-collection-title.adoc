@@ -1,0 +1,12 @@
+[[req_core_core_collection_title]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/core-collection-title
+statement:: A title SHALL be set for all collections and SHALL NOT exceed 50 characters.
+part:: A title SHALL be set for all collections.
+part:: A title SHALL NOT have more than 50 characters.
+part:: A title SHOULD be written in English.
+part:: A title SHOULD place the most important information first to guard against truncation.
+part:: A title SHOULD describe the collection understandably for non-experts (topic/domain and geographical area).
+====

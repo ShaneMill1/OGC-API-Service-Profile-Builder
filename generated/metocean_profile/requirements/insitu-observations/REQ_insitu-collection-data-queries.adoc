@@ -1,0 +1,8 @@
+[[req_insitu_observations_insitu_collection_data_queries]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/insitu-observations/insitu-collection-data-queries
+statement:: An insitu-observations collection SHALL support locations, area and radius.
+part:: A collection SHALL support locations, area and radius.
+====

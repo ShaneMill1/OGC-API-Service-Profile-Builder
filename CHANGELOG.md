@@ -1,5 +1,30 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.5.0] - 2026-07-17
+
+Addresses the MetOcean EDR Profile (OGC 26-027, Draft) gap analysis (issue #10) — targeted additions to close the incremental gaps against the profile's requirements classes, plus support for modelling a multi-class profile document in one config. All new fields are opt-in and config is backward compatible; existing profiles validate and generate unchanged (generated OpenAPI error/locations responses do change — see below).
+
+### Changed
+
+- **RFC 9457 error responses** (MetOcean `/req/core/error_handling`, the most consequential gap): the generated OpenAPI now serves 4xx/5xx errors as `application/problem+json` using an RFC 9457 Problem Details schema (`type`, `title`, `status`, `detail`, `instance`) instead of the previous custom `{code, description}` / `application/json` schema. EDR data-query operations also declare a `204` (No Content) response for empty results inside the extent.
+- **Constrained `/locations` response schema** (`/req/core/locations_query_response_format`): the locations query 200 response is now a GeoJSON `FeatureCollection` (`application/geo+json`) whose features require a string `id`; additional required feature properties (e.g. `name`) are driven by `locations_feature_required_properties`.
+
+### Added
+
+- **`collection_title_max_length`**: when set, every collection title must be present and within the limit (`/req/core/collection_title`, e.g. 50 characters).
+- **`require_license_link`** / **`license_link_type`**: require a `rel='license'` link (defaulting to `type='text/html'`) on every collection (`/req/core/collection_license`).
+- **`required_data_queries`**: data-query types every collection must define, enforcing the mandatory data-query sets (`/req/*/collection_data_queries`).
+- **`radius_within_units_required`**: unit tokens each radius query's `within_units` must contain, e.g. `['m']` (`/req/core/collection_radius_data_query`).
+- **`locations_feature_required_properties`**: feature properties marked required in the generated `/locations` response schema.
+- **Conformance-class-scoped constraints** — model a single profile document that spans several EDR Part 3 requirements classes (as the MetOcean profile does):
+  - **`conformance_class_requirements`** (profile-level): a map of class short name → constraints (`required_data_queries`, `radius_within_units_required`), applied only to collections that opt into the class.
+  - **`collection.conformance_classes`**: the class short names a collection implements (e.g. `[core, insitu-observations]`). Drives which class-scoped requirements are enforced, round-trips into `profile_config.json`, and is surfaced as `x-conformance-classes` on the collection operation in the generated OpenAPI.
+  - The flat `required_data_queries` / `radius_within_units_required` fields still apply to every collection; class-scoped constraints are additive on top, so single-class profiles are unaffected.
+- **Per-collection `parameter_schema`**: `Collection.parameter_schema` (optional) overrides the profile-level `parameter_schema` for a single collection in the generated OpenAPI. Precedence is collection → profile → built-in default. This lets collections in one profile carry different parameter constraints — e.g. an insitu collection requiring `metocean:standard_name`/`metocean:level`/`measurementType` while an NWP collection requires an ECMWF short-name `id`.
+- **Multi-class requirements/conformance documents**: `Requirement.conformance_class` (optional). When any requirement sets it, the generated AsciiDoc/PDF is organised into one requirements class and one conformance class per key — each with its own class URI under `spec_uri_base`, its own `requirements/<class>/` and `abstract_tests/<class>/` folders, and all classes included in order in the Requirements and Abstract Test Suite sections. When unset on all requirements, the generator keeps its single-class (`core`) layout, so existing profiles' generated documents are unchanged.
+- **`examples/metocean_profile.yaml`**: a reverse-engineered MetOcean EDR Profile (OGC 26-027), transcribed from the authoritative AsciiDoc source. One document modelling the Core, Insitu observations, NWP, and Data-query-response-format classes as four EDR Part 3 conformance classes — an insitu collection (locations/area/radius) and an NWP `weather_forecast` collection (instances + position/cube) enforced per class, the full Annex D ECMWF NWP parameter matrix, and all 19 normative requirements + abstract tests grouped by class. Divergences from the source are recorded in `docs/metocean-profile-differences.md`.
+- The `insitu_observations_profile.yaml` example now opts into the flat Core constraints to demonstrate a MetOcean-aligned single-class configuration; regenerated its artifacts and `profile.schema.json`.
+
 ## [3.4.1] - 2026-07-17
 
 Maintenance release — CI and release tooling only; no functional changes to the builder.

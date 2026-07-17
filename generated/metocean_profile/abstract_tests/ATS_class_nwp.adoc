@@ -1,0 +1,10 @@
+[[ats_class_nwp]]
+[conformance_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/nwp
+target:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/nwp
+abstract-test:: /conf/nwp/nwp-collection-parameter-names
+abstract-test:: /conf/nwp/nwp-collection-granularity
+abstract-test:: /conf/nwp/nwp-collection-data-queries
+====

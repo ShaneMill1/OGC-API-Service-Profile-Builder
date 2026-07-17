@@ -1,0 +1,10 @@
+[[req_nwp_nwp_collection_data_queries]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nwp/nwp-collection-data-queries
+statement:: An NWP collection SHALL support position and cube; no instance means latest.
+part:: A collection SHALL support position and cube queries.
+part:: Data queries without an instance SHALL be interpreted as the latest instance of a collection.
+part:: A datetime parameter between two timestamps SHALL trigger an HTTP 400 Bad Request.
+====

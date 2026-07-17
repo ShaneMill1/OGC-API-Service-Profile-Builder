@@ -1,0 +1,12 @@
+[[ats_core_core_collection_parameter_names]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-parameter-names
+target:: /req/core/core-collection-parameter-names
+test-purpose:: Validate that core collection parameter names is correctly implemented.
+test-method::
+step:: Retrieve a collection.
+step:: For each parameter verify label, description and unit are present.
+step:: Verify unit.symbol.type is a QUDT unit URI and observedProperty.id is a CF standard name URI when present.
+====

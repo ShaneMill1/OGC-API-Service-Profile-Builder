@@ -1,0 +1,11 @@
+[[ats_core_core_collection_spatial_extent]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-collection-spatial-extent
+target:: /req/core/core-collection-spatial-extent
+test-purpose:: Validate that core collection spatial extent is correctly implemented.
+test-method::
+step:: Retrieve a collection.
+step:: Verify extent.spatial.crs is OGC:CRS84 and crs includes OGC:CRS84.
+====

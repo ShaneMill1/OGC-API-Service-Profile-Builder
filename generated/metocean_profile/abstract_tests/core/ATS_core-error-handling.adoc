@@ -1,0 +1,11 @@
+[[ats_core_core_error_handling]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/core/core-error-handling
+target:: /req/core/core-error-handling
+test-purpose:: Validate that core error handling is correctly implemented.
+test-method::
+step:: Send a query inside the extent that returns no data; verify HTTP 204 with no content.
+step:: Send a request that yields a 4xx; verify the body complies with RFC 9457 (application/problem+json).
+====
