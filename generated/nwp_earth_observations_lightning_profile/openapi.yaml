@@ -564,6 +564,15 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - $ref: '#/components/parameters/f'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
       responses:
         '200':
           description: Coverage data response

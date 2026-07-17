@@ -604,6 +604,11 @@
   "pubsub": null,
   "processes": [],
   "document_metadata": null,
+  "paging": {
+    "enabled": true,
+    "default_limit": 10,
+    "max_limit": 10000
+  },
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core",
     "https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/core",

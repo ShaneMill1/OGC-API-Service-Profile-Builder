@@ -793,12 +793,28 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
     }}
 
     # Always generate Features paths (items, queryables, schema)
+    items_params = [_F, _LANG]
+    if profile and profile.paging and profile.paging.enabled:
+        limit_param = {
+            "name": "limit",
+            "in": "query",
+            "required": False,
+            "description": "Limits the number of features returned in the response.",
+            "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": profile.paging.max_limit,
+                "default": profile.paging.default_limit
+            }
+        }
+        items_params.append(limit_param)
+
     paths[f"{base}/items"] = {"get": {
         "summary": f"Get {coll.title or coll.id} items",
         "description": desc,
         "operationId": _operation_id("get", coll.id, "Features"),
         "tags": [tag],
-        "parameters": [_F, _LANG],
+        "parameters": items_params,
         "responses": {
             "200": _R200_FEATURES,
             "400": _ERR_400, "404": _ERR_404, "500": _ERR_500,
@@ -863,6 +879,22 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
             # instance-level query sub-paths — GET + optional POST
             for sub_qt in (active - {"instances"}):
                 sub_params = _params_with_default_f(_QUERY_PARAMS.get(sub_qt, []), profile, _vars(sub_qt))
+                if sub_qt == "items" and profile and profile.paging and profile.paging.enabled:
+                    limit_param = {
+                        "name": "limit",
+                        "in": "query",
+                        "required": False,
+                        "description": "Limits the number of features returned in the response.",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": profile.paging.max_limit,
+                            "default": profile.paging.default_limit
+                        }
+                    }
+                    sub_params = list(sub_params)
+                    if not any(p.get("name") == "limit" for p in sub_params if isinstance(p, dict)):
+                        sub_params.append(limit_param)
                 get_op = {
                     "summary": f"query {coll.id} instance by {sub_qt}",
                     "description": desc,
@@ -877,12 +909,28 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
                 paths[f"{base}/instances/{{instanceId}}/{sub_qt}"] = path_ops
 
         elif qt == "items":
+            items_params = list(params)
+            if profile and profile.paging and profile.paging.enabled:
+                limit_param = {
+                    "name": "limit",
+                    "in": "query",
+                    "required": False,
+                    "description": "Limits the number of features returned in the response.",
+                    "schema": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": profile.paging.max_limit,
+                        "default": profile.paging.default_limit
+                    }
+                }
+                if not any(p.get("name") == "limit" for p in items_params if isinstance(p, dict)):
+                    items_params.append(limit_param)
             get_op = {
                 "summary": f"query {coll.id} by items",
                 "description": desc,
                 "operationId": _operation_id("queryItems", coll.id),
                 "tags": [tag],
-                "parameters": params,
+                "parameters": items_params,
                 "responses": cov_resp,
             }
             path_ops = {"get": get_op}
@@ -1376,6 +1424,103 @@ def _individual_test_adoc(profile: ServiceProfile, test_id: str) -> str:
 
 _PDF_OVERRIDE_FILENAME = "pdf_override.xsl"
 
+_OVERRIDE_SUPPRESS_SECTION_DIVIDERS = """
+  <!-- Suppress section-divider pages by rendering only the main content flow. -->
+  <xsl:template match="node()" mode="sections">
+    <xsl:param name="num"/>
+    <xsl:param name="initial-page-number"/>
+    <fo:page-sequence xsl:use-attribute-sets="page-sequence-main">
+      <xsl:call-template name="refine_page-sequence-main"/>
+      <xsl:call-template name="insertFootnoteSeparator"/>
+      <xsl:call-template name="insertHeaderFooter">
+        <xsl:with-param name="num" select="$num"/>
+      </xsl:call-template>
+      <fo:flow flow-name="xsl-region-body">
+        <fo:block line-height="125%">
+          <xsl:choose>
+            <xsl:when test=".//mn:indexsect">
+              <xsl:apply-templates select=".//mn:indexsect" mode="index"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:apply-templates/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </fo:block>
+      </fo:flow>
+    </fo:page-sequence>
+  </xsl:template>
+"""
+
+_OVERRIDE_INLINE_SECTION_HEADERS = """
+  <!-- Inline Level 1 section titles (e.g. '1. Scope' in a single block, no circles, no table). -->
+  <xsl:template match="mn:fmt-title" name="title">
+    <xsl:variable name="level"><xsl:call-template name="getLevel"/></xsl:variable>
+    <xsl:variable name="element-name">
+      <xsl:choose>
+        <xsl:when test="../@inline-header = 'true'">fo:inline</xsl:when>
+        <xsl:otherwise>fo:block</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:call-template name="setNamedDestination"/>
+    <xsl:variable name="title_styles">
+      <styles xsl:use-attribute-sets="title-style">
+        <xsl:call-template name="refine_title-style"/>
+      </styles>
+    </xsl:variable>
+
+    <xsl:choose>
+      <xsl:when test="$level = 1">
+        <fo:block>
+          <xsl:copy-of select="xalan:nodeset($title_styles)/styles/@*[local-name() = 'space-before' or local-name() = 'margin-bottom' or local-name() = 'keep-with-next' or local-name() = 'role']"/>
+          <xsl:call-template name="setIDforNamedDestinationInline"/>
+          <xsl:variable name="title">
+            <xsl:choose>
+              <xsl:when test="mn:tab">
+                <xsl:copy-of select="mn:tab[1]/following-sibling::node()"/>
+              </xsl:when>
+              <xsl:otherwise><xsl:copy-of select="."/></xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:variable name="section" select="mn:tab[1]/preceding-sibling::node()"/>
+          <xsl:call-template name="insertSectionTitle">
+            <xsl:with-param name="section" select="$section"/>
+            <xsl:with-param name="title" select="$title"/>
+            <xsl:with-param name="level" select="$level"/>
+          </xsl:call-template>
+        </fo:block>
+      </xsl:when>
+      <xsl:when test="$level = 2">
+        <fo:block>
+          <xsl:copy-of select="xalan:nodeset($title_styles)/styles/@*[local-name() = 'space-before' or local-name() = 'margin-bottom' or local-name() = 'keep-with-next' or local-name() = 'role']"/>
+          <xsl:call-template name="setIDforNamedDestinationInline"/>
+          <xsl:variable name="title">
+            <xsl:choose>
+              <xsl:when test="mn:tab">
+                <xsl:copy-of select="mn:tab[1]/following-sibling::node()"/>
+              </xsl:when>
+              <xsl:otherwise><xsl:copy-of select="."/></xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:variable name="section" select="mn:tab[1]/preceding-sibling::node()"/>
+          <xsl:call-template name="insertSectionTitle">
+            <xsl:with-param name="section" select="$section"/>
+            <xsl:with-param name="title" select="$title"/>
+            <xsl:with-param name="level" select="$level"/>
+          </xsl:call-template>
+        </fo:block>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:element name="{$element-name}">
+          <xsl:copy-of select="xalan:nodeset($title_styles)/styles/@*"/>
+          <xsl:call-template name="setIDforNamedDestinationInline"/>
+          <xsl:apply-templates/>
+          <xsl:apply-templates select="following-sibling::*[1][self::mn:variant-title][@type = 'sub']" mode="subtitle"/>
+        </xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+"""
+
 # Individual template overrides for the OGC Metanorma flavor's PDF XSL. Each is
 # keyed to a real template name in metanorma-ogc's ogc.standard.xsl and merged
 # in via :pdf-stylesheet-override:. These are coupled to the OGC flavor.
@@ -1523,6 +1668,8 @@ def _effective_pdf_config(m) -> dict:
     crossing = debrand or bool(getattr(m, "suppress_crossing_lines", False))
     underlines = debrand or bool(getattr(m, "suppress_title_underlines", False))
     plain_nums = debrand or bool(getattr(m, "plain_section_numbers", False))
+    suppress_divs = debrand or bool(getattr(m, "suppress_section_divider_pages", False))
+    inline_headers = debrand or bool(getattr(m, "inline_section_headers", False))
 
     colors = getattr(m, "colors", None)
     page_bg = getattr(colors, "page_background", None) if colors else None
@@ -1548,6 +1695,8 @@ def _effective_pdf_config(m) -> dict:
         "crossing": crossing,
         "underlines": underlines,
         "plain_nums": plain_nums,
+        "suppress_divs": suppress_divs,
+        "inline_headers": inline_headers,
         "body_font": getattr(m, "body_font", None),
         "watermark": getattr(m, "page_watermark", None),
         "divider_bg": divider_bg,
@@ -1569,6 +1718,10 @@ def _pdf_override_flags(m) -> list[str]:
         parts.append(_OVERRIDE_SUPPRESS_TITLE_UNDERLINES)
     if cfg["plain_nums"]:
         parts.append(_plain_section_numbers_override(cfg["divider_fg"]))
+    if cfg["suppress_divs"]:
+        parts.append(_OVERRIDE_SUPPRESS_SECTION_DIVIDERS)
+    if cfg["inline_headers"]:
+        parts.append(_OVERRIDE_INLINE_SECTION_HEADERS)
     # When the divider background is rebranded (light), force the big title
     # colour too — the flavor inherits white text, invisible on a light page.
     if cfg["divider_bg"] is not None:
@@ -1699,7 +1852,7 @@ def _build_document_adoc(profile: ServiceProfile) -> str:
         ":committee: technical",
         f":docnumber: {m.doc_number if m else profile.name}",
         f":copyright-year: {year}",
-        f":published-date: {(m.publication_date if m and m.publication_date else default_date)}",
+        f":published-date: {((m.doc_pub_date or m.publication_date) if m and (m.doc_pub_date or m.publication_date) else default_date)}",
         f":issued-date: {(m.approval_date if m and m.approval_date else default_date)}",
         f":received-date: {(m.submission_date if m and m.submission_date else default_date)}",
     ]

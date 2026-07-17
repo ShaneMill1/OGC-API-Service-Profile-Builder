@@ -19,6 +19,10 @@ keywords:
 # Validated at build time and embedded in the generated OpenAPI as
 # enum/pattern constraints so runtime tools can enforce them.
 allow_post_queries: true
+paging:
+  enabled: true
+  default_limit: 10
+  max_limit: 100
 
 # Publish requirement/conformance identifiers under the DGIWG namespace.
 spec_uri_base: "https://schemas.dgiwg.org/edr/1.0"
@@ -222,6 +226,14 @@ document_metadata:
   cover:
     logo: examples/assets/DGIWG_logo.png
     tagline: Delivering Military Advantage through multi-national geospatial interoperability
+    logo_width: 200
+    logo_y: 100
+    tagline_font_size: 20
+    title_font_size: 40
+    bold_edition: true
+  doc_pub_date: "2026-07-16"
+  suppress_section_divider_pages: true
+  inline_section_headers: true
   colors:
     # DGIWG navy for cover text, clause titles, table headers and the (now
     # plain, non-circled) section-divider numbers/titles.

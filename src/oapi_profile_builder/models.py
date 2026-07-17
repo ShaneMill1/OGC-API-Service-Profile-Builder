@@ -472,6 +472,11 @@ class CoverPage(BaseModel):
             "Note: this marks the cover only; an every-page watermark requires the Metanorma layer."
         ),
     )
+    logo_width: int = Field(default=420, description="Target logo width on cover page")
+    logo_y: int = Field(default=180, description="Logo y-offset from top of cover page")
+    tagline_font_size: int = Field(default=30, description="Font size of cover page tagline")
+    title_font_size: int = Field(default=54, description="Font size of cover page title")
+    bold_edition: bool = Field(default=False, description="When true, render edition in bold font")
 
     @field_validator("background", "text_color")
     @classmethod
@@ -599,6 +604,9 @@ class DocumentMetadata(BaseModel):
             "the flavor's built-in text via :boilerplate-authority:."
         ),
     )
+    doc_pub_date: str | None = Field(default=None, description="Alternative field for publication date (YYYY-MM-DD)")
+    suppress_section_divider_pages: bool = Field(default=False, description="When true, completely remove section-divider pages from the PDF")
+    inline_section_headers: bool = Field(default=False, description="When true, render Level 1 headings inline without circles or table formatting")
     suppress_flavor_logo: bool = Field(
         default=False,
         description=(
@@ -666,7 +674,7 @@ class DocumentMetadata(BaseModel):
         ),
     )
 
-    @field_validator("submission_date", "approval_date", "publication_date")
+    @field_validator("submission_date", "approval_date", "publication_date", "doc_pub_date")
     @classmethod
     def _valid_date(cls, v: str | None) -> str | None:
         if v is not None and not _DATE_RE.match(v):
@@ -698,6 +706,13 @@ class PubSubConfig(BaseModel):
     filters: list[SubscriptionFilter] = Field(default_factory=list)
     servers: list[PubSubServer] = Field(default_factory=list, description="Additional server endpoints (ws, wss)")
     collection_filters: dict[str, CollectionPubSub] = Field(default_factory=dict, description="Per-collection filter overrides")
+
+
+class PagingConfig(BaseModel):
+    """Optional pagination parameters config."""
+    enabled: bool = Field(default=True, description="When true, include standard limit parameter in /items endpoint")
+    default_limit: int = Field(default=10, description="Default number of features to return", ge=1)
+    max_limit: int = Field(default=10000, description="Maximum allowed limit for features returned", ge=1)
 
 
 # ---------------------------------------------------------------------------
@@ -767,6 +782,7 @@ class ServiceProfile(BaseModel):
     pubsub: PubSubConfig | None = None
     processes: list[dict] = Field(default_factory=list)
     document_metadata: DocumentMetadata | None = None
+    paging: PagingConfig = Field(default_factory=PagingConfig)
     
     # OGC API - EDR Part 3 specific fields
     required_conformance_classes: list[str] = Field(

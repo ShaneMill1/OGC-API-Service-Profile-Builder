@@ -1927,12 +1927,30 @@
     "publication_date": null,
     "notice": null,
     "normative_references": [],
+    "terms": [],
     "external_id": "http://www.opengis.net/doc/dp/ogcapi-edr-nwsviz/1.0",
     "colors": null,
+    "fonts": null,
     "cover": null,
     "copyright_holder": null,
     "boilerplate": null,
-    "suppress_flavor_logo": false
+    "doc_pub_date": null,
+    "suppress_section_divider_pages": false,
+    "inline_section_headers": false,
+    "suppress_flavor_logo": false,
+    "body_font": null,
+    "header_font": null,
+    "monospace_font": null,
+    "suppress_crossing_lines": false,
+    "plain_section_numbers": false,
+    "suppress_title_underlines": false,
+    "suppress_design_elements": false,
+    "page_watermark": null
+  },
+  "paging": {
+    "enabled": true,
+    "default_limit": 10,
+    "max_limit": 10000
   },
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core",

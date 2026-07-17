@@ -173,12 +173,12 @@ def build_cover_image(profile, output_dir: Path) -> str | None:
         draw.text(((_PAGE_W - tw) / 2, y), text, font=font, fill=fill)
         return y + th
 
-    y = 180
+    y = getattr(cover, "logo_y", 180)
 
     # --- Logo (centered, scaled to a target width) ---
     logo = Image.open(logo_path).convert("RGBA")
-    target_logo_w = 420          # desired cover logo width
-    max_logo_w = 520             # hard cap
+    target_logo_w = getattr(cover, "logo_width", 420)
+    max_logo_w = max(520, target_logo_w)
     max_upscale = 3.0            # don't upscale tiny logos beyond this (avoids heavy blur)
     desired = min(target_logo_w, int(logo.width * max_upscale), max_logo_w)
     if logo.width != desired:
@@ -190,7 +190,8 @@ def build_cover_image(profile, output_dir: Path) -> str | None:
 
     # --- Tagline (italic) ---
     if cover.tagline:
-        y = centered(cover.tagline, fonts.italic_font(30), y, fg) + 60
+        tagline_fs = getattr(cover, "tagline_font_size", 30)
+        y = centered(cover.tagline, fonts.italic_font(tagline_fs), y, fg) + 60
 
     # --- Document number ---
     if m and m.doc_number:
@@ -199,16 +200,19 @@ def build_cover_image(profile, output_dir: Path) -> str | None:
     # --- Edition ---
     edition = getattr(profile, "version", None)
     if edition:
-        y = centered(f"Edition {edition}", fonts.regular_font(28), y, fg) + 24
+        bold_ed = bool(getattr(cover, "bold_edition", False))
+        y = centered(f"Edition {edition}", fonts.regular_font(28, bold=bold_ed), y, fg) + 24
 
     # --- Date ---
-    date_str = _format_date(m.publication_date if m else None)
+    pub_date = (m.doc_pub_date or m.publication_date) if m else None
+    date_str = _format_date(pub_date)
     if date_str:
         y = centered(f"Dated {date_str}", fonts.regular_font(28), y, fg) + 80
 
     # --- Title (large, bold, wrapped) ---
     title = getattr(profile, "title", "") or ""
-    title_font = fonts.regular_font(54, bold=True)
+    title_fs = getattr(cover, "title_font_size", 54)
+    title_font = fonts.regular_font(title_fs, bold=True)
     for line in _wrap(draw, title, title_font, _PAGE_W - 240):
         y = centered(line, title_font, y, fg) + 16
 

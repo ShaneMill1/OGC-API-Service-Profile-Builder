@@ -608,7 +608,12 @@
       "font_regular": null,
       "font_bold": null,
       "font_italic": null,
-      "watermark": null
+      "watermark": null,
+      "logo_width": 420,
+      "logo_y": 180,
+      "tagline_font_size": 30,
+      "title_font_size": 54,
+      "bold_edition": false
     },
     "copyright_holder": "DGIWG",
     "boilerplate": {
@@ -617,6 +622,9 @@
       "legal": "Attention is drawn to the possibility that some of the elements of this document may be the subject of patent rights. DGIWG shall not be held responsible for identifying any or all such patent rights.",
       "feedback": "Comments on this document should be directed to DGIWG."
     },
+    "doc_pub_date": null,
+    "suppress_section_divider_pages": false,
+    "inline_section_headers": false,
     "suppress_flavor_logo": true,
     "body_font": "Source Sans Pro",
     "header_font": "Source Sans Pro",
@@ -626,6 +634,11 @@
     "suppress_title_underlines": false,
     "suppress_design_elements": true,
     "page_watermark": "DRAFT"
+  },
+  "paging": {
+    "enabled": true,
+    "default_limit": 10,
+    "max_limit": 10000
   },
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
