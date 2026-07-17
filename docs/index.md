@@ -178,6 +178,7 @@ oapi-profile-builder cite-test-features \
 | `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id` |
 | `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
 | `collection_examples` | object | no | `{collectionId: {instanceId: "..."}}` — used by `validate-server` |
+| `paging` | object | no | Features `/items` paging — adds a validated `limit` query parameter to the OpenAPI (see below) |
 | `document_metadata` | object | no | Metanorma PDF header (see below) |
 
 ---
@@ -381,6 +382,18 @@ processes:
 
 ---
 
+### `paging`
+
+Controls Features `/items` paging in the generated OpenAPI. Enabled by default; adds a `limit` query parameter to every `/items` endpoint.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | bool | `true` | Set `false` to omit the `limit` parameter |
+| `default_limit` | integer | `10` | OpenAPI schema `default` for `limit` |
+| `max_limit` | integer | `10000` | OpenAPI schema `maximum` for `limit` |
+
+---
+
 ### `pubsub`
 
 When present, generates `asyncapi.yaml`.
@@ -452,22 +465,31 @@ The cover-page sub-title is produced by Metanorma from the `doc_type` + `doc_sub
 
 With `--pdf`, the document is compiled through the OGC Metanorma flavor by default. The following `document_metadata` fields rebrand it for another SDO, with no OGC branding left:
 
-- `cover` — replaces the OGC cover with a generated cover (logo + title/number/edition/date). Needs `pip install 'oapi-profile-builder[pdf]'`.
+- `cover` — replaces the OGC cover with a generated cover (logo + title/number/edition/date). Needs `pip install 'oapi-profile-builder[pdf]'`. Layout is tunable via `cover.{logo_width, logo_y, tagline_font_size, title_font_size, bold_edition}`.
+- `doc_pub_date` — publication date shown in long format on the cover (overrides `publication_date`).
 - `colors` — recolours titles, tables, cover and backgrounds via `:presentation-metadata-color-*:`.
 - `boilerplate` — replaces the page-ii legal text (copyright/license/notice/feedback).
-- `copyright_holder` — sets the footer organisation name (replaces "OPEN GEOSPATIAL CONSORTIUM").
+- `copyright_holder` — sets the footer organisation name (replaces "OPEN GEOSPATIAL CONSORTIUM"). Also rebrands the flavor's "Submitting Organizations" sentence away from OGC.
 - `suppress_flavor_logo` — removes the OGC logo from the legal page.
+- `suppress_design_elements` — removes decorative OGC styling (crossing lines, circled numbers, title rules) and recolours divider pages.
 
 Combined with `spec_uri_base` (requirement/conformance identifier namespace), the result carries only legitimate citations to the OGC standards the profile conforms to. See [`examples/nwp_radar.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/nwp_radar.yaml).
 
 ```yaml
 document_metadata:
   doc_number: "DGIWG 134"
+  doc_pub_date: "2026-07-16"
   copyright_holder: DGIWG
   suppress_flavor_logo: true
+  suppress_design_elements: true
   cover:
     logo: assets/dgiwg_logo.png
     tagline: Delivering Military Advantage through multi-national geospatial interoperability
+    logo_width: 200
+    logo_y: 100
+    tagline_font_size: 20
+    title_font_size: 40
+    bold_edition: true
   colors:
     cover_text: "#1F3864"
     title: "#1F3864"
@@ -479,7 +501,20 @@ document_metadata:
     feedback: "Comments on this document should be directed to DGIWG."
 ```
 
-> `suppress_flavor_logo` overrides an OGC-flavor XSL template and is coupled to that flavor; the other fields use documented Metanorma attributes.
+**Structural layout changes (opt-in, independent of `suppress_design_elements`).** The default OGC output keeps its section-divider pages and standard layout; set these only when you want to drop them (e.g. for DGIWG):
+
+- `suppress_section_divider_pages` — removes the standalone full-page section dividers.
+- `inline_section_headers` — renders headings inline (`1 Scope`, `i Abstract`) instead of circled numbers.
+- `suppress_bibliography_indent` — flattens Normative References and Bibliography (no hanging indent under the authors).
+
+```yaml
+document_metadata:
+  suppress_section_divider_pages: true
+  inline_section_headers: true
+  suppress_bibliography_indent: true
+```
+
+> `suppress_flavor_logo`, `suppress_design_elements`, the structural opt-ins above, and the submitting-organizations rebrand override OGC-flavor XSL templates and are coupled to that flavor; the other fields use documented Metanorma attributes.
 
 ---
 

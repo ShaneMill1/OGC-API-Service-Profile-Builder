@@ -192,15 +192,21 @@ Everything about the document — cover, title-page metadata, legal page, footer
 | PDF colours (titles, tables, cover, backgrounds) | `document_metadata.colors` | `:presentation-metadata-color-*:` |
 | Page-ii legal text (copyright / license / notice) | `document_metadata.boilerplate` | `:boilerplate-authority:` |
 | Footer organisation name | `document_metadata.copyright_holder` | `:copyright-holder:` |
+| Cover layout (logo size/position, tagline/title size, bold edition) | `document_metadata.cover.{logo_width, logo_y, tagline_font_size, title_font_size, bold_edition}` | Generated cover image |
+| Cover date | `document_metadata.doc_pub_date` | Long-format date on the generated cover + `:published-date:` |
 | Remove the OGC logo from the legal page | `document_metadata.suppress_flavor_logo` | targeted `:pdf-stylesheet-override:` |
 | Remove OGC design (crossing lines, circled numbers, rules, navy divider pages) | `document_metadata.suppress_design_elements` (or the individual `suppress_crossing_lines` / `plain_section_numbers` / `suppress_title_underlines`) | `:pdf-stylesheet-override:` + colour attributes |
+| Remove the standalone section-divider pages | `document_metadata.suppress_section_divider_pages` | `:pdf-stylesheet-override:` |
+| Inline section headings (`1 Scope` in one line, no circle) | `document_metadata.inline_section_headers` | `:pdf-stylesheet-override:` |
+| Flatten reference hanging indent (title under authors) | `document_metadata.suppress_bibliography_indent` | `:pdf-stylesheet-override:` |
 | Every-page DRAFT-style watermark (over content) | `document_metadata.page_watermark` | `:pdf-stylesheet-override:` (footer overlay) |
 | Requirement / conformance identifier namespace | `spec_uri_base` | derives `req_uri` / `conf_uri` |
 | Submitter table, notice paragraph, normative refs, extra terms | `document_metadata.{submitters, notice, normative_references, terms}` | Metanorma attributes / sections |
+| Features `/items` paging (`limit` parameter) | `paging.{enabled, default_limit, max_limit}` | OpenAPI query parameter |
 
 Custom branding requires Pillow for the cover image: `pip install 'oapi-profile-builder[pdf]'`. Field-by-field detail is in the [`document_metadata`](#document_metadata) reference below; [`examples/nwp_radar.yaml`](examples/nwp_radar.yaml) is a complete DGIWG-branded example. Omit all of these fields and the output keeps the standard OGC house style.
 
-> The `suppress_flavor_logo`, `suppress_design_elements`/`suppress_*`, and `page_watermark` overrides reach into the OGC Metanorma flavor's XSL templates (e.g. `insertLogoPreface`, `insertCrossingLines`, `insertSectionNumInCircle`, `insertFooter`) and are coupled to that flavor. Everything else uses documented Metanorma attributes. mn2pdf merges our same-named templates over the flavor's at equal precedence (via `merge_override.xsl`), which is what makes these work; a future metanorma-ogc release could require refreshing the template names. For long-term SDO adoption, a dedicated Metanorma "taste"/flavor is the most durable path.
+> The `suppress_flavor_logo`, `suppress_design_elements`/`suppress_*`, `suppress_section_divider_pages`, `inline_section_headers`, `suppress_bibliography_indent`, and `page_watermark` overrides reach into the OGC Metanorma flavor's XSL templates (e.g. `insertLogoPreface`, `insertCrossingLines`, `insertSectionNumInCircle`, `insertFooter`, the `sections` mode, `fmt-title`, and `bibitem-normative-style`) and are coupled to that flavor. Everything else uses documented Metanorma attributes. mn2pdf merges our same-named templates over the flavor's at equal precedence (via `merge_override.xsl`), which is what makes these work; a future metanorma-ogc release could require refreshing the template names. For long-term SDO adoption, a dedicated Metanorma "taste"/flavor is the most durable path.
 
 ---
 
@@ -294,6 +300,7 @@ abstract_tests: []
 | `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id` |
 | `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
 | `collection_examples` | object | no | `{collectionId: {instanceId: "..."}}` — used by `validate-server` |
+| `paging` | object | no | Features `/items` paging — adds a validated `limit` query parameter to the generated OpenAPI (see below) |
 | `document_metadata` | object | no | Metanorma PDF header — doc number/type/subtype, status, editors, submitters, dates, notice, normative references (see below) |
 
 ---
@@ -577,6 +584,21 @@ Generates: `/processes/compute-difference`, `/processes/compute-difference/execu
 
 ---
 
+### `paging`
+
+Controls Features `/items` paging in the generated OpenAPI. When enabled (the default), a validated `limit` query parameter is added to every `/items` endpoint (collection-level and instance-level).
+
+```yaml
+paging:
+  enabled: true          # default true; set false to omit the limit parameter
+  default_limit: 10      # OpenAPI schema default for limit (default 10)
+  max_limit: 100         # OpenAPI schema maximum for limit (default 10000)
+```
+
+The emitted parameter is `limit` (`in: query`, `type: integer`, `minimum: 1`, `maximum: <max_limit>`, `default: <default_limit>`).
+
+---
+
 ### `pubsub`
 
 When present, generates `asyncapi.yaml` alongside `openapi.yaml`.
@@ -622,6 +644,8 @@ document_metadata:
   submission_date: "2026-05-01"   # → :received-date:
   approval_date:   "2026-06-15"   # → :issued-date:
   publication_date: "2026-07-01"  # → :published-date:
+  doc_pub_date:    "2026-07-16"   # optional; overrides publication_date for the cover
+                                  #   (long-format "16 July 2026") and :published-date:
   # Custom notice paragraph rendered in the front matter. Note: the OGC cover-page
   # legal notice itself is generated by Metanorma from doc_type/status.
   notice: >
@@ -660,6 +684,12 @@ document_metadata:
     font_bold: "Source Sans Pro"    # optional bold face; derived from font_regular when unset
     font_italic: "Source Sans Pro"  # optional italic face for the tagline
     watermark: "DRAFT"             # optional diagonal watermark stamped on the cover
+    # --- cover layout (all optional) ---
+    logo_width: 200                # target logo width in px (default 420)
+    logo_y: 100                    # logo vertical offset from top in px (default 180)
+    tagline_font_size: 20          # tagline point size (default 30)
+    title_font_size: 40            # title point size (default 54)
+    bold_edition: true             # render the "Edition X" line in bold (default false)
   colors:
     text: "#000000"                # body text
     cover_text: "#1F3864"          # cover text / section numbers / ToC
@@ -715,6 +745,23 @@ document_metadata:
 With `cover` + `colors` + `copyright_holder` + `boilerplate` + `suppress_flavor_logo` + `suppress_design_elements` (and `spec_uri_base` for the requirement/conformance identifiers), the generated PDF carries no OGC branding — only legitimate citations to the OGC standards the profile conforms to. Omit these fields and you get the standard OGC house style. See [`examples/nwp_radar.yaml`](examples/nwp_radar.yaml).
 
 > These design-element overrides (and the `page_watermark` footer overlay) reach into the OGC Metanorma flavor's XSL template names and are coupled to that flavor; a future metanorma-ogc release could require refreshing them.
+
+#### Structural layout changes (divider pages, inline headers, references)
+
+`suppress_design_elements` only changes *decorative* styling — it keeps the document's structure (standalone section-divider pages, the standard heading layout, and the reference hanging indent) intact. The following are **independent, opt-in** structural changes, so the default OGC output is unaffected unless you set them:
+
+- **`suppress_section_divider_pages: true`** — removes the standalone full-page section dividers, so each section's content follows its heading directly.
+- **`inline_section_headers: true`** — renders Level 1/2 headings inline with the title (e.g. `1 Scope`, `i Abstract`) rather than the OGC circled-number layout.
+- **`suppress_bibliography_indent: true`** — flattens both the Normative References and the Bibliography so each entry is a single flush paragraph, removing the hanging indent that placed the title under the authors.
+
+```yaml
+document_metadata:
+  suppress_section_divider_pages: true
+  inline_section_headers: true
+  suppress_bibliography_indent: true
+```
+
+Additionally, when `copyright_holder` is set to a non-OGC organisation, the flavor's auto-generated "Submitting Organizations" sentence ("…submitted this Document to the Open Geospatial Consortium (OGC)") is rebranded to name that organisation instead, so no residual OGC text remains in the preface.
 
 #### Extending Terms and Definitions
 
