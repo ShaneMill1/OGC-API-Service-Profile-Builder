@@ -1,5 +1,18 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.4.1] - 2026-07-17
+
+Maintenance release — CI and release tooling only; no functional changes to the builder.
+
+### Changed
+
+- **Per-release GitHub Release notes**: the Release workflow now builds the release body from the matching `CHANGELOG.md` section for the tag (plus install and GitHub Actions usage snippets), so each release describes its own changes instead of repeating a static template.
+
+### Fixed
+
+- **Artifact-regeneration race**: the profile-artifact CI job now installs the builder from the checked-out source (`pip install .`) instead of the published PyPI package. Previously it raced the Release workflow's PyPI publish and could commit stale generated artifacts back to `main` (this had rolled back the 3.4.0 paging `limit` parameter on the non-DGIWG examples, now restored).
+- README and hosted docs updated to document the 3.4.0 fields (cover layout controls, `doc_pub_date`, the structural layout opt-ins, submitting-organizations rebrand, and `paging`).
+
 ## [3.4.0] - 2026-07-17
 
 Addresses a second round of DGIWG (Met Office) feedback on the generated PDF and profile YAML.
