@@ -68,7 +68,16 @@ runs:
         if [ "$VERSION" = "latest" ]; then
           pip install oapi-profile-builder
         else
-          pip install "oapi-profile-builder==$VERSION"
+          # Retry to tolerate PyPI index propagation delay right after publish.
+          for attempt in 1 2 3 4 5; do
+            if pip install "oapi-profile-builder==$VERSION"; then
+              break
+            fi
+            echo "pip install attempt $attempt failed; waiting for PyPI propagation..."
+            sleep 15
+          done
+          # Final attempt surfaces a real error if the version truly isn't available.
+          pip show oapi-profile-builder | grep -q "Version: $VERSION" || pip install "oapi-profile-builder==$VERSION"
         fi
 
     - name: Validate profile config

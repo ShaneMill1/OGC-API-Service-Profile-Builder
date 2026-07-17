@@ -6,7 +6,7 @@
 :committee: technical
 :docnumber: DGIWG-NWP-RADAR-001
 :copyright-year: 2026
-:published-date: 2026-01-01
+:published-date: 2026-07-16
 :issued-date: 2026-01-01
 :received-date: 2026-01-01
 :status: draft
@@ -76,7 +76,7 @@ Conformance with this standard shall be checked using the Abstract Test Suite in
 
 The following conformance classes are defined:
 
-* link:++https://schemas.dgiwg.org/edr/1.0/conf/nwp_radar++[]
+* link:++http://www.dgiwg.org/std/edr/1.0/conf/nwp_radar++[]
 
 [bibliography]
 == References
@@ -111,7 +111,7 @@ _SOURCE: OGC 19-086r6, OGC API - Environmental Data Retrieval Standard_
 [requirements_class]
 ====
 [%metadata]
-identifier:: link:++https://schemas.dgiwg.org/edr/1.0/req/nwp_radar++[]
+identifier:: link:++http://www.dgiwg.org/std/edr/1.0/req/nwp_radar++[]
 target-type:: NWP Radar Profile Profile Standard
 requirement:: /req/nwp_radar/spatial-extents-crs
 requirement:: /req/nwp_radar/profile-bbox-coordinates
@@ -266,8 +266,8 @@ part:: The service SHALL support both GET and POST HTTP Methods for queries.
 [conformance_class]
 ====
 [%metadata]
-identifier:: link:++https://schemas.dgiwg.org/edr/1.0/conf/nwp_radar++[]
-target:: link:++https://schemas.dgiwg.org/edr/1.0/req/nwp_radar++[]
+identifier:: link:++http://www.dgiwg.org/std/edr/1.0/conf/nwp_radar++[]
+target:: link:++http://www.dgiwg.org/std/edr/1.0/req/nwp_radar++[]
 abstract-test:: /conf/nwp_radar/spatial-extents-crs
 abstract-test:: /conf/nwp_radar/profile-bbox-coordinates
 abstract-test:: /conf/nwp_radar/profile-trs-values

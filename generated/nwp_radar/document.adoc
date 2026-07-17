@@ -6,7 +6,7 @@
 :committee: technical
 :docnumber: DGIWG-NWP-RADAR-001
 :copyright-year: 2026
-:published-date: 2026-01-01
+:published-date: 2026-07-16
 :issued-date: 2026-01-01
 :received-date: 2026-01-01
 :status: draft

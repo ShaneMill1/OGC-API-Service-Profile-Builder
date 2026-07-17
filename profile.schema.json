@@ -526,6 +526,36 @@
           "default": null,
           "description": "Optional watermark text stamped diagonally across the cover (e.g. 'DRAFT'). Note: this marks the cover only; an every-page watermark requires the Metanorma layer.",
           "title": "Watermark"
+        },
+        "logo_width": {
+          "default": 420,
+          "description": "Target logo width on cover page",
+          "title": "Logo Width",
+          "type": "integer"
+        },
+        "logo_y": {
+          "default": 180,
+          "description": "Logo y-offset from top of cover page",
+          "title": "Logo Y",
+          "type": "integer"
+        },
+        "tagline_font_size": {
+          "default": 30,
+          "description": "Font size of cover page tagline",
+          "title": "Tagline Font Size",
+          "type": "integer"
+        },
+        "title_font_size": {
+          "default": 54,
+          "description": "Font size of cover page title",
+          "title": "Title Font Size",
+          "type": "integer"
+        },
+        "bold_edition": {
+          "default": false,
+          "description": "When true, render edition in bold font",
+          "title": "Bold Edition",
+          "type": "boolean"
         }
       },
       "required": [
@@ -929,6 +959,14 @@
           "title": "Normative References",
           "type": "array"
         },
+        "terms": {
+          "description": "Profile-supplied terms appended to the Terms and Definitions section (e.g. EDR Part 3 / Pub/Sub terms), each with a definition and optional source.",
+          "items": {
+            "$ref": "#/$defs/Term"
+          },
+          "title": "Terms",
+          "type": "array"
+        },
         "external_id": {
           "anyOf": [
             {
@@ -1002,6 +1040,37 @@
           "default": null,
           "description": "Front-matter legal boilerplate (copyright/license/legal/feedback) replacing the flavor's built-in text via :boilerplate-authority:."
         },
+        "doc_pub_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Alternative field for publication date (YYYY-MM-DD)",
+          "title": "Doc Pub Date"
+        },
+        "suppress_section_divider_pages": {
+          "default": false,
+          "description": "When true, completely remove section-divider pages from the PDF",
+          "title": "Suppress Section Divider Pages",
+          "type": "boolean"
+        },
+        "inline_section_headers": {
+          "default": false,
+          "description": "When true, render Level 1 headings inline without circles or table formatting",
+          "title": "Inline Section Headers",
+          "type": "boolean"
+        },
+        "suppress_bibliography_indent": {
+          "default": false,
+          "description": "When true, remove the OGC flavor's hanging indent on non-normative bibliography/reference entries so the citation tag and title render as a single flush paragraph (wrapped lines align at the left margin instead of being indented under the authors). Coupled to the OGC Metanorma flavor.",
+          "title": "Suppress Bibliography Indent",
+          "type": "boolean"
+        },
         "suppress_flavor_logo": {
           "default": false,
           "description": "When true, suppress the Metanorma flavor's built-in logo on the preface/legal page (e.g. the OGC logo) via a targeted PDF stylesheet override. Use when rebranding (e.g. DGIWG) so no OGC logo remains on internal pages. Note: this overrides an OGC-flavor XSL template and is coupled to the OGC Metanorma flavor.",
@@ -1067,7 +1136,7 @@
         },
         "suppress_design_elements": {
           "default": false,
-          "description": "When true, strip the OGC flavor's decorative PDF design elements \u2014 the blue 'crossing lines' motif, the circular badges around clause numbers, and the short rule under clause titles \u2014 via a targeted PDF stylesheet override. Produces a plainer 'i. Abstract' / '1 Scope' heading style for SDOs (e.g. DGIWG) that don't use the OGC house style. Coupled to the OGC Metanorma flavor.",
+          "description": "When true, strip the OGC flavor's decorative PDF design elements \u2014 the blue 'crossing lines' motif, the circular badges around clause numbers, and the short rule under clause titles \u2014 via a targeted PDF stylesheet override, and recolour the section-divider pages to a clean light background for SDOs (e.g. DGIWG) that don't use the OGC house style. This affects only decorative styling: it does NOT remove the section-divider pages, inline the section headers, or reflow the bibliography \u2014 use suppress_section_divider_pages, inline_section_headers and suppress_bibliography_indent for those structural changes. Coupled to the OGC Metanorma flavor.",
           "title": "Suppress Design Elements",
           "type": "boolean"
         },
@@ -1689,6 +1758,33 @@
         "media_type"
       ],
       "title": "OutputFormat",
+      "type": "object"
+    },
+    "PagingConfig": {
+      "description": "Optional pagination parameters config.",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "When true, include standard limit parameter in /items endpoint",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "default_limit": {
+          "default": 10,
+          "description": "Default number of features to return",
+          "minimum": 1,
+          "title": "Default Limit",
+          "type": "integer"
+        },
+        "max_limit": {
+          "default": 10000,
+          "description": "Maximum allowed limit for features returned",
+          "minimum": 1,
+          "title": "Max Limit",
+          "type": "integer"
+        }
+      },
+      "title": "PagingConfig",
       "type": "object"
     },
     "Parameter": {
@@ -2485,6 +2581,40 @@
       "title": "TemporalWithNullBounds",
       "type": "object"
     },
+    "Term": {
+      "description": "A profile-supplied entry for the Terms and Definitions section.\n\nAppended after the base terms so a profile can extend the vocabulary (e.g.\nwith EDR Part 3 or Pub/Sub terms). Rendered as a Metanorma term clause.",
+      "properties": {
+        "term": {
+          "description": "The term being defined, e.g. 'publish/subscribe'",
+          "title": "Term",
+          "type": "string"
+        },
+        "definition": {
+          "description": "The definition text",
+          "title": "Definition",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional source/authority for the definition, e.g. 'SOURCE: OGC 19-086r6'",
+          "title": "Source"
+        }
+      },
+      "required": [
+        "term",
+        "definition"
+      ],
+      "title": "Term",
+      "type": "object"
+    },
     "Unit": {
       "additionalProperties": false,
       "properties": {
@@ -2827,6 +2957,9 @@
         }
       ],
       "default": null
+    },
+    "paging": {
+      "$ref": "#/$defs/PagingConfig"
     },
     "required_conformance_classes": {
       "description": "Conformance classes that implementations must declare",

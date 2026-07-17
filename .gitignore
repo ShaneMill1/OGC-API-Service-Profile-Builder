@@ -6,9 +6,9 @@ build/
 cite_features_results/
 cite_results/
 
-# Generated PDF build artifacts
+# Transient PDF build error logs (not the stylesheet override, which is a
+# tracked part of the generated profile output referenced by document.adoc)
 *.pdf.err
-pdf_override.xsl
 
 # Local-only: private correspondence / scratch (never publish to the public repo)
 email_to_guy.txt

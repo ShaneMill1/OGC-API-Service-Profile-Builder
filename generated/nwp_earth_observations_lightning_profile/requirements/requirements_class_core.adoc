@@ -2,7 +2,7 @@
 [requirements_class]
 ====
 [%metadata]
-identifier:: https://schemas.dgiwg.org/edr/1.0/req/nwp_earth_observations_lightning
+identifier:: http://www.dgiwg.org/std/edr/1.0/req/nwp_earth_observations_lightning
 target-type:: DGIWG NWP Earth Observations Lightning Profile Profile Standard
 requirement:: /req/nwp_earth_observations_lightning/items-endpoint
 requirement:: /req/nwp_earth_observations_lightning/cube-endpoint

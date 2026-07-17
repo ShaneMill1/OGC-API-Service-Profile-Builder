@@ -346,6 +346,7 @@
     "doc_pub_date": "2026-07-16",
     "suppress_section_divider_pages": true,
     "inline_section_headers": true,
+    "suppress_bibliography_indent": true,
     "suppress_flavor_logo": true,
     "body_font": "Source Sans Pro",
     "header_font": "Source Sans Pro",
@@ -417,7 +418,7 @@
   ],
   "allow_post_queries": true,
   "collection_id_pattern": null,
-  "spec_uri_base": "https://schemas.dgiwg.org/edr/1.0",
+  "spec_uri_base": "http://www.dgiwg.org/std/edr/1.0",
   "parameter_name_pattern": null,
   "parameter_schema": null
 }

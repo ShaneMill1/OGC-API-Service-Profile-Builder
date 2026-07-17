@@ -607,6 +607,15 @@ class DocumentMetadata(BaseModel):
     doc_pub_date: str | None = Field(default=None, description="Alternative field for publication date (YYYY-MM-DD)")
     suppress_section_divider_pages: bool = Field(default=False, description="When true, completely remove section-divider pages from the PDF")
     inline_section_headers: bool = Field(default=False, description="When true, render Level 1 headings inline without circles or table formatting")
+    suppress_bibliography_indent: bool = Field(
+        default=False,
+        description=(
+            "When true, remove the OGC flavor's hanging indent on non-normative "
+            "bibliography/reference entries so the citation tag and title render as a "
+            "single flush paragraph (wrapped lines align at the left margin instead of "
+            "being indented under the authors). Coupled to the OGC Metanorma flavor."
+        ),
+    )
     suppress_flavor_logo: bool = Field(
         default=False,
         description=(
@@ -659,10 +668,15 @@ class DocumentMetadata(BaseModel):
         default=False,
         description=(
             "When true, strip the OGC flavor's decorative PDF design elements — the "
-            "blue 'crossing lines' motif, the circular badges around clause numbers, and "
-            "the short rule under clause titles — via a targeted PDF stylesheet override. "
-            "Produces a plainer 'i. Abstract' / '1 Scope' heading style for SDOs (e.g. "
-            "DGIWG) that don't use the OGC house style. Coupled to the OGC Metanorma flavor."
+            "blue 'crossing lines' motif, the circular badges around clause numbers, "
+            "and the short rule under clause titles — via a targeted PDF stylesheet "
+            "override, and recolour the section-divider pages to a clean light "
+            "background for SDOs (e.g. DGIWG) that don't use the OGC house style. "
+            "This affects only decorative styling: it does NOT remove the "
+            "section-divider pages, inline the section headers, or reflow the "
+            "bibliography — use suppress_section_divider_pages, inline_section_headers "
+            "and suppress_bibliography_indent for those structural changes. Coupled to "
+            "the OGC Metanorma flavor."
         ),
     )
     page_watermark: str | None = Field(

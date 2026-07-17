@@ -1,5 +1,30 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.4.0] - 2026-07-17
+
+Addresses a second round of DGIWG (Met Office) feedback on the generated PDF and profile YAML.
+
+### Added
+
+- **Cover-page layout controls** under `document_metadata.cover`: `logo_width`, `logo_y` (logo size and vertical position), `tagline_font_size`, `title_font_size`, and `bold_edition` (render the edition line in bold). Lets a profile match an SDO's front-page layout without code changes.
+- **`document_metadata.doc_pub_date`**: explicit publication date (long format on the cover, e.g. "16 July 2026"). Takes precedence over `publication_date` for the cover and the Metanorma `:published-date:`.
+- **`document_metadata.suppress_section_divider_pages`**: remove the standalone full-page section-divider pages from the PDF (structural, opt-in).
+- **`document_metadata.inline_section_headers`**: render Level 1/2 section headings inline with their title (e.g. "1 Scope", "i Abstract") instead of the OGC circled-number layout (structural, opt-in).
+- **`document_metadata.suppress_bibliography_indent`**: reflow both Normative References and the non-normative Bibliography as flush paragraphs, removing the OGC hanging indent that placed the title under the authors (structural, opt-in).
+- **Submitting-Organizations rebrand**: when `copyright_holder` is set to a non-OGC organisation, the flavor's auto-generated "…submitted this Document to the Open Geospatial Consortium (OGC)" sentence is rebranded to name that organisation (e.g. DGIWG) via a targeted PDF-stylesheet override, so no residual OGC text remains in the preface.
+- **`paging`** (profile-level `PagingConfig`): `enabled`, `default_limit`, `max_limit`. When enabled, the generated OpenAPI adds a validated `limit` query parameter to Features `/items` endpoints (collection-level and instance-level).
+
+### Changed
+
+- **`suppress_design_elements` scope clarified**: the debrand switch now controls only *decorative* OGC styling (crossing-lines motif, circled clause numbers, title underlines) plus section-divider page recolouring. It no longer removes divider pages, inline the headers, or reflow the bibliography — those are independent structural opt-ins (`suppress_section_divider_pages`, `inline_section_headers`, `suppress_bibliography_indent`). This keeps the default OGC document's divider pages and standard layout intact; only profiles that explicitly opt in (e.g. DGIWG) drop them.
+- **DGIWG example profiles** (`nwp_radar`, `nwp_earth_observations_lightning`) updated with the new cover layout controls, `doc_pub_date`, the structural layout opt-ins, and the final DGIWG namespace `spec_uri_base: http://www.dgiwg.org/std/edr/1.0` (conformance/requirement URIs now resolve under `.../conf/<profile-name>`).
+- Regenerated all example artifacts (OpenAPI, profile config, AsciiDoc, and the DGIWG PDFs).
+- Regenerated `profile.schema.json` from the current models.
+
+### Internal
+
+- Extracted the OpenAPI paging `limit` parameter into `_paging_limit_param()` / `_with_paging_limit()` helpers to remove three duplicated inline definitions.
+
 ## [3.3.0] - 2026-07-13
 
 ### Added

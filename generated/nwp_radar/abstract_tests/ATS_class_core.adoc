@@ -2,8 +2,8 @@
 [conformance_class]
 ====
 [%metadata]
-identifier:: https://schemas.dgiwg.org/edr/1.0/conf/nwp_radar
-target:: https://schemas.dgiwg.org/edr/1.0/req/nwp_radar
+identifier:: http://www.dgiwg.org/std/edr/1.0/conf/nwp_radar
+target:: http://www.dgiwg.org/std/edr/1.0/req/nwp_radar
 abstract-test:: /conf/nwp_radar/spatial-extents-crs
 abstract-test:: /conf/nwp_radar/profile-bbox-coordinates
 abstract-test:: /conf/nwp_radar/profile-trs-values

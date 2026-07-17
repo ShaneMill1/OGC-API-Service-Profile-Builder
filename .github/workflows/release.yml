@@ -42,6 +42,8 @@ jobs:
   release:
     name: Build and release profile artifacts
     runs-on: ubuntu-latest
+    # Wait for the PyPI publish so the version this job installs from PyPI exists.
+    needs: pypi
 
     steps:
       - name: Checkout

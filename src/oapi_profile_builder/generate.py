@@ -761,6 +761,35 @@ def _params_with_default_f(params: list[dict], profile: "ServiceProfile | None",
     return [f_param if p is _F else p for p in params]
 
 
+def _paging_limit_param(profile: "ServiceProfile | None") -> dict | None:
+    """Return the `limit` query parameter for feature paging, or None when disabled."""
+    if not (profile and profile.paging and profile.paging.enabled):
+        return None
+    return {
+        "name": "limit",
+        "in": "query",
+        "required": False,
+        "description": "Limits the number of features returned in the response.",
+        "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": profile.paging.max_limit,
+            "default": profile.paging.default_limit,
+        },
+    }
+
+
+def _with_paging_limit(params: list[dict], profile: "ServiceProfile | None") -> list[dict]:
+    """Append the paging `limit` param to a copy of *params* if enabled and absent."""
+    limit_param = _paging_limit_param(profile)
+    if limit_param is None:
+        return params
+    out = list(params)
+    if not any(isinstance(p, dict) and p.get("name") == "limit" for p in out):
+        out.append(limit_param)
+    return out
+
+
 def _collection_paths(coll: Collection, examples: dict | None = None,
                       profile: ServiceProfile | None = None) -> dict:
     paths: dict = {}
@@ -793,21 +822,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
     }}
 
     # Always generate Features paths (items, queryables, schema)
-    items_params = [_F, _LANG]
-    if profile and profile.paging and profile.paging.enabled:
-        limit_param = {
-            "name": "limit",
-            "in": "query",
-            "required": False,
-            "description": "Limits the number of features returned in the response.",
-            "schema": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": profile.paging.max_limit,
-                "default": profile.paging.default_limit
-            }
-        }
-        items_params.append(limit_param)
+    items_params = _with_paging_limit([_F, _LANG], profile)
 
     paths[f"{base}/items"] = {"get": {
         "summary": f"Get {coll.title or coll.id} items",
@@ -879,22 +894,8 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
             # instance-level query sub-paths — GET + optional POST
             for sub_qt in (active - {"instances"}):
                 sub_params = _params_with_default_f(_QUERY_PARAMS.get(sub_qt, []), profile, _vars(sub_qt))
-                if sub_qt == "items" and profile and profile.paging and profile.paging.enabled:
-                    limit_param = {
-                        "name": "limit",
-                        "in": "query",
-                        "required": False,
-                        "description": "Limits the number of features returned in the response.",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": profile.paging.max_limit,
-                            "default": profile.paging.default_limit
-                        }
-                    }
-                    sub_params = list(sub_params)
-                    if not any(p.get("name") == "limit" for p in sub_params if isinstance(p, dict)):
-                        sub_params.append(limit_param)
+                if sub_qt == "items":
+                    sub_params = _with_paging_limit(sub_params, profile)
                 get_op = {
                     "summary": f"query {coll.id} instance by {sub_qt}",
                     "description": desc,
@@ -909,22 +910,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
                 paths[f"{base}/instances/{{instanceId}}/{sub_qt}"] = path_ops
 
         elif qt == "items":
-            items_params = list(params)
-            if profile and profile.paging and profile.paging.enabled:
-                limit_param = {
-                    "name": "limit",
-                    "in": "query",
-                    "required": False,
-                    "description": "Limits the number of features returned in the response.",
-                    "schema": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": profile.paging.max_limit,
-                        "default": profile.paging.default_limit
-                    }
-                }
-                if not any(p.get("name") == "limit" for p in items_params if isinstance(p, dict)):
-                    items_params.append(limit_param)
+            items_params = _with_paging_limit(params, profile)
             get_op = {
                 "summary": f"query {coll.id} by items",
                 "description": desc,
@@ -1451,6 +1437,38 @@ _OVERRIDE_SUPPRESS_SECTION_DIVIDERS = """
   </xsl:template>
 """
 
+_OVERRIDE_FLATTEN_BIBLIOGRAPHY = """
+  <!-- Remove the hanging indent on Normative References: the OGC flavor uses
+       start-indent 25mm / text-indent -25mm so continuation lines (the title)
+       sit indented under the authors. Flatten both to 0 so every line aligns at
+       the left margin. -->
+  <xsl:attribute-set name="bibitem-normative-style">
+    <xsl:attribute name="margin-bottom">12pt</xsl:attribute>
+    <xsl:attribute name="start-indent">0mm</xsl:attribute>
+    <xsl:attribute name="text-indent">0mm</xsl:attribute>
+    <xsl:attribute name="line-height">115%</xsl:attribute>
+  </xsl:attribute-set>
+
+  <!-- Same for the non-normative Bibliography section: render the citation tag
+       inline with the title as one flush block (wrapped lines align at the left
+       margin instead of being indented under the authors). -->
+  <xsl:template match="mn:references[not(@normative='true')]/mn:bibitem" name="bibitem_non_normative" priority="2">
+    <xsl:param name="skip"/>
+    <xsl:call-template name="setNamedDestination"/>
+    <fo:block id="{@id}" margin-bottom="12pt" role="SKIP">
+      <fo:inline role="SKIP">
+        <xsl:apply-templates select="mn:biblio-tag">
+          <xsl:with-param name="biblio_tag_part">first</xsl:with-param>
+        </xsl:apply-templates>
+      </fo:inline>
+      <xsl:text> </xsl:text>
+      <xsl:call-template name="processBibitem">
+        <xsl:with-param name="biblio_tag_part">last</xsl:with-param>
+      </xsl:call-template>
+    </fo:block>
+  </xsl:template>
+"""
+
 _OVERRIDE_INLINE_SECTION_HEADERS = """
   <!-- Inline Level 1 section titles (e.g. '1. Scope' in a single block, no circles, no table). -->
   <xsl:template match="mn:fmt-title" name="title">
@@ -1664,12 +1682,19 @@ def _effective_pdf_config(m) -> dict:
     (default white) background with dark, readable numbers/titles so they no
     longer carry the OGC navy house style.
     """
+    # suppress_design_elements ("debrand") controls only the OGC *decorative*
+    # motifs — the blue crossing lines, the circular clause-number badges and the
+    # short rule under titles — plus the section-divider page recolouring. It does
+    # NOT remove the section-divider pages, inline the headers, or reflow the
+    # bibliography: those are structural/layout choices left as independent opt-ins
+    # so the default OGC document keeps its divider pages and standard layout.
     debrand = bool(getattr(m, "suppress_design_elements", False))
     crossing = debrand or bool(getattr(m, "suppress_crossing_lines", False))
     underlines = debrand or bool(getattr(m, "suppress_title_underlines", False))
     plain_nums = debrand or bool(getattr(m, "plain_section_numbers", False))
-    suppress_divs = debrand or bool(getattr(m, "suppress_section_divider_pages", False))
-    inline_headers = debrand or bool(getattr(m, "inline_section_headers", False))
+    suppress_divs = bool(getattr(m, "suppress_section_divider_pages", False))
+    inline_headers = bool(getattr(m, "inline_section_headers", False))
+    biblio_indent = bool(getattr(m, "suppress_bibliography_indent", False))
 
     colors = getattr(m, "colors", None)
     page_bg = getattr(colors, "page_background", None) if colors else None
@@ -1697,11 +1722,38 @@ def _effective_pdf_config(m) -> dict:
         "plain_nums": plain_nums,
         "suppress_divs": suppress_divs,
         "inline_headers": inline_headers,
+        "biblio_indent": biblio_indent,
         "body_font": getattr(m, "body_font", None),
         "watermark": getattr(m, "page_watermark", None),
         "divider_bg": divider_bg,
         "divider_fg": divider_fg,
     }
+
+
+def _submitting_orgs_text_override(org_name: str) -> str:
+    """Rebrand the OGC flavor's auto-generated 'Submitting Organizations' sentence.
+
+    The OGC Metanorma flavor hardcodes "...submitted this Document to the Open
+    Geospatial Consortium (OGC):" in its presentation stage (not the i18n YAML),
+    so it lands in the presentation XML as the text of the
+    ``clause[@type='submitting_orgs']`` paragraph. We replace just that text node
+    with the rebranded SDO name, leaving the paragraph's styling intact.
+
+    Fragile by nature: coupled to the exact sentence the OGC flavor emits. If the
+    flavor changes that wording, this literal will no longer match and should be
+    updated.
+    """
+    org = _xml_escape(org_name)
+    return f"""
+  <!-- Rebrand the flavor's auto-generated 'Submitting Organizations' sentence
+       (the OGC flavor injects 'the Open Geospatial Consortium (OGC)' at its
+       presentation stage). Match the clause's paragraph element specifically —
+       more specific than the base mn:p template, so mn2pdf's merge appends this
+       and it wins for that paragraph only, leaving all other paragraphs alone. -->
+  <xsl:template match="mn:clause[@type='submitting_orgs']/mn:p">
+    <fo:block xsl:use-attribute-sets="p-style" role="P">The following organizations submitted this Document to {org}:</fo:block>
+  </xsl:template>
+"""
 
 
 def _pdf_override_flags(m) -> list[str]:
@@ -1722,6 +1774,13 @@ def _pdf_override_flags(m) -> list[str]:
         parts.append(_OVERRIDE_SUPPRESS_SECTION_DIVIDERS)
     if cfg["inline_headers"]:
         parts.append(_OVERRIDE_INLINE_SECTION_HEADERS)
+    if cfg["biblio_indent"]:
+        parts.append(_OVERRIDE_FLATTEN_BIBLIOGRAPHY)
+    # Rebrand the flavor's auto-generated "Submitting Organizations" sentence to
+    # name the copyright holder (e.g. DGIWG) instead of OGC, when rebranding.
+    holder = getattr(m, "copyright_holder", None)
+    if holder and holder.strip().upper() not in ("OGC", "OPEN GEOSPATIAL CONSORTIUM"):
+        parts.append(_submitting_orgs_text_override(holder))
     # When the divider background is rebranded (light), force the big title
     # colour too — the flavor inherits white text, invisible on a light page.
     if cfg["divider_bg"] is not None:

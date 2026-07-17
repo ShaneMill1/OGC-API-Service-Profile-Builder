@@ -46,8 +46,9 @@ required_conformance_classes:
   - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/wkt"
 
 # Publish requirement/conformance identifiers under the DGIWG namespace
-# instead of the OGC default.
-spec_uri_base: "https://schemas.dgiwg.org/edr/1.0"
+# instead of the OGC default. Derives conformance/requirement URIs of the form
+# http://www.dgiwg.org/std/edr/1.0/conf/<profile-name> (per DGIWG feedback).
+spec_uri_base: "http://www.dgiwg.org/std/edr/1.0"
 
 # Document metadata — keywords live here for PDF/AsciiDoc output
 document_metadata:
@@ -72,6 +73,23 @@ document_metadata:
   cover:
     logo: examples/assets/DGIWG_logo.png
     tagline: Delivering Military Advantage through multi-national geospatial interoperability
+    # Cover layout tuned per DGIWG feedback: smaller logo moved up the page,
+    # smaller tagline/title, bold edition line.
+    logo_width: 200
+    logo_y: 100
+    tagline_font_size: 20
+    title_font_size: 40
+    bold_edition: true
+  doc_pub_date: "2026-07-16"
+  # Structural layout choices (independent of suppress_design_elements). The
+  # default OGC document keeps its section-divider pages and standard layout;
+  # DGIWG opts out of them here:
+  #   - remove the standalone section-divider pages
+  #   - render section headers inline ("1 Scope", "i Abstract")
+  #   - reflow the bibliography flush (no hanging indent under the authors)
+  suppress_section_divider_pages: true
+  inline_section_headers: true
+  suppress_bibliography_indent: true
   colors:
     # DGIWG navy for cover text, clause titles, table headers and the (now
     # plain, non-circled) section-divider numbers/titles.
@@ -82,11 +100,12 @@ document_metadata:
   copyright_holder: DGIWG
   # Remove the OGC logo from the preface/legal page (rebranding).
   suppress_flavor_logo: true
-  # Single switch for a plain, non-OGC page design: removes the blue
-  # 'crossing lines with dots' motif, renders section numbers as plain text
-  # ("1 Scope" instead of a circled number), drops the short rule beneath
-  # section titles, and rebrands the full-blue section-divider pages to a clean
-  # white page with DGIWG-navy number and title.
+  # Debrand switch — DECORATIVE styling only: removes the blue 'crossing lines
+  # with dots' motif, renders section numbers as plain text ("1 Scope" instead
+  # of a circled number), drops the short rule beneath section titles, and
+  # recolours the section-divider pages from OGC navy to a clean white page with
+  # DGIWG-navy number and title. It does NOT remove divider pages or inline the
+  # headers — those are the structural flags above.
   suppress_design_elements: true
   # Every-page diagonal "DRAFT" watermark (distinct from cover.watermark, which
   # marks only the cover image). Remove once the profile is approved.

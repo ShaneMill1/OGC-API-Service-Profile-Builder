@@ -1937,6 +1937,7 @@
     "doc_pub_date": null,
     "suppress_section_divider_pages": false,
     "inline_section_headers": false,
+    "suppress_bibliography_indent": false,
     "suppress_flavor_logo": false,
     "body_font": null,
     "header_font": null,

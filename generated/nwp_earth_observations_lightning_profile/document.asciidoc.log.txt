@@ -69,7 +69,7 @@ Conformance with this standard shall be checked using the Abstract Test Suite in
 
 The following conformance classes are defined:
 
-* link:++https://schemas.dgiwg.org/edr/1.0/conf/nwp_earth_observations_lightning++[]
+* link:++http://www.dgiwg.org/std/edr/1.0/conf/nwp_earth_observations_lightning++[]
 
 [bibliography]
 == References
@@ -89,7 +89,7 @@ This document also uses terms defined in OGC API - EDR Part 1: Core.
 [requirements_class]
 ====
 [%metadata]
-identifier:: link:++https://schemas.dgiwg.org/edr/1.0/req/nwp_earth_observations_lightning++[]
+identifier:: link:++http://www.dgiwg.org/std/edr/1.0/req/nwp_earth_observations_lightning++[]
 target-type:: DGIWG NWP Earth Observations Lightning Profile Profile Standard
 requirement:: /req/nwp_earth_observations_lightning/items-endpoint
 requirement:: /req/nwp_earth_observations_lightning/cube-endpoint
@@ -134,8 +134,8 @@ part:: Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:
 [conformance_class]
 ====
 [%metadata]
-identifier:: link:++https://schemas.dgiwg.org/edr/1.0/conf/nwp_earth_observations_lightning++[]
-target:: link:++https://schemas.dgiwg.org/edr/1.0/req/nwp_earth_observations_lightning++[]
+identifier:: link:++http://www.dgiwg.org/std/edr/1.0/conf/nwp_earth_observations_lightning++[]
+target:: link:++http://www.dgiwg.org/std/edr/1.0/req/nwp_earth_observations_lightning++[]
 abstract-test:: /conf/nwp_earth_observations_lightning/items-endpoint
 abstract-test:: /conf/nwp_earth_observations_lightning/cube-endpoint
 abstract-test:: /conf/nwp_earth_observations_lightning/radius-endpoint
