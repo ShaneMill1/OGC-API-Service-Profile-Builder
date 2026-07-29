@@ -1,41 +1,44 @@
 name: Generate Profile Artifacts
 
+# Artifacts are no longer generated and committed automatically on push.
+# Instead:
+#   - Users generate artifacts on demand via the "Generate profile artifacts"
+#     issue form (see .github/workflows/profile-request.yml).
+#   - Maintainers can validate the example profiles on PRs, or regenerate them
+#     manually via workflow_dispatch (artifacts are uploaded, not committed).
+
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'examples/**_profile.yaml'
-      - 'examples/minimal_profile.yaml'
-      - 'action.yml'
-      - 'src/**'
   pull_request:
     paths:
       - 'examples/**_profile.yaml'
       - 'examples/minimal_profile.yaml'
       - 'src/**'
+      - 'action.yml'
   workflow_dispatch:
     inputs:
       config:
         description: Profile config file to generate (relative path)
         required: false
         default: examples/insitu_observations_profile.yaml
+      pdf:
+        description: Compile a PDF via Metanorma
+        required: false
+        default: 'false'
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
+  # Validate that the example profiles still generate cleanly. Runs the full
+  # example matrix on PRs; on manual dispatch, generates just the requested
+  # config. Artifacts are uploaded for inspection but never committed back.
   generate:
     name: Generate — ${{ matrix.profile }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        profile:
-          - examples/minimal_profile.yaml
-          - examples/insitu_observations_profile.yaml
-          - examples/nwsviz_profile.yaml
+        profile: ${{ github.event_name == 'workflow_dispatch' && fromJSON(format('["{0}"]', github.event.inputs.config)) || fromJSON('["examples/minimal_profile.yaml","examples/insitu_observations_profile.yaml","examples/nwsviz_profile.yaml"]') }}
 
     steps:
       - name: Checkout
@@ -47,6 +50,7 @@ jobs:
           config: ${{ matrix.profile }}
           output: ./output/${{ matrix.profile }}
           version: latest
+          pdf: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.pdf || 'false' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -54,49 +58,3 @@ jobs:
           name: profile-artifacts-${{ hashFiles(matrix.profile) }}
           path: ./output/${{ matrix.profile }}/
           retention-days: 30
-
-  # Commit generated artifacts back to the repo on pushes to main
-  commit-artifacts:
-    name: Commit generated artifacts
-    runs-on: ubuntu-latest
-    needs: generate
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      # Install from the checked-out source (not PyPI) so regenerated artifacts
-      # always match the code on main. Installing the published package here
-      # races the Release workflow's PyPI publish and can commit stale output.
-      - name: Install oapi-profile-builder (from source)
-        run: pip install .
-
-      - name: Generate all example profiles
-        run: |
-          for profile in examples/minimal_profile.yaml examples/insitu_observations_profile.yaml examples/nwsviz_profile.yaml; do
-            name=$(basename "$profile" .yaml)
-            echo "Generating $name..."
-            oapi-profile-builder generate \
-              --config "$profile" \
-              --output "generated/$name"
-          done
-
-      - name: Commit generated artifacts
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add generated/
-          if git diff --staged --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "chore: regenerate profile artifacts [skip ci]"
-            git push
-          fi

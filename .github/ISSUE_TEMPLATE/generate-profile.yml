@@ -1,0 +1,48 @@
+name: Generate profile artifacts
+description: Paste your profile configuration and get generated artifacts (OpenAPI, AsciiDoc, requirements, optional PDF) back as a downloadable zip.
+title: "[profile request] "
+labels: ["profile-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Generate OGC API profile artifacts
+
+        Paste your profile config below and submit. A bot will validate it,
+        generate the artifacts, and comment on this issue with a link to
+        download them as a zip. No fork or install required — you just need a
+        GitHub account.
+
+        Not sure what a config looks like? Start from an
+        [example profile](https://github.com/${{ github.repository }}/tree/main/examples).
+  - type: textarea
+    id: config
+    attributes:
+      label: Profile configuration (YAML)
+      description: Paste the full contents of your profile YAML. It is rendered as a code block, so indentation is preserved.
+      render: yaml
+      placeholder: |
+        name: my_profile
+        title: My Service Profile
+        version: "1.0"
+        # ... rest of your config ...
+    validations:
+      required: true
+  - type: dropdown
+    id: pdf
+    attributes:
+      label: Compile a PDF?
+      description: PDF generation uses Metanorma and adds a few minutes to the run.
+      options:
+        - "No"
+        - "Yes"
+      default: 0
+    validations:
+      required: true
+  - type: checkboxes
+    id: ack
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: My configuration does not contain any secrets or sensitive data. I understand the generated artifacts will be attached to a public workflow run.
+          required: true

@@ -197,17 +197,20 @@ def build_cover_image(profile, output_dir: Path) -> str | None:
     if m and m.doc_number:
         y = centered(m.doc_number, fonts.regular_font(46, bold=True), y, fg) + 40
 
-    # --- Edition ---
+    # --- Edition & date ---
+    # Per DGIWG feedback these two lines are both bold and set a little smaller
+    # than the document number so they read as a compact sub-heading.
+    ed_date_fs = getattr(cover, "edition_date_font_size", 24)
+    bold_ed = bool(getattr(cover, "bold_edition", False))
+
     edition = getattr(profile, "version", None)
     if edition:
-        bold_ed = bool(getattr(cover, "bold_edition", False))
-        y = centered(f"Edition {edition}", fonts.regular_font(28, bold=bold_ed), y, fg) + 24
+        y = centered(f"Edition {edition}", fonts.regular_font(ed_date_fs, bold=bold_ed), y, fg) + 20
 
-    # --- Date ---
     pub_date = (m.doc_pub_date or m.publication_date) if m else None
     date_str = _format_date(pub_date)
     if date_str:
-        y = centered(f"Dated {date_str}", fonts.regular_font(28), y, fg) + 80
+        y = centered(f"Dated {date_str}", fonts.regular_font(ed_date_fs, bold=bold_ed), y, fg) + 80
 
     # --- Title (large, bold, wrapped) ---
     title = getattr(profile, "title", "") or ""

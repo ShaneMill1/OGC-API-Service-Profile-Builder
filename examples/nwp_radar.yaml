@@ -73,12 +73,14 @@ document_metadata:
   cover:
     logo: examples/assets/DGIWG_logo.png
     tagline: Delivering Military Advantage through multi-national geospatial interoperability
-    # Cover layout tuned per DGIWG feedback: smaller logo moved up the page,
-    # smaller tagline/title, bold edition line.
-    logo_width: 200
+    # Cover layout tuned per DGIWG feedback: larger logo to match the DGIWG
+    # format template, smaller tagline/title, and a bold, reduced-size
+    # edition/date line.
+    logo_width: 300
     logo_y: 100
     tagline_font_size: 20
     title_font_size: 40
+    edition_date_font_size: 22
     bold_edition: true
   doc_pub_date: "2026-07-16"
   # Structural layout choices (independent of suppress_design_elements). The

@@ -526,7 +526,14 @@ class CoverPage(BaseModel):
     logo_y: int = Field(default=180, description="Logo y-offset from top of cover page")
     tagline_font_size: int = Field(default=30, description="Font size of cover page tagline")
     title_font_size: int = Field(default=54, description="Font size of cover page title")
-    bold_edition: bool = Field(default=False, description="When true, render edition in bold font")
+    edition_date_font_size: int = Field(
+        default=24,
+        description="Font size of the cover page edition and date lines (rendered a little smaller than the doc number)",
+    )
+    bold_edition: bool = Field(
+        default=False,
+        description="When true, render both the edition and date lines in bold font",
+    )
 
     @field_validator("background", "text_color")
     @classmethod

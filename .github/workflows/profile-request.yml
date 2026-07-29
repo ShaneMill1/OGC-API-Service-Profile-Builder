@@ -1,0 +1,139 @@
+name: Profile request (self-service)
+
+# Lets anyone with a GitHub account generate profile artifacts without forking
+# or installing anything: they open an issue from the "Generate profile
+# artifacts" form, and this workflow validates the config, generates the
+# artifacts, and comments back with a download link.
+#
+# Security: this runs on `issues`, so GITHUB_TOKEN is scoped to this repo. We
+# only grant `issues: write` (to comment) and `contents: read`. The workflow
+# never executes user-supplied code — it only runs our own generator over the
+# user's declarative YAML config.
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: profile-request-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    # Only react to issues created from the profile-request form. Gate on a
+    # marker in the body so it works even before the label exists in the repo.
+    if: contains(github.event.issue.body, 'Profile configuration (YAML)')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Acknowledge the request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              content: 'eyes',
+            });
+
+      - name: Extract config from the issue body
+        id: extract
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          python3 - <<'PY'
+          import os, re, sys, pathlib
+
+          body = os.environ["ISSUE_BODY"].replace("\r\n", "\n")
+
+          # The config textarea uses `render: yaml`, so the config is the first
+          # fenced code block in the issue body.
+          m = re.search(r"```[a-zA-Z0-9]*\n(.*?)\n```", body, re.S)
+          if not m or not m.group(1).strip():
+              print("::error::No YAML configuration found in the issue body.")
+              sys.exit(1)
+
+          pathlib.Path("user_config.yaml").write_text(m.group(1) + "\n", encoding="utf-8")
+
+          # PDF dropdown: the section header is followed by the chosen value.
+          pdf = "false"
+          mp = re.search(r"Compile a PDF\?\s*\n+\s*(Yes|No)\b", body, re.I)
+          if mp and mp.group(1).strip().lower() == "yes":
+              pdf = "true"
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"pdf={pdf}\n")
+
+          print(f"PDF requested: {pdf}")
+          print("--- extracted config ---")
+          print(pathlib.Path("user_config.yaml").read_text())
+          PY
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Install from the checked-out source so users always get exactly what is
+      # on this repo (including changes not yet published to PyPI).
+      - name: Install oapi-profile-builder (from source)
+        run: pip install .
+
+      - name: Validate configuration
+        run: oapi-profile-builder validate --config user_config.yaml
+
+      - name: Generate artifacts
+        id: generate
+        run: |
+          if [ "${{ steps.extract.outputs.pdf }}" = "true" ]; then
+            oapi-profile-builder generate --config user_config.yaml --output ./profile_output --pdf
+          else
+            oapi-profile-builder generate --config user_config.yaml --output ./profile_output
+          fi
+          ls -lh ./profile_output
+
+      - name: Upload artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: profile-artifacts-issue-${{ github.event.issue.number }}
+          path: profile_output/
+          retention-days: 14
+
+      - name: Comment with result
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const success = '${{ job.status }}' === 'success';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const artifactName = `profile-artifacts-issue-${context.issue.number}`;
+            const body = success
+              ? [
+                  '✅ **Your profile artifacts are ready.**',
+                  '',
+                  `Download **\`${artifactName}\`** from the bottom of the workflow run page:`,
+                  runUrl,
+                  '',
+                  '_Artifacts are retained for 14 days. Edit this issue to regenerate._',
+                ].join('\n')
+              : [
+                  '❌ **Generation failed.**',
+                  '',
+                  `See the logs for details: ${runUrl}`,
+                  '',
+                  'Common causes: invalid YAML or a config that fails validation. Fix the configuration and edit this issue to try again.',
+                ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

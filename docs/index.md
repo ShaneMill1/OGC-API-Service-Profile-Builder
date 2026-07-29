@@ -529,10 +529,11 @@ document_metadata:
   cover:
     logo: assets/dgiwg_logo.png
     tagline: Delivering Military Advantage through multi-national geospatial interoperability
-    logo_width: 200
+    logo_width: 300
     logo_y: 100
     tagline_font_size: 20
     title_font_size: 40
+    edition_date_font_size: 22
     bold_edition: true
   colors:
     cover_text: "#1F3864"

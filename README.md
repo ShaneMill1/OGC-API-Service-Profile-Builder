@@ -134,6 +134,20 @@ OGC API - EDR CITE Results
 
 ## GitHub Actions
 
+### Self-service: generate artifacts from an issue (no fork, no install)
+
+Anyone with a GitHub account can generate artifacts from their own config without cloning or installing anything:
+
+1. Open a new issue using the **"Generate profile artifacts"** template ([New issue](../../issues/new/choose)).
+2. Paste your profile YAML into the config field and submit.
+3. A workflow validates the config, generates the artifacts, and comments on the issue with a link to download them as a zip (retained for 14 days). Optionally tick "Compile a PDF?" to also get a Metanorma PDF.
+
+The workflow only runs the generator over your declarative config — it never executes user-supplied code — and comments back on both success and failure. Don't paste secrets: the artifacts are attached to a public workflow run.
+
+> Maintainers: create a `profile-request` label so requests are easy to filter (the workflow gates on a marker in the issue body, so it works even before the label exists).
+
+### Use the action in your own workflow
+
 No local install needed. Add this to any workflow to generate profile artifacts from a config file:
 
 ```yaml
@@ -192,7 +206,7 @@ Everything about the document — cover, title-page metadata, legal page, footer
 | PDF colours (titles, tables, cover, backgrounds) | `document_metadata.colors` | `:presentation-metadata-color-*:` |
 | Page-ii legal text (copyright / license / notice) | `document_metadata.boilerplate` | `:boilerplate-authority:` |
 | Footer organisation name | `document_metadata.copyright_holder` | `:copyright-holder:` |
-| Cover layout (logo size/position, tagline/title size, bold edition) | `document_metadata.cover.{logo_width, logo_y, tagline_font_size, title_font_size, bold_edition}` | Generated cover image |
+| Cover layout (logo size/position, tagline/title/edition-date size, bold edition+date) | `document_metadata.cover.{logo_width, logo_y, tagline_font_size, title_font_size, edition_date_font_size, bold_edition}` | Generated cover image |
 | Cover date | `document_metadata.doc_pub_date` | Long-format date on the generated cover + `:published-date:` |
 | Remove the OGC logo from the legal page | `document_metadata.suppress_flavor_logo` | targeted `:pdf-stylesheet-override:` |
 | Remove OGC design (crossing lines, circled numbers, rules, navy divider pages) | `document_metadata.suppress_design_elements` (or the individual `suppress_crossing_lines` / `plain_section_numbers` / `suppress_title_underlines`) | `:pdf-stylesheet-override:` + colour attributes |
@@ -726,11 +740,12 @@ document_metadata:
     font_italic: "Source Sans Pro"  # optional italic face for the tagline
     watermark: "DRAFT"             # optional diagonal watermark stamped on the cover
     # --- cover layout (all optional) ---
-    logo_width: 200                # target logo width in px (default 420)
+    logo_width: 300                # target logo width in px (default 420)
     logo_y: 100                    # logo vertical offset from top in px (default 180)
     tagline_font_size: 20          # tagline point size (default 30)
     title_font_size: 40            # title point size (default 54)
-    bold_edition: true             # render the "Edition X" line in bold (default false)
+    edition_date_font_size: 22     # edition/date point size (default 24)
+    bold_edition: true             # render the "Edition X" and "Dated ..." lines in bold (default false)
   colors:
     text: "#000000"                # body text
     cover_text: "#1F3864"          # cover text / section numbers / ToC
