@@ -3,9 +3,12 @@
 ====
 [%metadata]
 identifier:: /req/nws_connect/pubsub-amqp
-statement:: The service SHALL support AMQP pub/sub for real-time notifications on water_gauge and wwa collections.
-part:: The service SHALL provide an AMQP broker at edr-api-desi-c.mdl.nws.noaa.gov:5672.
-part:: Clients SHALL be able to subscribe to collections/water_gauge/items/# channel.
-part:: Clients SHALL be able to subscribe to collections/wwa/items/# channel.
+statement:: The service SHALL support AMQP 1.0 and MQTT pub/sub for real-time notifications on water_gauge, wwa, and space_weather collections.
+part:: The service SHALL provide an AMQP 1.0 broker (edr-broker) on port 5672 (RabbitMQ 4.x native AMQP 1.0).
+part:: The service SHALL provide an MQTT broker (edr-broker) on port 1883 over the same amq.topic exchange.
+part:: Clients SHALL be able to consume from a queue bound to amq.topic with binding key collections.water_gauge.items.
+part:: Clients SHALL be able to consume from a queue bound to amq.topic with binding key collections.wwa.items.
+part:: Clients SHALL be able to consume from a queue bound to amq.topic with binding key collections.space_weather.items.
+part:: Clients SHALL authenticate with SASL PLAIN using their account email as the username and a named WebSocket key (wsk_...) as the password.
 part:: Notifications SHALL be published as GeoJSON features.
 ====

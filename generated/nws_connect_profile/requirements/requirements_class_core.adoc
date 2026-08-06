@@ -8,6 +8,7 @@ requirement:: /req/nws_connect/conformance
 requirement:: /req/nws_connect/collections-endpoint
 requirement:: /req/nws_connect/water-gauge-collection
 requirement:: /req/nws_connect/wwa-collection
+requirement:: /req/nws_connect/space-weather-collection
 requirement:: /req/nws_connect/cwa-collection
 requirement:: /req/nws_connect/states-collection
 requirement:: /req/nws_connect/items-by-id
@@ -15,4 +16,5 @@ requirement:: /req/nws_connect/pubsub-amqp
 requirement:: /req/nws_connect/pubsub-websocket
 requirement:: /req/nws_connect/pubsub-filters-water-gauge
 requirement:: /req/nws_connect/pubsub-filters-wwa
+requirement:: /req/nws_connect/pubsub-filters-space-weather
 ====

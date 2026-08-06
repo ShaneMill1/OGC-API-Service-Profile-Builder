@@ -3,25 +3,36 @@ info:
   title: NWS Connect Service Profile AsyncAPI
   version: '1.0'
 servers:
-  production:
-    host: edr-api-desi-c.mdl.nws.noaa.gov:5672
-    protocol: amqp
-  amqp_websocket_local:
-    description: AMQP WebSocket endpoint (local development)
-    host: 205.156.8.80:15670
+  websocket_local:
+    description: Native pygeoapi live-map WebSocket (local development)
+    host: ''
     protocol: ws
     security: []
-    variables:
-      port:
-        default: '15670'
-        enum:
-        - '15670'
-  amqp_websocket_secure:
-    description: AMQP WebSocket endpoint (production)
-    host: edr-api-c.mdl.nws.noaa.gov
+    pathname: /ws
+  websocket_secure:
+    description: Native pygeoapi live-map WebSocket (production)
+    host: ''
     protocol: wss
     security: []
-    pathname: /wifs_wss/
+    pathname: /ws
+  amqp:
+    description: 'AMQP 1.0 broker (edr-broker, RabbitMQ 4.x native AMQP 1.0). Consume
+      from a queue bound to the amq.topic exchange with binding key collections.*.items
+      (v2 source address /queues/<your-queue>; declare and bind it first). Authenticate
+      with SASL PLAIN: your account email as the username and a named WebSocket key
+      (POST /api/ws-keys, value starts with wsk_) as the password. Read-only; fire-and-forget
+      (re-hydrate current state from /collections/{id}/items on reconnect).'
+    host: edr-broker:5672
+    protocol: amqp1
+    security: []
+  mqtt:
+    description: MQTT broker (edr-broker, RabbitMQ MQTT plugin over the same amq.topic
+      exchange). Subscribe to topic collections/+/items (or a specific collections/<id>/items).
+      Authenticate with your account email as the username and a named WebSocket key
+      (wsk_...) as the password. Read-only; fire-and-forget.
+    host: edr-broker:1883
+    protocol: mqtt
+    security: []
 channels:
   water_gauge_notifications:
     address: collections/water_gauge/items/#
@@ -73,6 +84,30 @@ channels:
         description: Email address for notifications
         schema:
           type: string
+  space_weather_notifications:
+    address: collections/space_weather/items/#
+    description: Real-time notifications for space_weather
+    messages:
+      space_weatherObservation:
+        $ref: '#/components/messages/space_weatherObservation'
+    x-ogc-subscription:
+      filters:
+      - name: message_type
+        description: Filter by message type (Alert, Warning, Watch, Summary)
+        schema:
+          type: string
+      - name: scale_category
+        description: Filter by NOAA scale category (G, S, R)
+        schema:
+          type: string
+      - name: scale_level
+        description: Filter by minimum NOAA scale level (1-5)
+        schema:
+          type: number
+      - name: email
+        description: Email address for notifications
+        schema:
+          type: string
 operations:
   receive_water_gauge_update:
     action: receive
@@ -86,6 +121,12 @@ operations:
       $ref: '#/channels/wwa_notifications'
     messages:
     - $ref: '#/channels/wwa_notifications/messages/wwaObservation'
+  receive_space_weather_update:
+    action: receive
+    channel:
+      $ref: '#/channels/space_weather_notifications'
+    messages:
+    - $ref: '#/channels/space_weather_notifications/messages/space_weatherObservation'
 components:
   messages:
     water_gaugeObservation:
@@ -110,6 +151,27 @@ components:
                 type: string
                 format: date-time
     wwaObservation:
+      payload:
+        type: object
+        required:
+        - type
+        - properties
+        properties:
+          type:
+            type: string
+            const: Feature
+          properties:
+            type: object
+            required:
+            - id
+            - timestamp
+            properties:
+              id:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+    space_weatherObservation:
       payload:
         type: object
         required:

@@ -1,0 +1,14 @@
+[[ats_nws_connect_space_weather_collection]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/space-weather-collection
+target:: /req/nws_connect/space-weather-collection
+test-purpose:: Validate that space weather collection is correctly implemented.
+test-method::
+step:: Send GET request to /collections/space_weather.
+step:: Verify response contains collection metadata.
+step:: Send GET request to /collections/space_weather/items?limit=10.
+step:: Verify response Content-Type is application/geo+json.
+step:: Verify each feature contains message_type, noaa_scale, scale_category, and scale_level properties.
+====

@@ -754,12 +754,18 @@ class DocumentMetadata(BaseModel):
 
 
 class PubSubServer(BaseModel):
-    """A single pub/sub server endpoint."""
+    """A single pub/sub server endpoint.
+
+    ``protocol`` accepts the AsyncAPI protocol identifiers used by the EDR
+    Part 2 PubSub bindings: ``amqp`` (AMQP 0-9-1), ``amqp1`` (AMQP 1.0, e.g.
+    RabbitMQ 4.x native AMQP 1.0), ``mqtt``, ``kafka``, and the WebSocket
+    transports ``ws`` / ``wss``.
+    """
     name: str
     description: str = ""
     host: str
     port: int | None = None
-    protocol: Literal["amqp", "mqtt", "kafka", "ws", "wss"] = "amqp"
+    protocol: Literal["amqp", "amqp1", "mqtt", "kafka", "ws", "wss"] = "amqp"
     pathname: str | None = None
 
 
@@ -769,13 +775,22 @@ class CollectionPubSub(BaseModel):
 
 
 class PubSubConfig(BaseModel):
-    """Optional OGC API - EDR Part 2 (PubSub) configuration."""
+    """Optional OGC API - EDR Part 2 (PubSub) configuration.
+
+    When ``servers`` is populated the generated AsyncAPI uses those entries
+    verbatim (keyed by ``name``) and does not synthesise the implicit
+    ``broker_host``/``broker_port`` ``production`` server, letting a profile
+    describe its exact transport topology (e.g. a native WebSocket ``/ws``
+    endpoint plus AMQP 1.0 and MQTT brokers). When ``servers`` is empty the
+    generator falls back to emitting a single ``production`` server built from
+    ``broker_host``/``broker_port``/``protocol``.
+    """
     broker_host: str = "localhost"
     broker_port: int = Field(default=5672, ge=1, le=65535)
-    protocol: Literal["amqp", "mqtt", "kafka"] = "amqp"
+    protocol: Literal["amqp", "amqp1", "mqtt", "kafka"] = "amqp"
     collections: list[str] = Field(default_factory=list, description="Collection IDs that support PubSub")
     filters: list[SubscriptionFilter] = Field(default_factory=list)
-    servers: list[PubSubServer] = Field(default_factory=list, description="Additional server endpoints (ws, wss)")
+    servers: list[PubSubServer] = Field(default_factory=list, description="Server endpoints (ws, wss, amqp, amqp1, mqtt); when set, replaces the implicit production server")
     collection_filters: dict[str, CollectionPubSub] = Field(default_factory=dict, description="Per-collection filter overrides")
 
 

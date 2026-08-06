@@ -595,9 +595,15 @@
           "title": "Title Font Size",
           "type": "integer"
         },
+        "edition_date_font_size": {
+          "default": 24,
+          "description": "Font size of the cover page edition and date lines (rendered a little smaller than the doc number)",
+          "title": "Edition Date Font Size",
+          "type": "integer"
+        },
         "bold_edition": {
           "default": false,
-          "description": "When true, render edition in bold font",
+          "description": "When true, render both the edition and date lines in bold font",
           "title": "Bold Edition",
           "type": "boolean"
         }
@@ -2233,7 +2239,7 @@
       "type": "object"
     },
     "PubSubConfig": {
-      "description": "Optional OGC API - EDR Part 2 (PubSub) configuration.",
+      "description": "Optional OGC API - EDR Part 2 (PubSub) configuration.\n\nWhen ``servers`` is populated the generated AsyncAPI uses those entries\nverbatim (keyed by ``name``) and does not synthesise the implicit\n``broker_host``/``broker_port`` ``production`` server, letting a profile\ndescribe its exact transport topology (e.g. a native WebSocket ``/ws``\nendpoint plus AMQP 1.0 and MQTT brokers). When ``servers`` is empty the\ngenerator falls back to emitting a single ``production`` server built from\n``broker_host``/``broker_port``/``protocol``.",
       "properties": {
         "broker_host": {
           "default": "localhost",
@@ -2251,6 +2257,7 @@
           "default": "amqp",
           "enum": [
             "amqp",
+            "amqp1",
             "mqtt",
             "kafka"
           ],
@@ -2273,7 +2280,7 @@
           "type": "array"
         },
         "servers": {
-          "description": "Additional server endpoints (ws, wss)",
+          "description": "Server endpoints (ws, wss, amqp, amqp1, mqtt); when set, replaces the implicit production server",
           "items": {
             "$ref": "#/$defs/PubSubServer"
           },
@@ -2293,7 +2300,7 @@
       "type": "object"
     },
     "PubSubServer": {
-      "description": "A single pub/sub server endpoint.",
+      "description": "A single pub/sub server endpoint.\n\n``protocol`` accepts the AsyncAPI protocol identifiers used by the EDR\nPart 2 PubSub bindings: ``amqp`` (AMQP 0-9-1), ``amqp1`` (AMQP 1.0, e.g.\nRabbitMQ 4.x native AMQP 1.0), ``mqtt``, ``kafka``, and the WebSocket\ntransports ``ws`` / ``wss``.",
       "properties": {
         "name": {
           "title": "Name",
@@ -2324,6 +2331,7 @@
           "default": "amqp",
           "enum": [
             "amqp",
+            "amqp1",
             "mqtt",
             "kafka",
             "ws",

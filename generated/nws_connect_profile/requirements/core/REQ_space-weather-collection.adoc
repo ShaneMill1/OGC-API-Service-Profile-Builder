@@ -1,0 +1,11 @@
+[[req_nws_connect_space_weather_collection]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/space-weather-collection
+statement:: The space_weather collection SHALL provide GeoJSON features for NOAA SWPC space weather alerts.
+part:: The service SHALL provide a /collections/space_weather endpoint.
+part:: The service SHALL provide a /collections/space_weather/items endpoint.
+part:: The response Content-Type SHALL be application/geo+json.
+part:: Each feature SHALL include message_type, noaa_scale, scale_category, and scale_level properties.
+====

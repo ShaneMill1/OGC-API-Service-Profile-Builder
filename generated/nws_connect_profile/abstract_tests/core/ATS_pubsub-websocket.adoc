@@ -6,8 +6,7 @@ identifier:: /conf/nws_connect/pubsub-websocket
 target:: /req/nws_connect/pubsub-websocket
 test-purpose:: Validate that pubsub websocket is correctly implemented.
 test-method::
-step:: Connect to WebSocket endpoint at ws://205.156.8.80:15670.
-step:: Verify connection succeeds and supports AMQP over WebSocket.
-step:: Connect to secure WebSocket endpoint at wss://edr-api-c.mdl.nws.noaa.gov/wifs_wss/.
-step:: Verify connection succeeds and supports AMQP over WebSocket.
+step:: Connect to the native WebSocket endpoint at /ws (ws locally, wss in production).
+step:: Verify the connection succeeds and delivers GeoJSON feature notifications.
+step:: Verify notifications match those delivered over the AMQP 1.0 and MQTT transports.
 ====

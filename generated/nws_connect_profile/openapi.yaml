@@ -2,11 +2,31 @@ openapi: 3.1.0
 info:
   title: NWS Connect Service Profile
   version: '1.0'
-  description: 'OGC API - EDR Part 3 Service Profile: NWS Connect Service Profile'
+  description: 'OGC API - EDR Part 3 Service Profile for NWS Connect: real-time GeoJSON
+    notification messages for water gauge observations, NWS Weather Watches, Warnings
+    and Advisories, and NOAA SWPC space weather alerts, delivered over EDR Part 2
+    PubSub (native WebSocket, AMQP 1.0, and MQTT) alongside the standard EDR Part
+    1 Features endpoints.
+
+    '
   x-ogc-profile: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/nws_connect
-  x-keywords: []
+  x-keywords:
+  - water gauge
+  - flood
+  - weather warnings
+  - watches
+  - advisories
+  - CAP
+  - space weather
+  - SWPC
+  - real-time
+  - pubsub
   contact:
-    name: Shane Mill
+    name: NOAA/NWS/Meteorological Development Laboratory (MDL)
+    url: https://www.weather.gov/mdl/
+    email: nws.mdl.support@noaa.gov
+    x-instructions: Data provided by the National Weather Service.
+    x-country: USA
     x-organization: NOAA/NWS/MDL
 servers:
 - url: /
@@ -22,8 +42,13 @@ tags:
 - name: wwa
   description: NWS Weather Watches and Warnings from CAP (Common Alerting Protocol)
     alerts
+- name: space_weather
+  description: Alerts, warnings, watches, and summaries from the NOAA Space Weather
+    Prediction Center (SWPC). Includes geomagnetic storms (G-scale), solar radiation
+    storms (S-scale), and radio blackouts (R-scale).
 - name: cwa
   description: Geographic boundaries of NWS County Warning Areas (CWA) in WKT format
+    - NWS - CWA - boundaries - geographic
 - name: states
   description: Geographic boundaries of states within the United States
 paths:
@@ -76,6 +101,24 @@ paths:
                   title:
                     type: string
                     const: NWS Connect Service Profile
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                    contains:
+                      enum:
+                      - water gauge
+                      - flood
+                      - weather warnings
+                      - watches
+                      - advisories
+                      - CAP
+                      - space weather
+                      - SWPC
+                      - real-time
+                      - pubsub
         '400':
           description: Invalid or missing parameter
           content:
@@ -1542,11 +1585,616 @@ paths:
                     format: uri-reference
                     description: A URI reference that identifies the specific occurrence
                       of the problem.
+  /collections/space_weather:
+    get:
+      summary: Get NOAA SWPC Space Weather Alerts metadata
+      description: Alerts, warnings, watches, and summaries from the NOAA Space Weather
+        Prediction Center (SWPC). Includes geomagnetic storms (G-scale), solar radiation
+        storms (S-scale), and radio blackouts (R-scale).
+      operationId: DescribeSpaceWeatherCollection
+      tags:
+      - space_weather
+      parameters:
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: Collection metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - links
+                - extent
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  keywords:
+                    type: array
+                    items:
+                      type: string
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                  crs:
+                    type: array
+                    items:
+                      type: string
+                  output_formats:
+                    type: array
+                    items:
+                      type: string
+                  parameter_names:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required:
+                      - type
+                      - observedProperty
+                      properties:
+                        type:
+                          type: string
+                          const: Parameter
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        description:
+                          type: string
+                        data-type:
+                          type: string
+                          enum:
+                          - integer
+                          - float
+                          - string
+                        unit:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            symbol:
+                              oneOf:
+                              - type: string
+                              - type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                  type:
+                                    type: string
+                        observedProperty:
+                          type: object
+                          required:
+                          - label
+                          properties:
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            description:
+                              type: string
+                        measurementType:
+                          type: object
+                          required:
+                          - method
+                          - duration
+                          properties:
+                            method:
+                              type: string
+                            duration:
+                              type: string
+                        extent:
+                          type: object
+                      additionalProperties: true
+                  extent:
+                    type: object
+                    required:
+                    - spatial
+                    properties:
+                      spatial:
+                        type: object
+                        required:
+                        - bbox
+                        - crs
+                        properties:
+                          bbox:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 4
+                              maxItems: 6
+                          crs:
+                            type: string
+                            enum:
+                            - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                      temporal:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                oneOf:
+                                - type: string
+                                  format: date-time
+                                - type: 'null'
+                              minItems: 2
+                              maxItems: 2
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          trs:
+                            type: string
+                            enum:
+                            - http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
+                      vertical:
+                        type: object
+                        properties:
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          vrs:
+                            type: string
+                          positive:
+                            type: string
+                            enum:
+                            - up
+                            - down
+                            description: Direction in which vertical extent values
+                              increase (CF Conventions 'positive' attribute). Disambiguates
+                              interval ordering for VRS such as pressure levels.
+                      custom:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - interval
+                          - reference
+                          properties:
+                            id:
+                              type: string
+                            interval:
+                              type: array
+                              items:
+                                type: string
+                            values:
+                              type: array
+                              items:
+                                type: string
+                            reference:
+                              type: string
+                  data_queries:
+                    type: object
+                    description: Available EDR data query types for this collection
+                    additionalProperties:
+                      type: object
+                      properties:
+                        link:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                            rel:
+                              type: string
+                            variables:
+                              type: object
+                              properties:
+                                query_type:
+                                  type: string
+                                output_formats:
+                                  type: array
+                                  items:
+                                    type: string
+                                default_output_format:
+                                  type: string
+                                  description: Default output format for this data
+                                    query when f is omitted
+                                crs:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                    (shorthand for crs_details)
+                                  items:
+                                    type: string
+                                crs_details:
+                                  type: array
+                                  description: CRS values supported by this data query
+                                  items:
+                                    type: object
+                                    required:
+                                    - crs
+                                    properties:
+                                      crs:
+                                        type: string
+                                      wkt:
+                                        type: string
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+        '404':
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+        '500':
+          description: Server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+  /collections/space_weather/items:
+    get:
+      summary: Get NOAA SWPC Space Weather Alerts items
+      description: Alerts, warnings, watches, and summaries from the NOAA Space Weather
+        Prediction Center (SWPC). Includes geomagnetic storms (G-scale), solar radiation
+        storms (S-scale), and radio blackouts (R-scale).
+      operationId: GetSpaceWeatherFeatures
+      tags:
+      - space_weather
+      parameters:
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      - name: limit
+        in: query
+        required: false
+        description: Limits the number of features returned in the response.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10
+      responses:
+        '200':
+          description: Feature collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    const: FeatureCollection
+                  features:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+        '404':
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+        '500':
+          description: Server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+  /collections/space_weather/items/{featureId}:
+    get:
+      summary: Get NOAA SWPC Space Weather Alerts item by id
+      description: Alerts, warnings, watches, and summaries from the NOAA Space Weather
+        Prediction Center (SWPC). Includes geomagnetic storms (G-scale), solar radiation
+        storms (S-scale), and radio blackouts (R-scale).
+      operationId: GetSpaceWeatherFeature
+      tags:
+      - space_weather
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Feature identifier
+        schema:
+          type: string
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: Feature collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    const: FeatureCollection
+                  features:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+        '404':
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+        '500':
+          description: Server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
   /collections/cwa:
     get:
       summary: Get NWS County Warning Areas metadata
       description: Geographic boundaries of NWS County Warning Areas (CWA) in WKT
-        format
+        format - NWS - CWA - boundaries - geographic
       operationId: DescribeCwaCollection
       tags:
       - cwa
@@ -1895,7 +2543,7 @@ paths:
     get:
       summary: Get NWS County Warning Areas items
       description: Geographic boundaries of NWS County Warning Areas (CWA) in WKT
-        format
+        format - NWS - CWA - boundaries - geographic
       operationId: GetCwaFeatures
       tags:
       - cwa
@@ -2023,7 +2671,7 @@ paths:
     get:
       summary: Get NWS County Warning Areas item by id
       description: Geographic boundaries of NWS County Warning Areas (CWA) in WKT
-        format
+        format - NWS - CWA - boundaries - geographic
       operationId: GetCwaFeature
       tags:
       - cwa

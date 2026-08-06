@@ -1,0 +1,11 @@
+[[req_nws_connect_pubsub_filters_space_weather]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/pubsub-filters-space-weather
+statement:: The space_weather collection pub/sub SHALL support filtering by message type and NOAA scale.
+part:: Subscriptions SHALL accept message_type filter (Alert, Warning, Watch, Summary).
+part:: Subscriptions SHALL accept scale_category filter (G, S, R).
+part:: Subscriptions SHALL accept scale_level filter (minimum NOAA scale level 1-5).
+part:: Subscriptions SHALL accept email filter for notification delivery.
+====

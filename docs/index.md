@@ -444,12 +444,13 @@ When present, generates `asyncapi.yaml`.
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `broker_host` | string | `localhost` | Message broker hostname |
-| `broker_port` | integer | `5672` | Broker port (1–65535) |
-| `protocol` | string | `amqp` | One of `amqp`, `mqtt`, `kafka` |
+| `broker_host` | string | `localhost` | Message broker hostname (used only when `servers` is empty) |
+| `broker_port` | integer | `5672` | Broker port (1–65535, used only when `servers` is empty) |
+| `protocol` | string | `amqp` | One of `amqp`, `amqp1`, `mqtt`, `kafka` |
 | `collections` | list | all | Collection IDs that support PubSub |
 | `filters` | list | `[]` | Subscription filters (`name`, `description`, `type`) |
-| `servers` | list | `[]` | Additional server endpoints (e.g. `ws`, `wss`) |
+| `servers` | list | `[]` | Explicit server endpoints (`amqp`, `amqp1`, `mqtt`, `kafka`, `ws`, `wss`). When set, replaces the implicit `production` server built from `broker_host`/`broker_port`/`protocol` |
+| `collection_filters` | map | `{}` | Per-collection filter overrides keyed by collection ID |
 
 ---
 

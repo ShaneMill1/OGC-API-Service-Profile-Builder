@@ -2,10 +2,34 @@
   "name": "nws_connect",
   "title": "NWS Connect Service Profile",
   "version": "1.0",
-  "description": null,
-  "keywords": [],
+  "description": "OGC API - EDR Part 3 Service Profile for NWS Connect: real-time GeoJSON notification messages for water gauge observations, NWS Weather Watches, Warnings and Advisories, and NOAA SWPC space weather alerts, delivered over EDR Part 2 PubSub (native WebSocket, AMQP 1.0, and MQTT) alongside the standard EDR Part 1 Features endpoints.\n",
+  "keywords": [
+    "water gauge",
+    "flood",
+    "weather warnings",
+    "watches",
+    "advisories",
+    "CAP",
+    "space weather",
+    "SWPC",
+    "real-time",
+    "pubsub"
+  ],
   "server_url": "https://edr-api-desi-c.mdl.nws.noaa.gov/nws_connect_pygeoapi",
-  "provider": null,
+  "provider": {
+    "name": "NOAA/NWS/Meteorological Development Laboratory (MDL)",
+    "url": "https://www.weather.gov/mdl/",
+    "contact": {
+      "email": "nws.mdl.support@noaa.gov",
+      "phone": null,
+      "hours": null,
+      "instructions": "Data provided by the National Weather Service.",
+      "address": null,
+      "postalcode": null,
+      "city": null,
+      "country": "USA"
+    }
+  },
   "classification": null,
   "metadata_date": null,
   "resource_service_publish_date": null,
@@ -304,15 +328,166 @@
       "parameter_schema": null
     },
     {
+      "id": "space_weather",
+      "title": "NOAA SWPC Space Weather Alerts",
+      "description": "Alerts, warnings, watches, and summaries from the NOAA Space Weather Prediction Center (SWPC). Includes geomagnetic storms (G-scale), solar radiation storms (S-scale), and radio blackouts (R-scale).",
+      "keywords": [
+        "space weather",
+        "SWPC",
+        "geomagnetic",
+        "solar",
+        "radio blackout",
+        "alerts"
+      ],
+      "links": [
+        {
+          "href": "https://edr-api-desi-c.mdl.nws.noaa.gov/nws_connect_pygeoapi/collections/space_weather",
+          "hreflang": null,
+          "rel": "self",
+          "type": "application/json",
+          "title": null,
+          "length": null,
+          "templated": null,
+          "variables": null
+        },
+        {
+          "href": "https://www.swpc.noaa.gov/products/alerts-watches-and-warnings",
+          "hreflang": null,
+          "rel": "related",
+          "type": "text/html",
+          "title": "SWPC Alerts, Watches and Warnings",
+          "length": null,
+          "templated": null,
+          "variables": null
+        }
+      ],
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180.0,
+              -90.0,
+              180.0,
+              90.0
+            ]
+          ],
+          "crs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+        },
+        "temporal": {
+          "interval": [
+            [
+              "2024-01-01T00:00:00Z",
+              "2025-12-31T23:59:59Z"
+            ]
+          ],
+          "values": [
+            "2024-01-01T00:00:00Z/2025-12-31T23:59:59Z"
+          ],
+          "trs": "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+        },
+        "vertical": null,
+        "custom": null
+      },
+      "data_queries": null,
+      "crs": null,
+      "output_formats": null,
+      "parameter_names": {
+        "message_type": {
+          "type": "Parameter",
+          "id": "message_type",
+          "label": null,
+          "description": "Type of space weather message (Alert, Warning, Watch, Summary)",
+          "dataType": null,
+          "unit": {
+            "id": null,
+            "label": "category",
+            "symbol": "category"
+          },
+          "observedProperty": {
+            "id": "message_type",
+            "label": "Message Type",
+            "description": null,
+            "categories": null
+          },
+          "extent": null,
+          "measurementType": null
+        },
+        "noaa_scale": {
+          "type": "Parameter",
+          "id": "noaa_scale",
+          "label": null,
+          "description": "NOAA Space Weather Scale designation (G1-G5, S1-S5, R1-R5)",
+          "dataType": null,
+          "unit": {
+            "id": null,
+            "label": "category",
+            "symbol": "category"
+          },
+          "observedProperty": {
+            "id": "noaa_scale",
+            "label": "NOAA Scale",
+            "description": null,
+            "categories": null
+          },
+          "extent": null,
+          "measurementType": null
+        },
+        "scale_category": {
+          "type": "Parameter",
+          "id": "scale_category",
+          "label": null,
+          "description": "Scale category letter (G=Geomagnetic, S=Solar Radiation, R=Radio Blackout)",
+          "dataType": null,
+          "unit": {
+            "id": null,
+            "label": "category",
+            "symbol": "category"
+          },
+          "observedProperty": {
+            "id": "scale_category",
+            "label": "Scale Category",
+            "description": null,
+            "categories": null
+          },
+          "extent": null,
+          "measurementType": null
+        },
+        "scale_level": {
+          "type": "Parameter",
+          "id": "scale_level",
+          "label": null,
+          "description": "Numeric severity level (1=Minor through 5=Extreme)",
+          "dataType": null,
+          "unit": {
+            "id": null,
+            "label": "level",
+            "symbol": "level"
+          },
+          "observedProperty": {
+            "id": "scale_level",
+            "label": "Scale Level",
+            "description": null,
+            "categories": null
+          },
+          "extent": null,
+          "measurementType": null
+        }
+      },
+      "distanceunits": null,
+      "post_queries": null,
+      "classification": null,
+      "provider": null,
+      "metadata_date": null,
+      "resource_service_publish_date": null,
+      "resource_default_locale": null,
+      "conformance_classes": [],
+      "parameter_schema": null
+    },
+    {
       "id": "cwa",
       "title": "NWS County Warning Areas",
-      "description": "Geographic boundaries of NWS County Warning Areas (CWA) in WKT format",
-      "keywords": [
-        "NWS",
-        "CWA",
-        "boundaries",
-        "geographic"
-      ],
+      "description": "Geographic boundaries of NWS County Warning Areas (CWA) in WKT format - NWS - CWA - boundaries - geographic",
+      "keywords": null,
       "links": [
         {
           "href": "https://edr-api-desi-c.mdl.nws.noaa.gov/nws_connect_pygeoapi/collections/cwa",
@@ -464,10 +639,10 @@
     },
     {
       "id": "collections-endpoint",
-      "statement": "The service SHALL provide a /collections endpoint listing all four collections.",
+      "statement": "The service SHALL provide a /collections endpoint listing all collections.",
       "parts": [
         "The service SHALL provide a /collections endpoint.",
-        "The response SHALL include water_gauge, wwa, cwa, and states collections.",
+        "The response SHALL include water_gauge, wwa, space_weather, cwa, and states collections.",
         "Each collection SHALL have id, title, description, extent, and links properties."
       ],
       "conformance_class": null
@@ -493,6 +668,17 @@
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL include CAP_info_event, CAP_info_severity, CAP_info_urgency, and CAP_status properties.",
         "Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon."
+      ],
+      "conformance_class": null
+    },
+    {
+      "id": "space-weather-collection",
+      "statement": "The space_weather collection SHALL provide GeoJSON features for NOAA SWPC space weather alerts.",
+      "parts": [
+        "The service SHALL provide a /collections/space_weather endpoint.",
+        "The service SHALL provide a /collections/space_weather/items endpoint.",
+        "The response Content-Type SHALL be application/geo+json.",
+        "Each feature SHALL include message_type, noaa_scale, scale_category, and scale_level properties."
       ],
       "conformance_class": null
     },
@@ -532,22 +718,25 @@
     },
     {
       "id": "pubsub-amqp",
-      "statement": "The service SHALL support AMQP pub/sub for real-time notifications on water_gauge and wwa collections.",
+      "statement": "The service SHALL support AMQP 1.0 and MQTT pub/sub for real-time notifications on water_gauge, wwa, and space_weather collections.",
       "parts": [
-        "The service SHALL provide an AMQP broker at edr-api-desi-c.mdl.nws.noaa.gov:5672.",
-        "Clients SHALL be able to subscribe to collections/water_gauge/items/# channel.",
-        "Clients SHALL be able to subscribe to collections/wwa/items/# channel.",
+        "The service SHALL provide an AMQP 1.0 broker (edr-broker) on port 5672 (RabbitMQ 4.x native AMQP 1.0).",
+        "The service SHALL provide an MQTT broker (edr-broker) on port 1883 over the same amq.topic exchange.",
+        "Clients SHALL be able to consume from a queue bound to amq.topic with binding key collections.water_gauge.items.",
+        "Clients SHALL be able to consume from a queue bound to amq.topic with binding key collections.wwa.items.",
+        "Clients SHALL be able to consume from a queue bound to amq.topic with binding key collections.space_weather.items.",
+        "Clients SHALL authenticate with SASL PLAIN using their account email as the username and a named WebSocket key (wsk_...) as the password.",
         "Notifications SHALL be published as GeoJSON features."
       ],
       "conformance_class": null
     },
     {
       "id": "pubsub-websocket",
-      "statement": "The service SHALL support WebSocket pub/sub endpoints for browser clients.",
+      "statement": "The service SHALL support a native WebSocket pub/sub endpoint for browser clients.",
       "parts": [
-        "The service SHALL provide a WebSocket endpoint at ws://205.156.8.80:15670 for local development.",
-        "The service SHALL provide a secure WebSocket endpoint at wss://edr-api-c.mdl.nws.noaa.gov/wifs_wss/ for production.",
-        "WebSocket connections SHALL support AMQP protocol over WebSocket."
+        "The service SHALL provide a WebSocket endpoint at /ws for local development (ws) and production (wss).",
+        "The WebSocket endpoint SHALL deliver the same GeoJSON feature notifications as the AMQP 1.0 and MQTT transports.",
+        "WebSocket connections SHALL authenticate with the same identity used for the AMQP/MQTT transports."
       ],
       "conformance_class": null
     },
@@ -572,6 +761,17 @@
         "Subscriptions SHALL accept email filter for notification delivery."
       ],
       "conformance_class": null
+    },
+    {
+      "id": "pubsub-filters-space-weather",
+      "statement": "The space_weather collection pub/sub SHALL support filtering by message type and NOAA scale.",
+      "parts": [
+        "Subscriptions SHALL accept message_type filter (Alert, Warning, Watch, Summary).",
+        "Subscriptions SHALL accept scale_category filter (G, S, R).",
+        "Subscriptions SHALL accept scale_level filter (minimum NOAA scale level 1-5).",
+        "Subscriptions SHALL accept email filter for notification delivery."
+      ],
+      "conformance_class": null
     }
   ],
   "abstract_tests": [
@@ -590,7 +790,7 @@
       "steps": [
         "Send GET request to /collections.",
         "Verify response contains collections array.",
-        "Verify water_gauge, wwa, cwa, and states are present in the collections array.",
+        "Verify water_gauge, wwa, space_weather, cwa, and states are present in the collections array.",
         "Verify each collection has id, title, description, extent, and links."
       ]
     },
@@ -616,6 +816,17 @@
         "Verify response Content-Type is application/geo+json.",
         "Verify each feature contains CAP_info_event, CAP_info_severity, CAP_info_urgency, and CAP_status properties.",
         "Verify each feature geometry type is Polygon or MultiPolygon."
+      ]
+    },
+    {
+      "id": "space-weather-collection",
+      "requirement_id": "space-weather-collection",
+      "steps": [
+        "Send GET request to /collections/space_weather.",
+        "Verify response contains collection metadata.",
+        "Send GET request to /collections/space_weather/items?limit=10.",
+        "Verify response Content-Type is application/geo+json.",
+        "Verify each feature contains message_type, noaa_scale, scale_category, and scale_level properties."
       ]
     },
     {
@@ -658,10 +869,12 @@
       "id": "pubsub-amqp",
       "requirement_id": "pubsub-amqp",
       "steps": [
-        "Connect to AMQP broker at edr-api-desi-c.mdl.nws.noaa.gov:5672.",
-        "Subscribe to collections/water_gauge/items/# channel.",
+        "Connect to the AMQP 1.0 broker (edr-broker) on port 5672 using SASL PLAIN (email + wsk_ key).",
+        "Declare a queue and bind it to the amq.topic exchange with binding key collections.water_gauge.items.",
         "Verify notifications are received as GeoJSON features.",
-        "Subscribe to collections/wwa/items/# channel.",
+        "Bind a queue to amq.topic with binding key collections.wwa.items.",
+        "Verify notifications are received as GeoJSON features.",
+        "Connect to the MQTT broker (edr-broker) on port 1883 and subscribe to topic collections/+/items.",
         "Verify notifications are received as GeoJSON features."
       ]
     },
@@ -669,10 +882,9 @@
       "id": "pubsub-websocket",
       "requirement_id": "pubsub-websocket",
       "steps": [
-        "Connect to WebSocket endpoint at ws://205.156.8.80:15670.",
-        "Verify connection succeeds and supports AMQP over WebSocket.",
-        "Connect to secure WebSocket endpoint at wss://edr-api-c.mdl.nws.noaa.gov/wifs_wss/.",
-        "Verify connection succeeds and supports AMQP over WebSocket."
+        "Connect to the native WebSocket endpoint at /ws (ws locally, wss in production).",
+        "Verify the connection succeeds and delivers GeoJSON feature notifications.",
+        "Verify notifications match those delivered over the AMQP 1.0 and MQTT transports."
       ]
     },
     {
@@ -698,33 +910,62 @@
         "Subscribe with cwa filter set to a specific CWA code.",
         "Verify only notifications for that CWA are received."
       ]
+    },
+    {
+      "id": "pubsub-filters-space-weather",
+      "requirement_id": "pubsub-filters-space-weather",
+      "steps": [
+        "Subscribe to collections/space_weather/items/# with message_type filter set to \"Warning\".",
+        "Verify only notifications matching the specified message type are received.",
+        "Subscribe with scale_category filter set to \"G\".",
+        "Verify only geomagnetic-storm notifications are received.",
+        "Subscribe with scale_level filter set to 3.",
+        "Verify only notifications at or above NOAA scale level 3 are received."
+      ]
     }
   ],
   "pubsub": {
-    "broker_host": "edr-api-desi-c.mdl.nws.noaa.gov",
+    "broker_host": "edr-broker",
     "broker_port": 5672,
-    "protocol": "amqp",
+    "protocol": "amqp1",
     "collections": [
       "water_gauge",
-      "wwa"
+      "wwa",
+      "space_weather"
     ],
     "filters": [],
     "servers": [
       {
-        "name": "amqp_websocket_local",
-        "description": "AMQP WebSocket endpoint (local development)",
-        "host": "205.156.8.80",
-        "port": 15670,
+        "name": "websocket_local",
+        "description": "Native pygeoapi live-map WebSocket (local development)",
+        "host": "",
+        "port": null,
         "protocol": "ws",
+        "pathname": "/ws"
+      },
+      {
+        "name": "websocket_secure",
+        "description": "Native pygeoapi live-map WebSocket (production)",
+        "host": "",
+        "port": null,
+        "protocol": "wss",
+        "pathname": "/ws"
+      },
+      {
+        "name": "amqp",
+        "description": "AMQP 1.0 broker (edr-broker, RabbitMQ 4.x native AMQP 1.0). Consume from a queue bound to the amq.topic exchange with binding key collections.*.items (v2 source address /queues/<your-queue>; declare and bind it first). Authenticate with SASL PLAIN: your account email as the username and a named WebSocket key (POST /api/ws-keys, value starts with wsk_) as the password. Read-only; fire-and-forget (re-hydrate current state from /collections/{id}/items on reconnect).",
+        "host": "edr-broker:5672",
+        "port": null,
+        "protocol": "amqp1",
         "pathname": null
       },
       {
-        "name": "amqp_websocket_secure",
-        "description": "AMQP WebSocket endpoint (production)",
-        "host": "edr-api-c.mdl.nws.noaa.gov",
+        "name": "mqtt",
+        "description": "MQTT broker (edr-broker, RabbitMQ MQTT plugin over the same amq.topic exchange). Subscribe to topic collections/+/items (or a specific collections/<id>/items). Authenticate with your account email as the username and a named WebSocket key (wsk_...) as the password. Read-only; fire-and-forget.",
+        "host": "edr-broker:1883",
         "port": null,
-        "protocol": "wss",
-        "pathname": "/wifs_wss/"
+        "protocol": "mqtt",
+        "pathname": null
       }
     ],
     "collection_filters": {
@@ -768,6 +1009,30 @@
             "name": "cwa",
             "description": "Filter by County Warning Area code",
             "type": "string"
+          },
+          {
+            "name": "email",
+            "description": "Email address for notifications",
+            "type": "string"
+          }
+        ]
+      },
+      "space_weather": {
+        "filters": [
+          {
+            "name": "message_type",
+            "description": "Filter by message type (Alert, Warning, Watch, Summary)",
+            "type": "string"
+          },
+          {
+            "name": "scale_category",
+            "description": "Filter by NOAA scale category (G, S, R)",
+            "type": "string"
+          },
+          {
+            "name": "scale_level",
+            "description": "Filter by minimum NOAA scale level (1-5)",
+            "type": "number"
           },
           {
             "name": "email",

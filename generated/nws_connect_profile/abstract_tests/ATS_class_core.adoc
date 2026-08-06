@@ -8,6 +8,7 @@ abstract-test:: /conf/nws_connect/conformance
 abstract-test:: /conf/nws_connect/collections-endpoint
 abstract-test:: /conf/nws_connect/water-gauge-collection
 abstract-test:: /conf/nws_connect/wwa-collection
+abstract-test:: /conf/nws_connect/space-weather-collection
 abstract-test:: /conf/nws_connect/cwa-collection
 abstract-test:: /conf/nws_connect/states-collection
 abstract-test:: /conf/nws_connect/items-by-id
@@ -15,4 +16,5 @@ abstract-test:: /conf/nws_connect/pubsub-amqp
 abstract-test:: /conf/nws_connect/pubsub-websocket
 abstract-test:: /conf/nws_connect/pubsub-filters-water-gauge
 abstract-test:: /conf/nws_connect/pubsub-filters-wwa
+abstract-test:: /conf/nws_connect/pubsub-filters-space-weather
 ====

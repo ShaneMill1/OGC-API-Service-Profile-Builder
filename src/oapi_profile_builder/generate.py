@@ -1405,13 +1405,16 @@ def build_asyncapi(profile: ServiceProfile) -> dict:
             }
         }
 
-    # Build servers: default production + additional servers
-    servers = {
-        "production": {
+    # Build servers. When the profile lists explicit servers, use those
+    # verbatim so it can describe its exact transport topology (WebSocket /ws,
+    # AMQP 1.0, MQTT, ...). Otherwise synthesise a single implicit production
+    # server from broker_host/broker_port/protocol.
+    servers: dict = {}
+    if not pub.servers:
+        servers["production"] = {
             "host": f"{pub.broker_host}:{pub.broker_port}",
             "protocol": pub.protocol,
         }
-    }
     for srv in pub.servers:
         server_def = {
             "description": srv.description,
@@ -1419,8 +1422,6 @@ def build_asyncapi(profile: ServiceProfile) -> dict:
             "protocol": srv.protocol,
             "security": [],
         }
-        if srv.port:
-            server_def["variables"] = {"port": {"default": str(srv.port), "enum": [str(srv.port)]}}
         if srv.pathname:
             server_def["pathname"] = srv.pathname
         servers[srv.name] = server_def

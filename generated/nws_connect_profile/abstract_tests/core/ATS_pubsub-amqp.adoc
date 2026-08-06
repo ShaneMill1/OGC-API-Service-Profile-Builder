@@ -6,9 +6,11 @@ identifier:: /conf/nws_connect/pubsub-amqp
 target:: /req/nws_connect/pubsub-amqp
 test-purpose:: Validate that pubsub amqp is correctly implemented.
 test-method::
-step:: Connect to AMQP broker at edr-api-desi-c.mdl.nws.noaa.gov:5672.
-step:: Subscribe to collections/water_gauge/items/# channel.
+step:: Connect to the AMQP 1.0 broker (edr-broker) on port 5672 using SASL PLAIN (email + wsk_ key).
+step:: Declare a queue and bind it to the amq.topic exchange with binding key collections.water_gauge.items.
 step:: Verify notifications are received as GeoJSON features.
-step:: Subscribe to collections/wwa/items/# channel.
+step:: Bind a queue to amq.topic with binding key collections.wwa.items.
+step:: Verify notifications are received as GeoJSON features.
+step:: Connect to the MQTT broker (edr-broker) on port 1883 and subscribe to topic collections/+/items.
 step:: Verify notifications are received as GeoJSON features.
 ====

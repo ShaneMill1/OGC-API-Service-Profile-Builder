@@ -1,8 +1,23 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.6.0] - 2026-08-06
+
+Aligns the PubSub (EDR Part 2) modelling with multi-transport deployments and refreshes the NWS Connect example.
+
+### Added
+
+- **`amqp1` protocol** on both `PubSubConfig.protocol` and `PubSubServer.protocol`: AsyncAPI protocol identifier for **AMQP 1.0** (e.g. RabbitMQ 4.x native AMQP 1.0), distinct from the AMQP 0-9-1 `amqp` binding. `PubSubServer.protocol` continues to also accept `mqtt`, `kafka`, `ws`, and `wss`.
+
+### Changed
+
+- **Explicit `pubsub.servers` now replace the implicit `production` server.** Previously `build_asyncapi()` always emitted a synthetic `production` server from `broker_host`/`broker_port`/`protocol` *and* appended the listed `servers`. When a profile lists `servers`, the generated AsyncAPI now uses exactly those (keyed by `name`), so a profile can describe its precise transport topology — a native WebSocket `/ws` endpoint plus AMQP 1.0 and MQTT brokers — without a spurious `production` entry. When `servers` is empty the implicit `production` server is still synthesised, so existing single-server profiles are unaffected. The per-server `variables.port` block is no longer emitted (the port is carried inline in `host`).
+- **`examples/nws_connect_profile.yaml` is now the single, unified NWS Connect service profile.** It describes **all** collections the NWS Connect service exposes — `water_gauge`, `wwa`, **`space_weather`**, `cwa`, and `states` — with PubSub over `water_gauge`, `wwa`, and `space_weather`. This replaces the previous split where the deployed service advertised three separate per-collection profiles (`water-gauge-profile`, `watches_warnings_advisories`, `space_weather`). Deployed services now reference this one profile document via a `rel: profile` link (see the pygeoapi `config.yaml`), pointing at the copy hosted in this repo (`generated/nws_connect_profile/`) rather than self-hosting a fork. The `pubsub` transports model the real deployment — native `/ws` WebSocket (`ws`/`wss`), AMQP 1.0 on `edr-broker:5672`, and MQTT on `edr-broker:1883`, all authenticated with SASL PLAIN (account email + `wsk_` WebSocket key) — replacing the retired AMQP-over-WebSocket (`205.156.8.80:15670`, `/wifs_wss/`) topology. Added a service-level `description`, `keywords`, and `provider` (NOAA/NWS/MDL) block. Regenerated its artifacts.
+- Regenerated `profile.schema.json` from the current models.
+
 ## [3.5.0] - 2026-07-17
 
 Addresses the MetOcean EDR Profile (OGC 26-027, Draft) gap analysis (issue #10) — targeted additions to close the incremental gaps against the profile's requirements classes, plus support for modelling a multi-class profile document in one config. All new fields are opt-in and config is backward compatible; existing profiles validate and generate unchanged (generated OpenAPI error/locations responses do change — see below).
+
 
 ### Changed
 

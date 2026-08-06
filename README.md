@@ -662,13 +662,47 @@ When present, generates `asyncapi.yaml` alongside `openapi.yaml`.
 pubsub:
   broker_host: my-broker.example.com
   broker_port: 5672
-  protocol: amqp          # amqp | mqtt | kafka
+  protocol: amqp          # amqp | amqp1 | mqtt | kafka
   collections:
     - my_collection
   filters:
     - name: station
       description: Filter by station ID
       type: string
+```
+
+`broker_host`/`broker_port`/`protocol` synthesise a single implicit
+`production` AsyncAPI server. To describe an exact transport topology instead —
+e.g. a native WebSocket `/ws` endpoint plus AMQP 1.0 and MQTT brokers, as the
+`nws_connect_profile.yaml` example does — list them explicitly under `servers`.
+When `servers` is set, the implicit `production` server is **not** emitted:
+
+```yaml
+pubsub:
+  broker_host: edr-broker
+  broker_port: 5672
+  protocol: amqp1         # AMQP 1.0 (e.g. RabbitMQ 4.x native)
+  collections: [water_gauge, wwa]
+  servers:
+    - name: websocket_secure
+      description: Native WebSocket live map (production)
+      host: ''
+      protocol: wss       # amqp | amqp1 | mqtt | kafka | ws | wss
+      pathname: /ws
+    - name: amqp
+      description: AMQP 1.0 broker (RabbitMQ 4.x native AMQP 1.0)
+      host: 'edr-broker:5672'
+      protocol: amqp1
+    - name: mqtt
+      description: MQTT broker (RabbitMQ MQTT plugin)
+      host: 'edr-broker:1883'
+      protocol: mqtt
+  collection_filters:     # per-collection filter overrides
+    water_gauge:
+      filters:
+        - name: flood_stages
+          description: Alert for selected flood stages
+          type: array
 ```
 
 ---

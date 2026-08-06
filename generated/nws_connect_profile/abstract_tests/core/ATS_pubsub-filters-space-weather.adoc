@@ -1,0 +1,15 @@
+[[ats_nws_connect_pubsub_filters_space_weather]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/pubsub-filters-space-weather
+target:: /req/nws_connect/pubsub-filters-space-weather
+test-purpose:: Validate that pubsub filters space weather is correctly implemented.
+test-method::
+step:: Subscribe to collections/space_weather/items/# with message_type filter set to "Warning".
+step:: Verify only notifications matching the specified message type are received.
+step:: Subscribe with scale_category filter set to "G".
+step:: Verify only geomagnetic-storm notifications are received.
+step:: Subscribe with scale_level filter set to 3.
+step:: Verify only notifications at or above NOAA scale level 3 are received.
+====
