@@ -10,7 +10,9 @@ Generate OGC API - EDR Part 3 Service Profile artifacts from a YAML config — O
 ## Quick Start
 
 ```bash
-pip install oapi-profile-builder
+# Base install. Adds Pillow (cover image generation) with the [pdf] extra —
+# required whenever your profile sets document_metadata.cover.logo.
+pip install 'oapi-profile-builder[pdf]'
 
 # Copy an example config and edit it
 cp examples/minimal_profile.yaml my_profile.yaml
@@ -139,8 +141,18 @@ OGC API - EDR CITE Results
 Anyone with a GitHub account can generate artifacts from their own config without cloning or installing anything:
 
 1. Open a new issue using the **"Generate profile artifacts"** template ([New issue](../../issues/new/choose)).
-2. Paste your profile YAML into the config field and submit.
-3. A workflow validates the config, generates the artifacts, and comments on the issue with a link to download them as a zip (retained for 14 days). Optionally tick "Compile a PDF?" to also get a Metanorma PDF.
+2. Paste your profile YAML into the config field.
+3. If your profile references local files (typically a cover logo via `document_metadata.cover.logo`), drag-and-drop them into the **"Additional assets (optional)"** field. Reference each uploaded file in your YAML as `uploads/<original-filename>` — for example:
+
+    ```yaml
+    document_metadata:
+      cover:
+        logo: uploads/my_logo.png
+    ```
+
+    The workflow downloads each dropped file into `./uploads/` before generation. It parses your YAML to figure out the target filename, so images that GitHub renders as an `<img>` tag with a UUID URL still land at the exact path your config references. Tip: to skip the upload entirely for the DGIWG logo, point at the copy that already ships in this repo: `logo: examples/assets/DGIWG_logo.png`.
+4. Tick "Compile a PDF?" if you also want a Metanorma PDF, then submit.
+5. A workflow validates the config, generates the artifacts, and comments on the issue with a link to download them as a zip (retained for 14 days).
 
 The workflow only runs the generator over your declarative config — it never executes user-supplied code — and comments back on both success and failure. Don't paste secrets: the artifacts are attached to a public workflow run.
 
@@ -765,7 +777,9 @@ Two `document_metadata` blocks let you rebrand the PDF (e.g. for DGIWG) without 
 document_metadata:
   doc_number: "DGIWG 134"
   cover:
-    logo: assets/dgiwg_logo.png    # path relative to the working directory (or absolute)
+    logo: examples/assets/DGIWG_logo.png    # path relative to the working directory (or absolute).
+                                            # From the self-service issue form use uploads/<file>
+                                            # instead and drag-drop the file into "Additional assets".
     tagline: Delivering Military Advantage through multi-national geospatial interoperability
     background: "#FFFFFF"          # optional cover background (default white)
     text_color: "#1F3864"          # optional cover text colour (default black)

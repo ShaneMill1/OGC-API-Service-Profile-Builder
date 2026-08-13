@@ -528,7 +528,7 @@ document_metadata:
   suppress_flavor_logo: true
   suppress_design_elements: true
   cover:
-    logo: assets/dgiwg_logo.png
+    logo: examples/assets/DGIWG_logo.png
     tagline: Delivering Military Advantage through multi-national geospatial interoperability
     logo_width: 300
     logo_y: 100
