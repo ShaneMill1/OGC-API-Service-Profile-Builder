@@ -65,19 +65,22 @@ runs:
       shell: bash
       run: |
         VERSION="${{ inputs.version }}"
+        # Always install the [pdf] extra so cover-image generation (Pillow) works
+        # whenever a profile sets document_metadata.cover.logo, regardless of
+        # whether --pdf is requested.
         if [ "$VERSION" = "latest" ]; then
-          pip install oapi-profile-builder
+          pip install 'oapi-profile-builder[pdf]'
         else
           # Retry to tolerate PyPI index propagation delay right after publish.
           for attempt in 1 2 3 4 5; do
-            if pip install "oapi-profile-builder==$VERSION"; then
+            if pip install "oapi-profile-builder[pdf]==$VERSION"; then
               break
             fi
             echo "pip install attempt $attempt failed; waiting for PyPI propagation..."
             sleep 15
           done
           # Final attempt surfaces a real error if the version truly isn't available.
-          pip show oapi-profile-builder | grep -q "Version: $VERSION" || pip install "oapi-profile-builder==$VERSION"
+          pip show oapi-profile-builder | grep -q "Version: $VERSION" || pip install "oapi-profile-builder[pdf]==$VERSION"
         fi
 
     - name: Validate profile config

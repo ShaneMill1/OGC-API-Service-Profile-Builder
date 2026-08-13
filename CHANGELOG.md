@@ -1,5 +1,13 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.6.1] - 2026-08-13
+
+Fixes the self-service GitHub Action workflow when a profile sets `document_metadata.cover.logo`.
+
+### Fixed
+
+- **`action.yml` now installs the `[pdf]` extra unconditionally.** Previously the composite action ran `pip install oapi-profile-builder`, which omits Pillow. Any profile setting `document_metadata.cover.logo` (used by every profile with a cover image) then failed in `build_cover_image` with `ModuleNotFoundError: No module named 'PIL'`, aborting both the plain generate step and the optional `--pdf` step. The action now installs `oapi-profile-builder[pdf]` so cover-image generation succeeds regardless of whether `pdf: 'true'` is set on the workflow input.
+
 ## [3.6.0] - 2026-08-06
 
 Aligns the PubSub (EDR Part 2) modelling with multi-transport deployments and refreshes the NWS Connect example.
