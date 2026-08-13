@@ -76,6 +76,72 @@ jobs:
           print(pathlib.Path("user_config.yaml").read_text())
           PY
 
+      - name: Download attached assets into ./uploads
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          # Auth so private-repo user-attachments URLs resolve. Public-repo
+          # attachments don't need it, but sending the header is harmless.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import os, re, pathlib, urllib.parse, subprocess, sys
+
+          body = os.environ["ISSUE_BODY"].replace("\r\n", "\n")
+
+          # The "Additional assets" section starts at that heading and runs
+          # until the next `### ` heading. GitHub renders the issue-form
+          # section labels as `### <label>`.
+          m = re.search(
+              r"###\s*Additional assets.*?\n(.*?)(?=\n###\s|\Z)",
+              body,
+              re.S | re.I,
+          )
+          section = m.group(1) if m else ""
+
+          # Collect every user-attachment / user-images URL in that section.
+          # Two host patterns are used by GitHub's drag-drop uploader.
+          url_re = re.compile(
+              r"https?://(?:github\.com/user-attachments/assets|"
+              r"user-images\.githubusercontent\.com)/[^\s)\"'<>]+",
+              re.I,
+          )
+          urls = list(dict.fromkeys(url_re.findall(section)))
+          if not urls:
+              print("No attachments detected; skipping asset download.")
+              sys.exit(0)
+
+          uploads = pathlib.Path("uploads")
+          uploads.mkdir(exist_ok=True)
+
+          token = os.environ.get("GH_TOKEN", "")
+          for url in urls:
+              # Strip a trailing ')' left over from Markdown link syntax that
+              # our regex kept because ')' is not in its stopset (it is, but
+              # only inside a character class — keep this belt-and-braces).
+              url = url.rstrip(").,;")
+              # Filename = last path segment; user-attachments preserves the
+              # original filename after a UUID segment.
+              path = urllib.parse.urlparse(url).path
+              name = pathlib.Path(urllib.parse.unquote(path)).name
+              if not name:
+                  print(f"::warning::Skipping URL with no filename: {url}")
+                  continue
+              dest = uploads / name
+              print(f"Downloading {url} -> {dest}")
+              cmd = [
+                  "curl", "-fsSL",
+                  "-H", f"Authorization: Bearer {token}",
+                  "-H", "Accept: application/octet-stream",
+                  "-o", str(dest),
+                  url,
+              ]
+              subprocess.run(cmd, check=True)
+
+          print("--- ./uploads/ ---")
+          for p in sorted(uploads.iterdir()):
+              print(f"  {p.name}  ({p.stat().st_size} bytes)")
+          PY
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -132,7 +198,11 @@ jobs:
                   '',
                   `See the logs for details: ${runUrl}`,
                   '',
-                  'Common causes: invalid YAML or a config that fails validation. Fix the configuration and edit this issue to try again.',
+                  'Common causes:',
+                  '- Invalid YAML or a config that fails validation.',
+                  '- A `document_metadata.cover.logo` (or any other local file path) that references a file the workflow can\'t see. Drag-and-drop the file into the **Additional assets** box and reference it as `uploads/<filename>` in your YAML.',
+                  '',
+                  'Fix the configuration and edit this issue to try again.',
                 ].join('\n');
             await github.rest.issues.createComment({
               owner: context.repo.owner,

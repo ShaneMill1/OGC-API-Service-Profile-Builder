@@ -28,6 +28,31 @@ body:
         # ... rest of your config ...
     validations:
       required: true
+  - type: textarea
+    id: assets
+    attributes:
+      label: Additional assets (optional)
+      description: |
+        If your profile references local files — for example a cover logo via
+        `document_metadata.cover.logo` — drag-and-drop them into the box below.
+        GitHub will upload each file and insert a Markdown link; do not edit
+        those links.
+
+        **Reference each uploaded file in your YAML as `uploads/<original-filename>`.**
+        For example, if you drop `my_logo.png` here, set:
+
+        ```yaml
+        document_metadata:
+          cover:
+            logo: uploads/my_logo.png
+        ```
+
+        Supported by GitHub's drag-and-drop uploader: PNG, JPG, GIF, SVG, PDF,
+        ZIP, and a few others. Leave this empty if your profile has no local
+        file references.
+      placeholder: Drag-and-drop files here...
+    validations:
+      required: false
   - type: dropdown
     id: pdf
     attributes:
