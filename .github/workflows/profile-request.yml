@@ -76,6 +76,14 @@ jobs:
           print(pathlib.Path("user_config.yaml").read_text())
           PY
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install helper dependencies (PyYAML for attachment binding)
+        run: pip install pyyaml
+
       - name: Download attached assets into ./uploads
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
@@ -84,68 +92,237 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 - <<'PY'
-          import os, re, pathlib, urllib.parse, subprocess, sys
+          import os, re, pathlib, urllib.parse, subprocess, sys, yaml
 
           body = os.environ["ISSUE_BODY"].replace("\r\n", "\n")
 
           # The "Additional assets" section starts at that heading and runs
-          # until the next `### ` heading. GitHub renders the issue-form
-          # section labels as `### <label>`.
+          # until the next `### ` heading. GitHub renders issue-form section
+          # labels as `### <label>`.
           m = re.search(
               r"###\s*Additional assets.*?\n(.*?)(?=\n###\s|\Z)",
-              body,
-              re.S | re.I,
+              body, re.S | re.I,
           )
           section = m.group(1) if m else ""
 
-          # Collect every user-attachment / user-images URL in that section.
-          # Two host patterns are used by GitHub's drag-drop uploader.
-          url_re = re.compile(
-              r"https?://(?:github\.com/user-attachments/assets|"
-              r"user-images\.githubusercontent\.com)/[^\s)\"'<>]+",
-              re.I,
+          # An attachment in an issue body can arrive in a few shapes:
+          #   Markdown image:  ![alt](https://github.com/user-attachments/assets/<uuid>)
+          #   Markdown file:   [name.zip](https://github.com/user-attachments/files/<id>/name.zip)
+          #   HTML <img>:      <img ... alt="Image" src="https://.../assets/<uuid>">
+          #   Bare URL:        https://user-images.githubusercontent.com/.../name.png
+          #
+          # For dropped IMAGES, GitHub's current renderer produces the HTML
+          # <img> form with alt="Image" (a placeholder — NOT the original
+          # filename) and a src URL that is just a UUID with no extension.
+          # We recover a real filename by following the redirect and reading
+          # either Content-Disposition or the S3 `response-content-type`
+          # parameter (which tells us the MIME, hence the extension).
+          #
+          # For file drops (Markdown link form), GitHub keeps the original
+          # filename in both the URL path and the link text, so those Just
+          # Work.
+
+          hosts_re = (
+              r"https?://(?:"
+              r"github\.com/user-attachments/(?:assets|files/[^\s)\"'<>]+)"
+              r"|user-images\.githubusercontent\.com/[^\s)\"'<>]+"
+              r")"
+              r"[^\s)\"'<>]*"
           )
-          urls = list(dict.fromkeys(url_re.findall(section)))
-          if not urls:
+          url_re = re.compile(hosts_re, re.I)
+
+          # (hint, url) pairs; hint is the alt text / Markdown link text if
+          # present. Order-preserving dedup by URL.
+          seen, candidates = set(), []
+          def push(url, hint):
+              url = url.rstrip(").,;")
+              if url in seen: return
+              seen.add(url); candidates.append((hint, url))
+
+          for tag in re.finditer(r"<img\b[^>]*>", section, re.I):
+              t = tag.group(0)
+              src_m = re.search(r'\bsrc\s*=\s*"([^"]+)"', t, re.I)
+              alt_m = re.search(r'\balt\s*=\s*"([^"]+)"', t, re.I)
+              if src_m and url_re.match(src_m.group(1)):
+                  push(src_m.group(1), alt_m.group(1) if alt_m else None)
+
+          for md in re.finditer(r"!?\[([^\]]*)\]\((" + hosts_re + r")\)", section, re.I):
+              push(md.group(2), md.group(1) or None)
+
+          for u in url_re.findall(section):
+              push(u, None)
+
+          if not candidates:
               print("No attachments detected; skipping asset download.")
               sys.exit(0)
 
           uploads = pathlib.Path("uploads")
           uploads.mkdir(exist_ok=True)
 
+          # Collect every `uploads/<name>` path referenced anywhere in the
+          # user's YAML. Images dropped into the issue lose their original
+          # filename (GitHub reduces them to a UUID with alt="Image"), so we
+          # use the YAML references as the authoritative names and drop the
+          # downloaded bytes onto each one in order. This lets the user say
+          # `logo: uploads/dgiwg_logo.png` in the config, drop the PNG, and
+          # have it Just Work.
+          try:
+              cfg = yaml.safe_load(pathlib.Path("user_config.yaml").read_text())
+          except Exception as exc:
+              print(f"::warning::Could not parse user_config.yaml for uploads/ hints: {exc}")
+              cfg = None
+
+          def walk_strings(node):
+              if isinstance(node, dict):
+                  for v in node.values(): yield from walk_strings(v)
+              elif isinstance(node, list):
+                  for v in node: yield from walk_strings(v)
+              elif isinstance(node, str):
+                  yield node
+
+          referenced = []
+          seen_ref = set()
+          if cfg is not None:
+              for s in walk_strings(cfg):
+                  m2 = re.fullmatch(r"\s*uploads/([^\s/]+)\s*", s)
+                  if m2:
+                      name = m2.group(1)
+                      if name not in seen_ref:
+                          seen_ref.add(name)
+                          referenced.append(name)
+          print(f"YAML references {len(referenced)} uploads/ path(s): {referenced}")
+
           token = os.environ.get("GH_TOKEN", "")
-          for url in urls:
-              # Strip a trailing ')' left over from Markdown link syntax that
-              # our regex kept because ')' is not in its stopset (it is, but
-              # only inside a character class — keep this belt-and-braces).
-              url = url.rstrip(").,;")
-              # Filename = last path segment; user-attachments preserves the
-              # original filename after a UUID segment.
-              path = urllib.parse.urlparse(url).path
-              name = pathlib.Path(urllib.parse.unquote(path)).name
-              if not name:
-                  print(f"::warning::Skipping URL with no filename: {url}")
-                  continue
-              dest = uploads / name
-              print(f"Downloading {url} -> {dest}")
-              cmd = [
-                  "curl", "-fsSL",
-                  "-H", f"Authorization: Bearer {token}",
-                  "-H", "Accept: application/octet-stream",
-                  "-o", str(dest),
-                  url,
-              ]
-              subprocess.run(cmd, check=True)
+
+          MIME_EXT = {
+              "image/png": ".png", "image/jpeg": ".jpg", "image/jpg": ".jpg",
+              "image/gif": ".gif", "image/svg+xml": ".svg", "image/webp": ".webp",
+              "application/pdf": ".pdf", "application/zip": ".zip",
+              "application/x-zip-compressed": ".zip",
+          }
+
+          def sanitize(name):
+              name = urllib.parse.unquote(name).strip()
+              name = name.replace("\\", "/").split("/")[-1]
+              return re.sub(r'[^A-Za-z0-9._+\-]+', '_', name) or ""
+
+          def has_extension(name):
+              return bool(name) and "." in name and not name.startswith(".")
+
+          # For each candidate, figure out the "natural" filename (from the
+          # attachment metadata), download once, then also copy it onto any
+          # YAML-referenced uploads/<name> that is still unfilled.
+          natural_saved = []  # (natural_name, path)
+          ref_iter = iter(referenced)
+
+          def next_referenced():
+              # Return the next YAML-referenced name that doesn't already
+              # exist in ./uploads/.
+              for n in list(referenced):
+                  if not (uploads / n).exists() and n in remaining_refs:
+                      remaining_refs.discard(n)
+                      return n
+              return None
+
+          remaining_refs = set(referenced)
+
+          for hint, url in candidates:
+              # Probe the URL: follow redirects, capture the effective URL
+              # and response headers so we can recover the real filename.
+              headers_file = uploads / ".headers"
+              probe = subprocess.run(
+                  [
+                      "curl", "-fsSL", "-I",
+                      "-H", f"Authorization: Bearer {token}",
+                      "-D", str(headers_file),
+                      "-o", "/dev/null",
+                      "-w", "%{url_effective}\n%{content_type}",
+                      url,
+                  ],
+                  capture_output=True, text=True,
+              )
+              parts = probe.stdout.split("\n", 1)
+              effective_url = parts[0].strip() or url
+              probe_ctype = parts[1].strip() if len(parts) > 1 else ""
+              headers = headers_file.read_text(errors="replace") if headers_file.exists() else ""
+
+              # 1. Content-Disposition filename.
+              natural = None
+              cd = re.search(
+                  r'^\s*content-disposition\s*:\s*[^\n]*?filename\*?=(?:UTF-8\'\')?"?([^";\r\n]+)"?',
+                  headers, re.I | re.M,
+              )
+              if cd:
+                  natural = sanitize(cd.group(1))
+
+              # 2. Effective URL's last path segment.
+              if not has_extension(natural or ""):
+                  path = urllib.parse.urlparse(effective_url).path
+                  candidate = sanitize(pathlib.Path(urllib.parse.unquote(path)).name)
+                  if has_extension(candidate):
+                      natural = candidate
+
+              # 3. Alt / link-text hint from the issue body.
+              if not has_extension(natural or "") and hint:
+                  candidate = sanitize(hint)
+                  if has_extension(candidate):
+                      natural = candidate
+
+              # 4. Derive extension from Content-Type or S3
+              #    ?response-content-type=... on the effective URL.
+              if not has_extension(natural or ""):
+                  ext = ""
+                  # S3 signed URL: parse ?response-content-type=image%2Fpng
+                  qs = urllib.parse.parse_qs(urllib.parse.urlparse(effective_url).query)
+                  rct = (qs.get("response-content-type") or [""])[0].lower()
+                  ext = MIME_EXT.get(rct.split(";")[0].strip(), "")
+                  if not ext and probe_ctype:
+                      ext = MIME_EXT.get(probe_ctype.split(";")[0].strip().lower(), "")
+                  # Fall back to a generic name for this attachment.
+                  path = urllib.parse.urlparse(effective_url).path
+                  stem = sanitize(pathlib.Path(urllib.parse.unquote(path)).stem) or "attachment"
+                  natural = f"{stem}{ext}" if ext else stem or "attachment"
+
+              dest = uploads / natural
+              print(f"Downloading {url}")
+              print(f"          -> {dest}")
+              subprocess.run(
+                  [
+                      "curl", "-fsSL",
+                      "-H", f"Authorization: Bearer {token}",
+                      "-o", str(dest),
+                      url,
+                  ], check=True,
+              )
+              natural_saved.append((natural, dest))
+
+              # Also drop this attachment onto the next unfilled
+              # uploads/<name> reference from the YAML, so users can name the
+              # target file in their config without hand-editing URLs.
+              target = next_referenced()
+              if target and target != natural:
+                  alias = uploads / target
+                  alias.write_bytes(dest.read_bytes())
+                  print(f"          -> {alias}  (bound to YAML reference `uploads/{target}`)")
+
+              try:
+                  headers_file.unlink()
+              except FileNotFoundError:
+                  pass
+
+          # Any YAML-referenced uploads/<name> paths still unfilled here are
+          # a user error — surface them so the failure message is meaningful.
+          missing = [n for n in referenced if not (uploads / n).exists()]
+          if missing:
+              print(
+                  f"::warning::YAML references these uploads/ files but no "
+                  f"matching attachment was provided: {missing}"
+              )
 
           print("--- ./uploads/ ---")
           for p in sorted(uploads.iterdir()):
               print(f"  {p.name}  ({p.stat().st_size} bytes)")
           PY
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
 
       # Install from the checked-out source so users always get exactly what is
       # on this repo (including changes not yet published to PyPI). The [pdf]

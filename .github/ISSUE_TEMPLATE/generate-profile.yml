@@ -35,8 +35,8 @@ body:
       description: |
         If your profile references local files — for example a cover logo via
         `document_metadata.cover.logo` — drag-and-drop them into the box below.
-        GitHub will upload each file and insert a Markdown link; do not edit
-        those links.
+        GitHub will upload each file and insert either a Markdown link or an
+        `<img>` tag; leave what it inserts alone.
 
         **Reference each uploaded file in your YAML as `uploads/<original-filename>`.**
         For example, if you drop `my_logo.png` here, set:
@@ -46,6 +46,14 @@ body:
           cover:
             logo: uploads/my_logo.png
         ```
+
+        The workflow downloads each attachment into `./uploads/`, using the
+        original filename it can recover from the upload (Content-Disposition,
+        redirect URL, or the `alt` text GitHub sets from the filename you
+        dropped). If nothing else resolves the name, the workflow saves the
+        file under GitHub's UUID — in that case, use the file listing printed
+        by the "Download attached assets" step in the workflow log to see the
+        exact filename to reference.
 
         Supported by GitHub's drag-and-drop uploader: PNG, JPG, GIF, SVG, PDF,
         ZIP, and a few others. Leave this empty if your profile has no local
