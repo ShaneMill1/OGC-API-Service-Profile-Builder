@@ -82,9 +82,12 @@ jobs:
           python-version: '3.11'
 
       # Install from the checked-out source so users always get exactly what is
-      # on this repo (including changes not yet published to PyPI).
+      # on this repo (including changes not yet published to PyPI). The [pdf]
+      # extra pulls in Pillow, which is required whenever the profile sets
+      # `document_metadata.cover.logo` (cover-image generation runs on every
+      # `generate`, not just `--pdf`).
       - name: Install oapi-profile-builder (from source)
-        run: pip install .
+        run: pip install '.[pdf]'
 
       - name: Validate configuration
         run: oapi-profile-builder validate --config user_config.yaml
