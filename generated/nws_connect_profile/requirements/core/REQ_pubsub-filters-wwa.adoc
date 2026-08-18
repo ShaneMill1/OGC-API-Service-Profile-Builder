@@ -3,9 +3,16 @@
 ====
 [%metadata]
 identifier:: /req/nws_connect/pubsub-filters-wwa
-statement:: The wwa collection pub/sub SHALL support filtering by event types, state, and CWA.
+statement:: The wwa collection pub/sub SHALL support filtering by event types, state, CWA, delivery method, warning lifecycle, and Impact-Based Warning thresholds.
 part:: Subscriptions SHALL accept event_types filter (array of weather event types).
-part:: Subscriptions SHALL accept state filter (state code or blank for all).
-part:: Subscriptions SHALL accept cwa filter (County Warning Area code).
+part:: Subscriptions SHALL accept state filter (comma-separated USPS state codes or blank for all).
+part:: Subscriptions SHALL accept cwa filter (comma-separated County Warning Area codes).
 part:: Subscriptions SHALL accept email filter for notification delivery.
+part:: Subscriptions SHALL accept a delivery_method value of either 'email' (default) or 'sms'.
+part:: Subscriptions with delivery_method='sms' SHALL require a phone_number filter (any common US format; the service normalizes to E.164).
+part:: Subscriptions with delivery_method='sms' SHALL require at least one of state or cwa to be set (to bound message volume and per-message cost).
+part:: Subscriptions SHALL accept alert_action filter with value 'initial' (default), 'upgrade', or 'both' selecting which lifecycle events fire a notification.
+part:: Subscriptions SHALL accept ibw_tier_min filter (CONSIDERABLE, DESTRUCTIVE, PDS, EMERGENCY) to floor the Impact-Based Warning tier that triggers alerts.
+part:: Subscriptions SHALL accept hail_min_in and wind_min_mph numeric filters; when both are set they combine via logical OR so either threshold fires the alert.
+part:: When a subscription opts in to upgrade re-alerts on a Severe Thunderstorm Warning or Tornado Warning event type, the service SHALL automatically include 'Severe Weather Statement' in the effective event filter so follow-up SVS products can trigger the alert.
 ====

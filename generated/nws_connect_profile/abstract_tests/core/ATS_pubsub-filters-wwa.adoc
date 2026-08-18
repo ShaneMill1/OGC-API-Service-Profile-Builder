@@ -12,4 +12,10 @@ step:: Subscribe with state filter set to a specific state code.
 step:: Verify only notifications for that state are received.
 step:: Subscribe with cwa filter set to a specific CWA code.
 step:: Verify only notifications for that CWA are received.
+step:: Subscribe with delivery_method='sms' and no state or cwa filter; verify the service rejects the subscription with a 4xx error identifying the missing scope.
+step:: Subscribe with delivery_method='sms', phone_number='(555) 234-5678', state='TN'; verify the subscription is accepted and the phone number is normalized to '+15552345678' in the persisted record.
+step:: Subscribe with alert_action='both', event_types=["Severe Thunderstorm Warning"]; verify the service transparently adds "Severe Weather Statement" to the effective event filter so follow-up SVS products can fire the alert.
+step:: Publish a synthetic SVR followed by an SVS that raises the IBW tier from BASE to CONSIDERABLE; verify a subscription with alert_action='upgrade' receives exactly one notification for the SVS and none for a subsequent CON that keeps the tier at CONSIDERABLE.
+step:: Subscribe with hail_min_in=1.75 and wind_min_mph=70; verify notifications for a product with maxHailSize=2.5 (hail matches) and separately for a product with maxWindGust=75 (wind matches) both arrive (OR semantics).
+step:: Verify notifications for a product with maxHailSize=1.0 and maxWindGust=60 do NOT arrive.
 ====

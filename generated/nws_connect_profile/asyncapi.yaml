@@ -1,7 +1,7 @@
 asyncapi: 3.0.0
 info:
   title: NWS Connect Service Profile AsyncAPI
-  version: '1.0'
+  version: '1.1'
 servers:
   websocket_local:
     description: Native pygeoapi live-map WebSocket (local development)
@@ -73,17 +73,60 @@ channels:
         schema:
           type: array
       - name: state
-        description: Filter by state, or leave blank for all states
+        description: Filter by one or more two-letter USPS state codes (comma separated,
+          e.g. 'TN,IA'). Optional for email; REQUIRED for SMS delivery to bound message
+          volume.
         schema:
           type: string
       - name: cwa
-        description: Filter by County Warning Area code
+        description: Filter by County Warning Area code (comma-separated list allowed).
+          Optional for email; either state or cwa is REQUIRED for SMS delivery.
         schema:
           type: string
       - name: email
-        description: Email address for notifications
+        description: Email address for notifications (used when delivery_method=email).
         schema:
           type: string
+      - name: delivery_method
+        description: How alerts are delivered to the subscriber. 'email' is the default
+          and requires SNS double-opt-in confirmation. 'sms' delivers directly to
+          a US mobile number and requires the phone_number filter plus a state or
+          cwa scope for cost containment. Standard carrier STOP/HELP keywords are
+          honored.
+        schema:
+          type: string
+      - name: phone_number
+        description: US phone number in any common format (e.g., '(555) 234-5678',
+          '555-234-5678', '+15552345678'). Required when delivery_method=sms; normalized
+          to E.164 (+1XXXXXXXXXX) by the service.
+        schema:
+          type: string
+      - name: alert_action
+        description: Which warning lifecycle events should trigger a notification.
+          'initial' (default) alerts only on the first NEW issuance of a warning.
+          'upgrade' alerts only on follow-up SVS products that raise the IBW tier.
+          'both' alerts on initial issuances and upgrades. Downgrades and routine
+          follow-ups never re-alert regardless of this setting.
+        schema:
+          type: string
+      - name: ibw_tier_min
+        description: 'Minimum Impact-Based Warning tier that should trigger a notification.
+          For SVR: CONSIDERABLE / DESTRUCTIVE. For TOR: PDS / EMERGENCY. Ignored for
+          other event types.'
+        schema:
+          type: string
+      - name: hail_min_in
+        description: Notify when the warning's maximum hail size reaches this value
+          in inches, in an initial SVR or a follow-up SVS. Combined with wind_min_mph
+          via SNS $or so either threshold can fire the alert.
+        schema:
+          type: number
+      - name: wind_min_mph
+        description: Notify when the warning's maximum wind gust reaches this value
+          in miles per hour, in an initial SVR or a follow-up SVS. Combined with hail_min_in
+          via SNS $or.
+        schema:
+          type: number
   space_weather_notifications:
     address: collections/space_weather/items/#
     description: Real-time notifications for space_weather

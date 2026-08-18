@@ -1,7 +1,7 @@
 = NWS Connect Service Profile
 :doctype: draft-standard
 :docsubtype: implementation
-:edition: 1.0
+:edition: 1.1
 :language: en
 :committee: technical
 :docnumber: 25-nwsconnect

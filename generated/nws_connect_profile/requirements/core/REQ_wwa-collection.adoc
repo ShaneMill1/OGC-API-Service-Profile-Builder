@@ -9,4 +9,11 @@ part:: The service SHALL provide a /collections/wwa/items endpoint.
 part:: The response Content-Type SHALL be application/geo+json.
 part:: Each feature SHALL include CAP_info_event, CAP_info_severity, CAP_info_urgency, and CAP_status properties.
 part:: Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon.
+part:: Each SVR / TOR / SVS feature SHALL include alert_action ('initial', 'upgrade', 'update', 'cancel', or 'other').
+part:: Each SVR / TOR / SVS feature SHALL include ibw_tier reflecting the current Impact-Based Warning tier per NWSI 10-511.
+part:: Each SVR / TOR / SVS feature SHALL include parent_item_id resolving to the initial SVR or TOR that started the lifecycle.
+part:: Each SVR / TOR / SVS feature SHALL include vtec_action, vtec_etn, vtec_office, vtec_phenomenon, and vtec_significance parsed from the P-VTEC line(s).
+part:: Each SVR / TOR / SVS feature SHALL include max_hail_size_in and max_wind_gust_mph (0 when unknown) so numeric filter policies apply uniformly.
+part:: Each SVR / TOR / SVS feature MAY include a banner object with text, bg (background color), fg (foreground color), and severity (1-5) when a life-safety banner applies (TORNADO EMERGENCY, PARTICULARLY DANGEROUS SITUATION, DESTRUCTIVE / CONSIDERABLE DAMAGE THREAT, TORNADO POSSIBLE, TORNADO OBSERVED, FLASH FLOOD EMERGENCY).
+part:: Each feature MAY include a states property listing two-letter USPS state codes covered by the warning geometry, derived from CAP UGC and SAME geocodes.
 ====

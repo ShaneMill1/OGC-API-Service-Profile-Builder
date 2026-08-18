@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: NWS Connect Service Profile
-  version: '1.0'
+  version: '1.1'
   description: 'OGC API - EDR Part 3 Service Profile for NWS Connect: real-time GeoJSON
     notification messages for water gauge observations, NWS Weather Watches, Warnings
     and Advisories, and NOAA SWPC space weather alerts, delivered over EDR Part 2
