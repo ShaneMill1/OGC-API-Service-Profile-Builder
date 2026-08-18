@@ -1,0 +1,13 @@
+[[req_nws_connect_pubsub_message_attributes_wwa]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/nws_connect/pubsub-message-attributes-wwa
+statement:: Each wwa pub/sub notification SHALL carry a set of message attributes that enable partner-side and broker-side filtering across all supported transports (SNS filter policies, AMQP 1.0 message properties, MQTT subscription topics).
+part:: Each notification SHALL carry event, severity, urgency, certainty, wfo, and sender String attributes.
+part:: Each notification SHALL carry alert_action, ibw_tier, ibw_prior_tier, vtec_phenomenon, vtec_significance, vtec_action, vtec_etn, and parent_item_id String attributes when applicable.
+part:: Each notification SHALL carry max_hail_size_in and max_wind_gust_mph Number attributes (0 when unknown) so numeric filter policies can express threshold-based subscriptions.
+part:: Each notification MAY carry a banner_text String attribute when a life-safety banner applies.
+part:: Each notification SHALL carry a states String.Array attribute listing the two-letter USPS codes covered by the warning geometry.
+part:: Each notification SHALL carry a dedup_token String attribute keyed by (parent_item_id, ibw_tier, alert_action) so downstream paging systems cannot collapse a genuine upgrade re-alert as a duplicate of the parent warning.
+====

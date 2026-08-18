@@ -16,5 +16,6 @@ abstract-test:: /conf/nws_connect/pubsub-amqp
 abstract-test:: /conf/nws_connect/pubsub-websocket
 abstract-test:: /conf/nws_connect/pubsub-filters-water-gauge
 abstract-test:: /conf/nws_connect/pubsub-filters-wwa
+abstract-test:: /conf/nws_connect/pubsub-message-attributes-wwa
 abstract-test:: /conf/nws_connect/pubsub-filters-space-weather
 ====

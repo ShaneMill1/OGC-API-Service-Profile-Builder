@@ -7,4 +7,5 @@ statement:: The service SHALL provide a /collections endpoint listing all collec
 part:: The service SHALL provide a /collections endpoint.
 part:: The response SHALL include water_gauge, wwa, space_weather, cwa, and states collections.
 part:: Each collection SHALL have id, title, description, extent, and links properties.
+part:: The /collections/{collectionId}/queryables endpoint SHALL expose Part 3 custom dimensions (e.g. for wwa, alert_action / ibw_tier / max_hail_size_in / max_wind_gust_mph / parent_item_id) so partners can discover filterable attributes.
 ====

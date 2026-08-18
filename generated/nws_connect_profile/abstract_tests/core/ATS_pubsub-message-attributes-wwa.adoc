@@ -1,0 +1,16 @@
+[[ats_nws_connect_pubsub_message_attributes_wwa]]
+[abstract_test]
+====
+[%metadata]
+identifier:: /conf/nws_connect/pubsub-message-attributes-wwa
+target:: /req/nws_connect/pubsub-message-attributes-wwa
+test-purpose:: Validate that pubsub message attributes wwa is correctly implemented.
+test-method::
+step:: Subscribe to collections/wwa/items and receive a live SVR notification.
+step:: Verify the notification carries event, severity, urgency, certainty, wfo, sender String message attributes.
+step:: Verify the notification carries alert_action, ibw_tier, vtec_action, vtec_etn, parent_item_id String message attributes.
+step:: Verify the notification carries max_hail_size_in and max_wind_gust_mph Number message attributes (present even when zero).
+step:: Verify the notification carries a states String.Array message attribute matching the state(s) covered by the warning geometry.
+step:: Verify the notification carries a dedup_token String message attribute formatted as '<parent_item_id>|<ibw_tier>|<alert_action>'.
+step:: For an SVR followed by an SVS upgrade, verify the two notifications have DIFFERENT dedup_token values so paging systems cannot collapse them as duplicates.
+====
