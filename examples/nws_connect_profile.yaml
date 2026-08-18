@@ -1,6 +1,6 @@
 name: nws_connect
 title: NWS Connect Service Profile
-version: "1.0"
+version: "1.1"
 description: >
   OGC API - EDR Part 3 Service Profile for NWS Connect: real-time GeoJSON
   notification messages for water gauge observations, NWS Weather Watches,
@@ -160,6 +160,135 @@ collections:
         unit:
           label: category
           symbol: category
+      # ── Lifecycle parameters (v1.1) ─────────────────────────────────────
+      # A single VTEC-tracked warning (e.g. a Severe Thunderstorm Warning)
+      # is followed by one or more Severe Weather Statement (SVS) products
+      # that refine or upgrade its impact tier. The following parameters
+      # describe how a feature fits into that lifecycle.
+      alert_action:
+        type: Parameter
+        id: alert_action
+        description: >-
+          The role this feature plays in its warning lifecycle. 'initial'
+          is the first NEW issuance of an SVR or TOR. 'upgrade' is a
+          follow-up SVS that raises the Impact-Based Warning (IBW) tier
+          over the parent warning. 'update' is a routine SVS that does
+          not change the tier. 'cancel' is a CAN or EXP action.
+        observedProperty:
+          id: alert_action
+          label: Alert Lifecycle Action
+        unit:
+          label: category
+          symbol: category
+      parent_item_id:
+        type: Parameter
+        id: parent_item_id
+        description: >-
+          Item id of the initial SVR or TOR this feature descends from.
+          Every follow-up SVS carries the same parent_item_id as its
+          parent warning so partners can correlate the lifecycle.
+        observedProperty:
+          id: parent_item_id
+          label: Parent Warning Item ID
+        unit:
+          label: reference
+          symbol: reference
+      vtec_action:
+        type: Parameter
+        id: vtec_action
+        description: VTEC action code (NEW, CON, CAN, EXP, EXT, UPG, ROU, COR).
+        observedProperty:
+          id: vtec_action
+          label: VTEC Action Code
+        unit:
+          label: category
+          symbol: category
+      vtec_etn:
+        type: Parameter
+        id: vtec_etn
+        description: >-
+          VTEC Event Tracking Number (ETN), zero-padded (e.g. '0132').
+          Together with (office, phenomenon, significance) forms the
+          warning key that groups an SVR/TOR with its follow-up SVS
+          products.
+        observedProperty:
+          id: vtec_etn
+          label: VTEC ETN
+        unit:
+          label: identifier
+          symbol: identifier
+      # ── IBW (Impact-Based Warning) parameters (v1.1) ────────────────────
+      ibw_tier:
+        type: Parameter
+        id: ibw_tier
+        description: >-
+          Impact-Based Warning tier per NWSI 10-511. For Severe
+          Thunderstorm Warnings: BASE / SIGNIFICANT / CONSIDERABLE /
+          DESTRUCTIVE. For Tornado Warnings: BASE / OBSERVED / PDS /
+          EMERGENCY. Drives the upgrade re-alert semantics.
+        observedProperty:
+          id: ibw_tier
+          label: IBW Threat Tier
+        unit:
+          label: category
+          symbol: category
+      max_hail_size_in:
+        type: Parameter
+        id: max_hail_size_in
+        description: >-
+          Maximum reported hail size for this warning, in inches. Parsed
+          from the CAP maxHailSize parameter. Emitted on every SVR / TOR
+          / SVS feature (0 when unknown) so numeric filter policies can
+          match on threshold.
+        observedProperty:
+          id: max_hail_size_in
+          label: Maximum Hail Size
+        unit:
+          label: inches
+          symbol: in
+      max_wind_gust_mph:
+        type: Parameter
+        id: max_wind_gust_mph
+        description: >-
+          Maximum reported wind gust for this warning, in miles per hour.
+          Parsed from the CAP maxWindGust parameter. Emitted on every
+          SVR / TOR / SVS feature (0 when unknown).
+        observedProperty:
+          id: max_wind_gust_mph
+          label: Maximum Wind Gust
+        unit:
+          label: miles per hour
+          symbol: mph
+      banner_text:
+        type: Parameter
+        id: banner_text
+        description: >-
+          Life-safety banner rendered across the alert graphic and
+          included in the notification body. One of TORNADO EMERGENCY,
+          PARTICULARLY DANGEROUS SITUATION, DESTRUCTIVE DAMAGE THREAT,
+          CONSIDERABLE DAMAGE THREAT, TORNADO POSSIBLE, TORNADO OBSERVED,
+          FLASH FLOOD EMERGENCY, or absent when no banner applies.
+        observedProperty:
+          id: banner_text
+          label: Life-Safety Banner Text
+        unit:
+          label: category
+          symbol: category
+      states:
+        type: Parameter
+        id: states
+        description: >-
+          Two-letter USPS state codes covered by the warning polygon,
+          derived from CAP UGC and SAME geocodes. Emitted as a
+          String.Array attribute on every WWA notification so
+          subscription filter policies can match on state without a
+          per-partner CWA list.
+        observedProperty:
+          id: states
+          label: Covered States
+        unit:
+          label: identifier
+          symbol: identifier
 
   - id: space_weather
     title: NOAA SWPC Space Weather Alerts
@@ -349,14 +478,68 @@ pubsub:
           description: Weather event types to subscribe to (e.g., Tornado Warning, Flood Watch)
           type: array
         - name: state
-          description: Filter by state, or leave blank for all states
+          description: >-
+            Filter by one or more two-letter USPS state codes (comma
+            separated, e.g. 'TN,IA'). Optional for email; REQUIRED for
+            SMS delivery to bound message volume.
           type: string
         - name: cwa
-          description: Filter by County Warning Area code
+          description: >-
+            Filter by County Warning Area code (comma-separated list
+            allowed). Optional for email; either state or cwa is
+            REQUIRED for SMS delivery.
           type: string
         - name: email
-          description: Email address for notifications
+          description: Email address for notifications (used when delivery_method=email).
           type: string
+        # ── Delivery method (v1.1) ──────────────────────────────────────
+        - name: delivery_method
+          description: >-
+            How alerts are delivered to the subscriber. 'email' is the
+            default and requires SNS double-opt-in confirmation. 'sms'
+            delivers directly to a US mobile number and requires the
+            phone_number filter plus a state or cwa scope for cost
+            containment. Standard carrier STOP/HELP keywords are honored.
+          type: string
+          enum: [email, sms]
+        - name: phone_number
+          description: >-
+            US phone number in any common format (e.g., '(555) 234-5678',
+            '555-234-5678', '+15552345678'). Required when
+            delivery_method=sms; normalized to E.164 (+1XXXXXXXXXX) by
+            the service.
+          type: string
+        # ── Lifecycle re-alert filters (v1.1) ───────────────────────────
+        - name: alert_action
+          description: >-
+            Which warning lifecycle events should trigger a
+            notification. 'initial' (default) alerts only on the first
+            NEW issuance of a warning. 'upgrade' alerts only on follow-up
+            SVS products that raise the IBW tier. 'both' alerts on
+            initial issuances and upgrades. Downgrades and routine
+            follow-ups never re-alert regardless of this setting.
+          type: string
+          enum: [initial, upgrade, both]
+        - name: ibw_tier_min
+          description: >-
+            Minimum Impact-Based Warning tier that should trigger a
+            notification. For SVR: CONSIDERABLE / DESTRUCTIVE. For TOR:
+            PDS / EMERGENCY. Ignored for other event types.
+          type: string
+          enum: ["", CONSIDERABLE, DESTRUCTIVE, PDS, EMERGENCY]
+        - name: hail_min_in
+          description: >-
+            Notify when the warning's maximum hail size reaches this
+            value in inches, in an initial SVR or a follow-up SVS.
+            Combined with wind_min_mph via SNS $or so either threshold
+            can fire the alert.
+          type: number
+        - name: wind_min_mph
+          description: >-
+            Notify when the warning's maximum wind gust reaches this
+            value in miles per hour, in an initial SVR or a follow-up
+            SVS. Combined with hail_min_in via SNS $or.
+          type: number
     space_weather:
       filters:
         - name: message_type
@@ -405,6 +588,7 @@ requirements:
       - The service SHALL provide a /collections endpoint.
       - The response SHALL include water_gauge, wwa, space_weather, cwa, and states collections.
       - Each collection SHALL have id, title, description, extent, and links properties.
+      - The /collections/{collectionId}/queryables endpoint SHALL expose Part 3 custom dimensions (e.g. for wwa, alert_action / ibw_tier / max_hail_size_in / max_wind_gust_mph / parent_item_id) so partners can discover filterable attributes.
 
   - id: water-gauge-collection
     statement: The water_gauge collection SHALL provide GeoJSON features with flood stage information.
@@ -423,6 +607,14 @@ requirements:
       - The response Content-Type SHALL be application/geo+json.
       - Each feature SHALL include CAP_info_event, CAP_info_severity, CAP_info_urgency, and CAP_status properties.
       - Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon.
+      # ── v1.1 lifecycle and IBW properties ──────────────────────────────
+      - Each SVR / TOR / SVS feature SHALL include alert_action ('initial', 'upgrade', 'update', 'cancel', or 'other').
+      - Each SVR / TOR / SVS feature SHALL include ibw_tier reflecting the current Impact-Based Warning tier per NWSI 10-511.
+      - Each SVR / TOR / SVS feature SHALL include parent_item_id resolving to the initial SVR or TOR that started the lifecycle.
+      - Each SVR / TOR / SVS feature SHALL include vtec_action, vtec_etn, vtec_office, vtec_phenomenon, and vtec_significance parsed from the P-VTEC line(s).
+      - Each SVR / TOR / SVS feature SHALL include max_hail_size_in and max_wind_gust_mph (0 when unknown) so numeric filter policies apply uniformly.
+      - Each SVR / TOR / SVS feature MAY include a banner object with text, bg (background color), fg (foreground color), and severity (1-5) when a life-safety banner applies (TORNADO EMERGENCY, PARTICULARLY DANGEROUS SITUATION, DESTRUCTIVE / CONSIDERABLE DAMAGE THREAT, TORNADO POSSIBLE, TORNADO OBSERVED, FLASH FLOOD EMERGENCY).
+      - Each feature MAY include a states property listing two-letter USPS state codes covered by the warning geometry, derived from CAP UGC and SAME geocodes.
 
   - id: space-weather-collection
     statement: The space_weather collection SHALL provide GeoJSON features for NOAA SWPC space weather alerts.
@@ -484,12 +676,33 @@ requirements:
       - Subscriptions SHALL accept email filter for notification delivery.
 
   - id: pubsub-filters-wwa
-    statement: The wwa collection pub/sub SHALL support filtering by event types, state, and CWA.
+    statement: The wwa collection pub/sub SHALL support filtering by event types, state, CWA, delivery method, warning lifecycle, and Impact-Based Warning thresholds.
     parts:
       - Subscriptions SHALL accept event_types filter (array of weather event types).
-      - Subscriptions SHALL accept state filter (state code or blank for all).
-      - Subscriptions SHALL accept cwa filter (County Warning Area code).
+      - Subscriptions SHALL accept state filter (comma-separated USPS state codes or blank for all).
+      - Subscriptions SHALL accept cwa filter (comma-separated County Warning Area codes).
       - Subscriptions SHALL accept email filter for notification delivery.
+      - Subscriptions SHALL accept a delivery_method value of either 'email' (default) or 'sms'.
+      - Subscriptions with delivery_method='sms' SHALL require a phone_number filter (any common US format; the service normalizes to E.164).
+      - Subscriptions with delivery_method='sms' SHALL require at least one of state or cwa to be set (to bound message volume and per-message cost).
+      - Subscriptions SHALL accept alert_action filter with value 'initial' (default), 'upgrade', or 'both' selecting which lifecycle events fire a notification.
+      - Subscriptions SHALL accept ibw_tier_min filter (CONSIDERABLE, DESTRUCTIVE, PDS, EMERGENCY) to floor the Impact-Based Warning tier that triggers alerts.
+      - Subscriptions SHALL accept hail_min_in and wind_min_mph numeric filters; when both are set they combine via logical OR so either threshold fires the alert.
+      - When a subscription opts in to upgrade re-alerts on a Severe Thunderstorm Warning or Tornado Warning event type, the service SHALL automatically include 'Severe Weather Statement' in the effective event filter so follow-up SVS products can trigger the alert.
+
+  - id: pubsub-message-attributes-wwa
+    statement: >-
+      Each wwa pub/sub notification SHALL carry a set of message attributes
+      that enable partner-side and broker-side filtering across all supported
+      transports (SNS filter policies, AMQP 1.0 message properties, MQTT
+      subscription topics).
+    parts:
+      - Each notification SHALL carry event, severity, urgency, certainty, wfo, and sender String attributes.
+      - Each notification SHALL carry alert_action, ibw_tier, ibw_prior_tier, vtec_phenomenon, vtec_significance, vtec_action, vtec_etn, and parent_item_id String attributes when applicable.
+      - Each notification SHALL carry max_hail_size_in and max_wind_gust_mph Number attributes (0 when unknown) so numeric filter policies can express threshold-based subscriptions.
+      - Each notification MAY carry a banner_text String attribute when a life-safety banner applies.
+      - Each notification SHALL carry a states String.Array attribute listing the two-letter USPS codes covered by the warning geometry.
+      - Each notification SHALL carry a dedup_token String attribute keyed by (parent_item_id, ibw_tier, alert_action) so downstream paging systems cannot collapse a genuine upgrade re-alert as a duplicate of the parent warning.
 
   - id: pubsub-filters-space-weather
     statement: The space_weather collection pub/sub SHALL support filtering by message type and NOAA scale.
@@ -611,6 +824,23 @@ abstract_tests:
       - Verify only notifications for that state are received.
       - Subscribe with cwa filter set to a specific CWA code.
       - Verify only notifications for that CWA are received.
+      - Subscribe with delivery_method='sms' and no state or cwa filter; verify the service rejects the subscription with a 4xx error identifying the missing scope.
+      - Subscribe with delivery_method='sms', phone_number='(555) 234-5678', state='TN'; verify the subscription is accepted and the phone number is normalized to '+15552345678' in the persisted record.
+      - Subscribe with alert_action='both', event_types=["Severe Thunderstorm Warning"]; verify the service transparently adds "Severe Weather Statement" to the effective event filter so follow-up SVS products can fire the alert.
+      - Publish a synthetic SVR followed by an SVS that raises the IBW tier from BASE to CONSIDERABLE; verify a subscription with alert_action='upgrade' receives exactly one notification for the SVS and none for a subsequent CON that keeps the tier at CONSIDERABLE.
+      - Subscribe with hail_min_in=1.75 and wind_min_mph=70; verify notifications for a product with maxHailSize=2.5 (hail matches) and separately for a product with maxWindGust=75 (wind matches) both arrive (OR semantics).
+      - Verify notifications for a product with maxHailSize=1.0 and maxWindGust=60 do NOT arrive.
+
+  - id: pubsub-message-attributes-wwa
+    requirement_id: pubsub-message-attributes-wwa
+    steps:
+      - Subscribe to collections/wwa/items and receive a live SVR notification.
+      - Verify the notification carries event, severity, urgency, certainty, wfo, sender String message attributes.
+      - Verify the notification carries alert_action, ibw_tier, vtec_action, vtec_etn, parent_item_id String message attributes.
+      - Verify the notification carries max_hail_size_in and max_wind_gust_mph Number message attributes (present even when zero).
+      - Verify the notification carries a states String.Array message attribute matching the state(s) covered by the warning geometry.
+      - Verify the notification carries a dedup_token String message attribute formatted as '<parent_item_id>|<ibw_tier>|<alert_action>'.
+      - For an SVR followed by an SVS upgrade, verify the two notifications have DIFFERENT dedup_token values so paging systems cannot collapse them as duplicates.
 
   - id: pubsub-filters-space-weather
     requirement_id: pubsub-filters-space-weather
@@ -640,3 +870,21 @@ document_metadata:
     - pub/sub
     - service profile
   external_id: http://www.opengis.net/doc/dp/ogcapi-features-nwsconnect/1.0
+  history:
+    - version: "1.0"
+      date: "2025-06-01"
+      note: Initial NWS Connect service profile (water_gauge, wwa, space_weather, cwa, states).
+    - version: "1.1"
+      date: "2026-08-18"
+      note: >-
+        WWA lifecycle + IBW upgrade detection + banner + SMS delivery.
+        Adds alert_action, ibw_tier, parent_item_id, vtec_action / vtec_etn,
+        max_hail_size_in, max_wind_gust_mph, banner_text, and states
+        properties to wwa features and their pub/sub message attributes.
+        Introduces delivery_method (email | sms) with a phone_number
+        requirement and a state-or-cwa scope requirement for SMS.
+        Introduces alert_action (initial | upgrade | both), ibw_tier_min,
+        hail_min_in, and wind_min_mph filters. Auto-adds Severe Weather
+        Statement to the event filter when a subscription opts in to
+        upgrades on SVR or TOR. New requirement pubsub-message-attributes-wwa
+        pins the message-attribute contract.
