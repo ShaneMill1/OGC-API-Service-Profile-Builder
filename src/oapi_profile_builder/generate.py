@@ -186,7 +186,11 @@ def _landing_page_schema(profile: "ServiceProfile") -> dict:
     if profile.description:
         schema_props["description"] = {"type": "string", **_const(profile.description, version)}
     if profile.keywords:
-        schema_props["keywords"] = {"type": "array", "items": {"type": "string", "enum": profile.keywords}}
+        schema_props["keywords"] = {
+            "type": "array",
+            "items": {"type": "string"},
+            "enum": [profile.keywords]
+        }
     
     if profile.provider:
         p = profile.provider
@@ -589,7 +593,7 @@ def _parameter_schema(version: str) -> dict:
             },
             "extent": {"type": "object"},
         },
-        "additionalProperties": True,
+        "additionalProperties": False,
     }
 
 
@@ -598,6 +602,7 @@ def _parameter_instance_schema(param: object, version: str) -> dict:
     schema = {
         "type": "object",
         "required": ["type", "observedProperty"],
+        "additionalProperties": False,
         "properties": {
             "type": {"type": "string", **_const("Parameter", version)},
         }
@@ -669,7 +674,7 @@ def _collection_response_schema(coll: Collection,
     else:
         param_item_schema = _parameter_schema(profile.openapi_version)
 
-    param_names_schema: dict = {"type": "object", "additionalProperties": param_item_schema}
+    param_names_schema: dict = {"type": "object", "additionalProperties": False}
     if coll.parameter_names:
         param_names_schema["properties"] = {
             name: _parameter_instance_schema(param, version)
@@ -778,11 +783,11 @@ def _collection_response_schema(coll: Collection,
             "id": {"type": "string", **_const(coll.id, version)},
             "title": {"type": "string", **_const(coll.title, version)} if coll.title else {"type": "string"},
             "description": {"type": "string", **_const(coll.description, version)} if coll.description else {"type": "string"},
-            "keywords": {"type": "array", "items": {"type": "string"}},
+            "keywords": {"type": "array", "items": {"type": "string"}, "enum": [coll.keywords] if coll.keywords else [[]]},
             "links": {"type": "array", "items": _LINK_SCHEMA, "enum": [links_to_show]}, "crs": crs_array_schema, "output_formats": output_formats_schema,
-            "parameter_names": param_names_schema,
+            "parameter_names": {**param_names_schema, "additionalProperties": False},
             "extent": {"type": "object", "required": ["spatial"], "properties": extent_props},
-            "data_queries": {"type": "object", "properties": dq_props}
+            "data_queries": {"type": "object", "properties": dq_props, "additionalProperties": False}
         }
     }
     return {"description": "Collection metadata", "content": {"application/json": {"schema": schema}}}

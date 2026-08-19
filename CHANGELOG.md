@@ -1,5 +1,16 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.7.4] - 2026-08-19
+
+Ensures keyword completeness and scrubs Swagger placeholders.
+
+### Added
+- **Enforced Keywords**: The Landing Page and Collection keywords are now enforced as a complete array, ensuring the entire list appears in Swagger UI.
+
+### Fixed
+- **Placeholder Cleanup**: Set `additionalProperties: false` across all collection response schemas (`parameter_names`, `data_queries`, and parameter instances), eliminating generic `additionalProp` placeholders in Swagger documentation.
+
+
 ## [3.7.3] - 2026-08-19
 
 Populates Landing Page and Collection links and strictly mandates Conformance classes.
