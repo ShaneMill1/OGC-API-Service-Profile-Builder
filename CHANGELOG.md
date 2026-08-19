@@ -1,5 +1,13 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.7.5] - 2026-08-19
+
+Fresh release to ensure PyPI propagation.
+
+### Added
+- Re-triggering release workflow to ensure v3.7.4 features are available on PyPI.
+
+
 ## [3.7.4] - 2026-08-19
 
 Ensures keyword completeness and scrubs Swagger placeholders.
