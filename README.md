@@ -1,6 +1,6 @@
 # OGC API Service Profile Builder
 
-Generate OGC API - EDR Part 3 Service Profile artifacts from a YAML config — OpenAPI 3.1.0, AsyncAPI, AsciiDoc requirements and conformance tests, and a publication-ready Metanorma PDF with optional custom (e.g. DGIWG) branding.
+Generate OGC API - EDR Part 3 Service Profile artifacts from a YAML config — OpenAPI 3.0.0/3.1.0, AsyncAPI, AsciiDoc requirements and conformance tests, and a publication-ready Metanorma PDF with optional custom (e.g. DGIWG) branding.
 
 [![PyPI](https://img.shields.io/pypi/v/oapi-profile-builder)](https://pypi.org/project/oapi-profile-builder/)
 [![License](https://img.shields.io/badge/license-Apache-blue)](LICENSE)
@@ -25,7 +25,7 @@ That's it. The `output/` directory will contain:
 
 ```
 output/
-├── openapi.yaml          # OpenAPI 3.1.0 — ready for Swagger UI, Redoc, schemathesis
+├── openapi.yaml          # OpenAPI 3.0.0 or 3.1.0 — ready for Swagger UI, Redoc, schemathesis
 ├── profile_config.json   # Round-trip serialized profile
 ├── document.adoc         # Metanorma root document
 ├── sections/             # Abstract, Preface, Scope, Conformance, References, Terms
@@ -331,6 +331,7 @@ abstract_tests: []
 | `processes` | list | no | OGC API Processes to expose in the OpenAPI |
 | `requirements` | list | no | Normative requirements for the AsciiDoc/PDF |
 | `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id` |
+| `abstract_tests[].method` | string | no | Optional test method description |
 | `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
 | `collection_examples` | object | no | `{collectionId: {instanceId: "..."}}` — used by `validate-server` |
 | `paging` | object | no | Features `/items` paging — adds a validated `limit` query parameter to the generated OpenAPI (see below) |
@@ -625,6 +626,7 @@ requirements:
 abstract_tests:
   - id: position-coveragejson          # must equal requirement_id
     requirement_id: position-coveragejson
+    method: Manual inspection of the /position response.
     steps:
       - Send GET /collections/{id}/position?coords=POINT(lon lat).
       - Verify Content-Type is application/prs.coverage+json.
