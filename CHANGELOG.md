@@ -1,5 +1,23 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.6.2] - 2026-08-19
+
+Adds support for configurable OpenAPI versions, improving compatibility with Swagger Editor, and introduces the Abstract Test Method field.
+
+### Added
+
+- **Configurable OpenAPI version**: added `openapi_version` to the profile config (defaults to `3.0.0`). The generator now conditionally uses 3.1.0-only keywords (`const`, `contains`, `propertyNames`) only when 3.1.0 is requested, ensuring the default output is fully compatible with industry-standard tooling like Swagger Editor.
+- **Abstract Test Method**: added an optional `method` field to the `abstract_tests` model. When set in the YAML config, it is rendered as `test-method::` in the generated conformance documentation.
+
+### Changed
+
+- **Improved OpenAPI parameter listing**: parameters mandated in the profile via `parameter_names` are now explicitly listed as named properties in the OpenAPI schema, ensuring they are visible and mandated in Swagger UI / Redoc.
+- **Cover page text wrapping**: implemented automatic text wrapping for the document number and tagline on the cover page to prevent text from being cut off.
+- **Italics resolution**: overhauled font resolution to correctly find system Oblique/Italic faces even when a regular font path is provided.
+
+### Fixed
+
+- **Swagger validation errors**: resolved structural errors in the generated OpenAPI 3.0.0 output by removing the unsupported `propertyNames` keyword and correctly using `nullable: true` for temporal intervals.
 ## [3.6.1] - 2026-08-13
 
 Fixes the self-service GitHub Action workflow when a profile sets `document_metadata.cover.logo`.
