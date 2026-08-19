@@ -72,7 +72,7 @@ runs:
           pip install 'oapi-profile-builder[pdf]'
         else
           # Retry to tolerate PyPI index propagation delay right after publish.
-          for attempt in 1 2 3 4 5; do
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
             if pip install "oapi-profile-builder[pdf]==$VERSION"; then
               break
             fi
