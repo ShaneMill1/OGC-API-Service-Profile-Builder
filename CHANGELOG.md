@@ -1,5 +1,13 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.7.2] - 2026-08-19
+
+Fixes semantic errors in OpenAPI array schemas.
+
+### Fixed
+- **OpenAPI Array Schemas**: Added missing `items` property to temporal, vertical, and custom extent array schemas, resolving semantic errors in OpenAPI validators.
+
+
 ## [3.7.1] - 2026-08-19
 
 Hotfix for structural error in POST body schemas.

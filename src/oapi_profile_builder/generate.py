@@ -676,21 +676,48 @@ def _collection_response_schema(coll: Collection,
     if coll.extent and coll.extent.temporal:
         t = coll.extent.temporal
         temporal_props = {"trs": {"type": "string", **_const(t.trs, version)}}
-        if t.interval: temporal_props["interval"] = {"type": "array", **_const(t.interval, version)}
-        if t.values: temporal_props["values"] = {"type": "array", **_const(t.values, version)}
+        if t.interval:
+            temporal_props["interval"] = {
+                "type": "array",
+                "items": {"type": "array", "items": {"type": "string", "nullable": True}},
+                **_const(t.interval, version)
+            }
+        if t.values:
+            temporal_props["values"] = {
+                "type": "array",
+                "items": {"type": "string"},
+                **_const(t.values, version)
+            }
         extent_props["temporal"] = {"type": "object", "required": ["trs"], "properties": temporal_props}
     if coll.extent and coll.extent.vertical:
         v = coll.extent.vertical
         vertical_props = {"vrs": {"type": "string", **_const(v.vrs, version)}}
-        if v.interval: vertical_props["interval"] = {"type": "array", **_const(v.interval, version)}
-        if v.values: vertical_props["values"] = {"type": "array", **_const(v.values, version)}
+        if v.interval:
+            vertical_props["interval"] = {
+                "type": "array",
+                "items": {"type": "array", "items": {"type": "number"}},
+                **_const(v.interval, version)
+            }
+        if v.values:
+            vertical_props["values"] = {
+                "type": "array",
+                "items": {"type": "string"},
+                **_const(v.values, version)
+            }
         if getattr(v, "positive", None): vertical_props["positive"] = {"type": "string", **_const(v.positive, version)}
         extent_props["vertical"] = {"type": "object", "required": ["vrs"], "properties": vertical_props}
     if coll.extent and coll.extent.custom:
-        custom_items = [{"type": "object", "required": ["id", "interval", "reference"],
-                         "properties": {"id": {"type": "string", **_const(c.id, version)},
-                                        "interval": {"type": "array", **_const(c.interval, version)},
-                                        "reference": {"type": "string", **_const(c.reference, version)}}} for c in coll.extent.custom]
+        custom_items = []
+        for c in coll.extent.custom:
+            custom_items.append({
+                "type": "object",
+                "required": ["id", "interval", "reference"],
+                "properties": {
+                    "id": {"type": "string", **_const(c.id, version)},
+                    "interval": {"type": "array", "items": {"type": "string"}, **_const(c.interval, version)},
+                    "reference": {"type": "string", **_const(c.reference, version)},
+                }
+            })
         extent_props["custom"] = {"type": "array", "items": {"oneOf": custom_items}}
 
     dq_props = {}
@@ -720,7 +747,7 @@ def _collection_response_schema(coll: Collection,
             "id": {"type": "string", **_const(coll.id, version)},
             "title": {"type": "string", **_const(coll.title, version)} if coll.title else {"type": "string"},
             "description": {"type": "string", **_const(coll.description, version)} if coll.description else {"type": "string"},
-            "keywords": {"type": "array", "items": {"type": "string", "enum": coll.keywords}} if coll.keywords else {"type": "array"},
+            "keywords": {"type": "array", "items": {"type": "string"}},
             "links": _LINKS_ARRAY, "crs": crs_array_schema, "output_formats": output_formats_schema,
             "parameter_names": param_names_schema,
             "extent": {"type": "object", "required": ["spatial"], "properties": extent_props},
