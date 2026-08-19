@@ -1,5 +1,13 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.7.1] - 2026-08-19
+
+Hotfix for structural error in POST body schemas.
+
+### Fixed
+- **POST Body Schema syntax**: Fixed a syntax error where `_POST_BODY_SCHEMAS` was incorrectly terminated, causing it to be interpreted as a tuple instead of a dictionary.
+
+
 ## [3.7.0] - 2026-08-19
 
 Major improvements to OpenAPI metadata and dynamic query parameters.

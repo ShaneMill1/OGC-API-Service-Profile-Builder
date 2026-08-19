@@ -427,8 +427,9 @@ _POST_BODY_SCHEMAS: dict[str, dict] = {
             "crs": {"type": "string", "description": "Identifier for the coordinate reference system"},
             "f": {"type": "string", "description": "Response format"},
         },
-}
     },
+}
+
 def _post_operation(get_op: dict, query_type: str, coll: object, responses: dict) -> dict:
     """Build a POST operation mirroring a GET EDR data query operation."""
     body_schema = _POST_BODY_SCHEMAS.get(query_type, {"type": "object"})
