@@ -1,5 +1,18 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.8.0] - 2026-08-19
+
+Significant improvements to OpenAPI visibility and metadata strictness.
+
+### Added
+- **Example Visibility**: Added `default` values to array schemas (conformance classes, CRS, keywords, output formats), ensuring they appear correctly in Swagger UI examples.
+- **Strict Collection Schema**: Fully refined the `/collections/{collId}` schema to strictly mirror configuration without hardcoded fallbacks or `additionalProp` noise.
+
+### Fixed
+- **Conformance Listing**: Fixed an issue where conformance classes would show as a generic `["string"]` placeholder in some documentation tools.
+- **Keyword and Format Fidelity**: Ensured multiple keywords and output formats are correctly captured and required in the output.
+
+
 ## [3.7.5] - 2026-08-19
 
 Fresh release to ensure PyPI propagation.
