@@ -43,9 +43,9 @@ _PAGE_H = 1754
 _COVER_FILENAME = "cover.png"
 
 # Default font family (bundled with Pillow, resolved by name).
-_DEFAULT_REGULAR = "DejaVuSans.ttf"
-_DEFAULT_BOLD = "DejaVuSans-Bold.ttf"
-_DEFAULT_ITALIC = "DejaVuSans-Oblique.ttf"
+_DEFAULT_REGULAR = "DejaVuSans"
+_DEFAULT_BOLD = "DejaVuSans-Bold"
+_DEFAULT_ITALIC = "DejaVuSans:style=Oblique"
 
 
 def _resolve_font_file(spec: str | None, *, bold: bool = False, italic: bool = False) -> str | None:
@@ -62,20 +62,40 @@ def _resolve_font_file(spec: str | None, *, bold: bool = False, italic: bool = F
     if p.is_file():
         return str(p)
     if shutil.which("fc-match"):
-        styles = []
-        if bold:
-            styles.append("Bold")
-        if italic:
-            styles.append("Italic")
-        query = spec if not styles else f"{spec}:style={' '.join(styles)}"
+        # If the spec already contains a colon, treat it as a full fontconfig query
+        if ":" in spec:
+            query = spec
+        else:
+            styles = []
+            if bold:
+                styles.append("Bold")
+            if italic:
+                styles.append("Italic")
+            query = spec if not styles else f"{spec}:style={' '.join(styles)}"
+            
         try:
+            # Try the primary query
             out = subprocess.run(
                 ["fc-match", "-f", "%{file}", query],
                 capture_output=True, text=True, timeout=5, check=False,
             )
             path = out.stdout.strip()
             if path and Path(path).is_file():
-                return path
+                # Verify that the result matches the requested style if possible.
+                # If we asked for Italic but got a Regular file, fc-match just fell back.
+                if italic and "Italic" not in path and "Oblique" not in path:
+                    # Try a second attempt explicitly asking for Oblique if Italic failed
+                    if ":" not in spec:
+                        query_oblique = f"{spec}:style=Oblique"
+                        out = subprocess.run(
+                            ["fc-match", "-f", "%{file}", query_oblique],
+                            capture_output=True, text=True, timeout=5, check=False,
+                        )
+                        path = out.stdout.strip()
+                        if path and Path(path).is_file() and ("Italic" in path or "Oblique" in path):
+                            return path
+                else:
+                    return path
         except Exception:
             pass
     return None
@@ -89,10 +109,16 @@ class _FontSet:
     ultimately fall back to the bundled DejaVu family.
     """
 
-    def __init__(self, cover=None):
+    def __init__(self, cover=None, metadata=None):
         self.regular = getattr(cover, "font_regular", None) if cover else None
         self.bold = getattr(cover, "font_bold", None) if cover else None
         self.italic = getattr(cover, "font_italic", None) if cover else None
+        
+        # Fallback to metadata-level font overrides if set
+        if not self.regular and metadata:
+            self.regular = getattr(metadata, "body_font", None)
+        if not self.bold and metadata:
+            self.bold = getattr(metadata, "header_font", None)
 
     def _font(self, size: int, *, bold: bool = False, italic: bool = False):
         from PIL import ImageFont
@@ -168,7 +194,7 @@ def build_cover_image(profile, output_dir: Path) -> str | None:
 
     bg = cover.background or "#FFFFFF"
     fg = cover.text_color or "#000000"
-    fonts = _FontSet(cover)
+    fonts = _FontSet(cover, m)
 
     page = Image.new("RGB", (_PAGE_W, _PAGE_H), bg)
     draw = ImageDraw.Draw(page)
