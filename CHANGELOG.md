@@ -1,5 +1,14 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.6.3] - 2026-08-19
+
+Fixes structural validation errors in OpenAPI 3.0.0 output.
+
+### Fixed
+
+- **OpenAPI 3.0.0 compatibility**: ensured `propertyNames` is omitted and `nullable: true` is used for temporal intervals when generating OpenAPI 3.0.0, resolving the remaining structural errors in Swagger Editor.
+- **Variable scoping**: fixed a `NameError` in the generator.
+
 ## [3.6.2] - 2026-08-19
 
 Adds support for configurable OpenAPI versions, improving compatibility with Swagger Editor, and introduces the Abstract Test Method field.
