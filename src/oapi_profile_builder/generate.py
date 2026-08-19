@@ -130,25 +130,16 @@ def _landing_page_schema(profile_uri: str, title: str = "", description: str = "
         "links": {
             "type": "array",
             "items": _LINK_SCHEMA,
-            "contains": {
-                "type": "object",
-                "required": ["href", "rel"],
-                "properties": {
-                    "rel": {"const": "profile"},
-                    "href": {"const": profile_uri},
-                },
-            },
         },
     }
     if title:
-        schema_props["title"] = {"type": "string", "const": title}
+        schema_props["title"] = {"type": "string", "enum": [title]}
     if description:
         schema_props["description"] = {"type": "string"}
     if keywords:
         schema_props["keywords"] = {
             "type": "array",
-            "items": {"type": "string"},
-            "contains": {"enum": keywords},
+            "items": {"type": "string", "enum": keywords},
         }
 
     return {
@@ -189,7 +180,7 @@ _R200_FEATURES = {
             "schema": {
                 "type": "object",
                 "properties": {
-                    "type": {"type": "string", "const": "FeatureCollection"},
+                    "type": {"type": "string", "enum": ["FeatureCollection"]},
                     "features": {
                         "type": "array",
                         "items": {"type": "object"},
@@ -237,7 +228,7 @@ def _locations_response_schema(profile: "ServiceProfile | None") -> dict:
                     "type": "object",
                     "required": ["type", "features"],
                     "properties": {
-                        "type": {"type": "string", "const": "FeatureCollection"},
+                        "type": {"type": "string", "enum": ["FeatureCollection"]},
                         "features": {"type": "array", "items": feature_schema},
                     },
                 }
@@ -267,11 +258,11 @@ def _coverage_response(coll: Collection, profile: "ServiceProfile | None") -> di
                 media_type = "application/prs.coverage+json"
                 # Also accept the newer media type
                 alt_media = "application/vnd.cov+json"
-                schema = (
-                    {"$ref": schema_ref}
-                    if schema_ref
-                    else {"$ref": f"{_EDR}/schemas/coverageJSON.yaml"}
-                )
+                if schema_ref:
+                     schema = {"$ref": schema_ref}
+                else:
+                     # Fallback to an inline object if external ref is problematic
+                     schema = {"type": "object"}
                 content[media_type] = {"schema": schema}
                 content[alt_media] = {"schema": schema}
             elif fmt_name == "GeoJSON":
@@ -744,7 +735,7 @@ def _parameter_schema() -> dict:
         "type": "object",
         "required": ["type", "observedProperty"],
         "properties": {
-            "type": {"type": "string", "const": "Parameter"},
+            "type": {"type": "string", "enum": ["Parameter"]},
             "id": {"type": "string"},
             "label": {"type": "string"},
             "description": {"type": "string"},
@@ -1090,7 +1081,8 @@ def _core_paths(profile: ServiceProfile) -> dict:
     # Conformance response with required conformance classes
     conformance_response = _R200_CONFORMANCE.copy()
     if profile.required_conformance_classes:
-        conformance_response["content"]["application/json"]["schema"]["properties"]["conformsTo"]["contains"] = {
+        conformance_response["content"]["application/json"]["schema"]["properties"]["conformsTo"]["items"] = {
+            "type": "string",
             "enum": profile.required_conformance_classes
         }
     
@@ -1309,7 +1301,7 @@ def build_openapi(profile: ServiceProfile) -> dict:
         info["x-default-locale"] = profile.resource_default_locale
 
     return {
-        "openapi": "3.1.0",
+        "openapi": "3.0.0",
         "info": info,
         # Per OGC API - EDR Part 3 REQ_publishing: this profile is implementation-independent.
         # The placeholder server URL "/" is required by OpenAPI validators but implementations
