@@ -97,14 +97,22 @@ class _FontSet:
     def _font(self, size: int, *, bold: bool = False, italic: bool = False):
         from PIL import ImageFont
 
-        # Prefer an explicit per-style spec, else derive from the regular family.
-        explicit = self.bold if bold else (self.italic if italic else self.regular)
-        candidates = [
-            _resolve_font_file(explicit, bold=bold, italic=italic),
-            _resolve_font_file(self.regular, bold=bold, italic=italic),
-        ]
-        default = _DEFAULT_BOLD if bold else (_DEFAULT_ITALIC if italic else _DEFAULT_REGULAR)
-        candidates.append(default)
+        candidates = []
+        # 1. Try explicit style override (path or family name)
+        style_spec = self.bold if bold else (self.italic if italic else None)
+        if style_spec:
+            candidates.append(_resolve_font_file(style_spec, bold=bold, italic=italic))
+
+        # 2. Try deriving from the regular spec if it is a family name
+        if (bold or italic) and self.regular and not Path(self.regular).expanduser().is_file():
+            candidates.append(_resolve_font_file(self.regular, bold=bold, italic=italic))
+
+        # 3. Try standard defaults for the requested style
+        candidates.append(_DEFAULT_BOLD if bold else (_DEFAULT_ITALIC if italic else _DEFAULT_REGULAR))
+
+        # 4. Fallback to the regular font spec (even if not the right style)
+        candidates.append(_resolve_font_file(self.regular))
+
         for cand in candidates:
             if not cand:
                 continue
@@ -191,11 +199,18 @@ def build_cover_image(profile, output_dir: Path) -> str | None:
     # --- Tagline (italic) ---
     if cover.tagline:
         tagline_fs = getattr(cover, "tagline_font_size", 30)
-        y = centered(cover.tagline, fonts.italic_font(tagline_fs), y, fg) + 60
+        tagline_font = fonts.italic_font(tagline_fs)
+        for line in _wrap(draw, cover.tagline, tagline_font, _PAGE_W - 240):
+            y = centered(line, tagline_font, y, fg) + 10
+        y += 50
 
     # --- Document number ---
     if m and m.doc_number:
-        y = centered(m.doc_number, fonts.regular_font(46, bold=True), y, fg) + 40
+        doc_num_font = fonts.regular_font(46, bold=True)
+        for line in _wrap(draw, m.doc_number, doc_num_font, _PAGE_W - 240):
+            y = centered(line, doc_num_font, y, fg) + 16
+        y += 24
+
 
     # --- Edition & date ---
     # Per DGIWG feedback these two lines are both bold and set a little smaller

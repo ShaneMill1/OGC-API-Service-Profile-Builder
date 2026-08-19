@@ -555,6 +555,10 @@ def _collection_response_schema(coll: Collection,
         "type": "object",
         "additionalProperties": param_item_schema,
     }
+    if coll.parameter_names:
+        param_names_schema["properties"] = {
+            name: param_item_schema for name in coll.parameter_names.root
+        }
     if profile and profile.parameter_name_pattern:
         param_names_schema["propertyNames"] = {
             "type": "string",
@@ -1498,7 +1502,7 @@ def _individual_test_adoc(profile: ServiceProfile, test_id: str) -> str:
         f"identifier:: /conf/{profile.name}/{test.id}",
         f"target:: /req/{profile.name}/{test.requirement_id}",
         f"test-purpose:: Validate that {test.id.replace('-', ' ')} is correctly implemented.",
-        "test-method::",
+        f"test-method:: {test.method or ''}",
     ]
     for step in test.steps:
         lines.append(f"step:: {step}")
@@ -1601,7 +1605,7 @@ def _individual_test_adoc_for(profile: ServiceProfile, cls: str, test) -> str:
         f"identifier:: /conf/{cls}/{test.id}",
         f"target:: /req/{cls}/{test.requirement_id}",
         f"test-purpose:: Validate that {test.id.replace('-', ' ')} is correctly implemented.",
-        "test-method::",
+        f"test-method:: {test.method or ''}",
     ]
     for step in test.steps:
         lines.append(f"step:: {step}")
