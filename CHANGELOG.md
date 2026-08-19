@@ -1,5 +1,25 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.7.0] - 2026-08-19
+
+Major improvements to OpenAPI metadata and dynamic query parameters.
+
+### Added
+- **Landing Page Metadata**: The `/` landing page response now includes full metadata: `title`, `version`, `description`, `x-ogc-profile`, `x-keywords`, `provider`, `contact` details (with `x-` extensions), and security `x-classification`.
+- **Dynamic Query Parameters**: 
+    - Query parameters (`position`, `area`, `radius`, `cube`, `trajectory`, `corridor`, `items`) now dynamically include a `crs` parameter with an `enum` of supported coordinate systems.
+    - The `z` (vertical) parameter is now automatically omitted from both GET and POST operations if the collection has no vertical extent, as required by the EDR standard for such datasets.
+- **Enhanced Collection Metadata**: Collection responses now strictly mandate and populate `id`, `title`, `description`, `keywords`, `crs`, `output_formats`, and `links` from the configuration, with `enum`/`const` constraints in the schema.
+- **Parameter Documentation**: `parameter_names` objects are now fully expanded in the OpenAPI schema to include detailed `observedProperty` and `unit` metadata.
+
+### Changed
+- **Endpoint Renaming**: Renamed the OpenAPI definition endpoint from `/openapi` to `/api` for better alignment with OGC API standards.
+- **Link Documentation**: Improved landing page `links` documentation with explicit `rel` type enums (`self`, `service-desc`, `service-doc`, `conformance`, `data`, `profile`).
+
+### Fixed
+- **Shared State bug**: Fixed a bug where the conformance response was shallow-copied, potentially leading to cross-collection metadata leakage or Swagger Editor errors.
+
+
 ## [3.6.3] - 2026-08-19
 
 Fixes structural validation errors in OpenAPI 3.0.0 output.
