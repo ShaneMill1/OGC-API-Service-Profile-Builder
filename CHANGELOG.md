@@ -1,5 +1,18 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.7.3] - 2026-08-19
+
+Populates Landing Page and Collection links and strictly mandates Conformance classes.
+
+### Added
+- **Populated Links**: The Landing Page and Collection metadata responses now include fully populated `links` arrays with standard OGC API relations (`self`, `service-desc`, `conformance`, `data`, `profile`).
+- **Strict Conformance**: The `/conformance` response now strictly lists all 8 required conformance classes in the OpenAPI schema, ensuring they are visible and mandated in Swagger UI.
+- **hreflang support**: Added support for the `hreflang` property in Landing Page and Collection links.
+
+### Changed
+- **ServiceProfile Model**: Added an optional `links` field to the root of the ServiceProfile YAML configuration.
+
+
 ## [3.7.2] - 2026-08-19
 
 Fixes semantic errors in OpenAPI array schemas.

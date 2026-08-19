@@ -150,12 +150,34 @@ def _landing_page_schema(profile: "ServiceProfile") -> dict:
             "href": {"type": "string"},
             "rel": {"type": "string", "enum": link_rels},
             "type": {"type": "string"},
-            "title": {"type": "string"}
+            "title": {"type": "string"},
+            "hreflang": {"type": "string"}
         }
     }
 
+    links_to_show = []
+    if profile.links:
+        for l in profile.links:
+            link_obj = {"href": l.href, "rel": l.rel}
+            if l.type: link_obj["type"] = l.type
+            if l.title: link_obj["title"] = l.title
+            if getattr(l, "hreflang", None): link_obj["hreflang"] = l.hreflang
+            links_to_show.append(link_obj)
+    else:
+        links_to_show = [
+            {"href": "/", "rel": "self", "type": "application/json", "title": "this document"},
+            {"href": "/api", "rel": "service-desc", "type": "application/vnd.oai.openapi+json;version=3.0.0", "title": "the API definition"},
+            {"href": "/conformance", "rel": "conformance", "type": "application/json", "title": "OGC API conformance classes implemented by this server"},
+            {"href": "/collections", "rel": "data", "type": "application/json", "title": "Information about the collections"},
+            {"href": profile_uri, "rel": "profile", "type": "text/html", "title": "The Service Profile for this API"}
+        ]
+
     schema_props: dict = {
-        "links": {"type": "array", "items": link_items},
+        "links": {
+            "type": "array",
+            "items": link_items,
+            "enum": [links_to_show]
+        },
         "title": {"type": "string", **_const(profile.title, version)},
         "version": {"type": "string", **_const(profile.version, version)},
         "x-ogc-profile": {"type": "string", **_const(profile_uri, version)}
@@ -741,6 +763,15 @@ def _collection_response_schema(coll: Collection,
                 "variables": {"type": "object", "properties": vars_props}
             }}}}
 
+    links_to_show = []
+    if coll.links:
+        for l in coll.links:
+            link_obj = {"href": l.href, "rel": l.rel}
+            if l.type: link_obj["type"] = l.type
+            if l.title: link_obj["title"] = l.title
+            if getattr(l, "hreflang", None): link_obj["hreflang"] = l.hreflang
+            links_to_show.append(link_obj)
+
     schema: dict = {
         "type": "object", "required": ["id", "links", "extent"],
         "properties": {
@@ -748,7 +779,7 @@ def _collection_response_schema(coll: Collection,
             "title": {"type": "string", **_const(coll.title, version)} if coll.title else {"type": "string"},
             "description": {"type": "string", **_const(coll.description, version)} if coll.description else {"type": "string"},
             "keywords": {"type": "array", "items": {"type": "string"}},
-            "links": _LINKS_ARRAY, "crs": crs_array_schema, "output_formats": output_formats_schema,
+            "links": {"type": "array", "items": _LINK_SCHEMA, "enum": [links_to_show]}, "crs": crs_array_schema, "output_formats": output_formats_schema,
             "parameter_names": param_names_schema,
             "extent": {"type": "object", "required": ["spatial"], "properties": extent_props},
             "data_queries": {"type": "object", "properties": dq_props}
@@ -1083,14 +1114,15 @@ def _core_paths(profile: ServiceProfile) -> dict:
     # Conformance response with required conformance classes
     conformance_response = copy.deepcopy(_R200_CONFORMANCE)
     if profile.required_conformance_classes:
+        schema = conformance_response["content"]["application/json"]["schema"]
         if version == "3.1.0":
-            conformance_response["content"]["application/json"]["schema"]["properties"]["conformsTo"]["contains"] = {
-                "enum": profile.required_conformance_classes
-            }
+            schema["properties"]["conformsTo"]["contains"] = {"enum": profile.required_conformance_classes}
         else:
-            conformance_response["content"]["application/json"]["schema"]["properties"]["conformsTo"]["items"] = {
-                "type": "string",
-                "enum": profile.required_conformance_classes
+            # Force listing all expected classes in Swagger UI by using enum at the array level
+            schema["properties"]["conformsTo"] = {
+                "type": "array",
+                "items": {"type": "string"},
+                "enum": [profile.required_conformance_classes]
             }
     
     return {

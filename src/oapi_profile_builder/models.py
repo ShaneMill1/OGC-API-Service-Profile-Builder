@@ -44,6 +44,7 @@ from enum import Enum
 from typing import Annotated, List, Literal, Optional
 
 from annotated_types import Len
+from edr_pydantic.link import Link
 from edr_pydantic.collections import Collection as EDRCollection
 from edr_pydantic.extent import Custom, Extent as EDRExtent, Spatial, Vertical
 from pydantic import AwareDatetime, BaseModel, Field, field_validator, model_validator
@@ -894,6 +895,7 @@ class ServiceProfile(BaseModel):
         default=None,
         description="Date the resource/service was published (ISO 8601 string). Surfaces as info.x-resource-publish-date.",
     )
+    links: list[Link] = Field(default_factory=list, description="Landing page links")
     resource_default_locale: str | None = Field(
         default=None,
         description="Default locale of the resource (e.g. 'eng'). Surfaces as info.x-default-locale.",
