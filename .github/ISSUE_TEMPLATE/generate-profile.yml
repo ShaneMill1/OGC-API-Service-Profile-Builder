@@ -25,6 +25,7 @@ body:
         name: my_profile
         title: My Service Profile
         version: "1.0"
+        openapi_version: "3.0.0" # "3.0.0" for compatibility, "3.1.0" for latest features
         # ... rest of your config ...
     validations:
       required: true

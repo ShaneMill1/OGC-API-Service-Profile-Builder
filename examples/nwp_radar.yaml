@@ -1,6 +1,7 @@
 name: nwp_radar
 title: NWP Radar Profile
 version: "1.0"
+openapi_version: "3.0.0"
 description: >
   Service profile for DGIWG NWP radar data, providing
   precipitation amount via OGC API - EDR.

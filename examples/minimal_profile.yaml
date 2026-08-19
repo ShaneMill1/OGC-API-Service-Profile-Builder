@@ -1,6 +1,7 @@
 name: minimal_profile
 title: Minimal EDR Profile Example
 version: "1.0"
+openapi_version: "3.0.0"
 
 # ── Profile-level constraints ─────────────────────────────────────────────
 # Define what any conforming implementation MUST support.

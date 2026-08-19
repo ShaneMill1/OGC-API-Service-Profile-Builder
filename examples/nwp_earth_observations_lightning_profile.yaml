@@ -1,6 +1,7 @@
 name: nwp_earth_observations_lightning
 title: DGIWG NWP Earth Observations Lightning Profile
 version: "1.0"
+openapi_version: "3.0.0"
 description: >
   Service profile for NWP Earth Observations Lightning data, providing
   frequency of lightning flashes per unit area via OGC API - EDR.
