@@ -223,6 +223,7 @@ def _locations_response_schema(profile: "ServiceProfile | None") -> dict:
     properties named in ``profile.locations_feature_required_properties`` are
     marked required so the generated OpenAPI enforces them.
     """
+    version = profile.openapi_version if profile else "3.0.0"
     required_props = list(getattr(profile, "locations_feature_required_properties", None) or [])
     properties_schema: dict = {
         "type": "object",
@@ -1094,8 +1095,9 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
 
 
 def _core_paths(profile: ServiceProfile) -> dict:
+    version = profile.openapi_version
     landing_response = _landing_page_schema(
-        profile.req_uri, profile.openapi_version,
+        profile.req_uri, version,
         title=profile.title,
         description=profile.description or "",
         keywords=profile.keywords or None,
@@ -1104,10 +1106,15 @@ def _core_paths(profile: ServiceProfile) -> dict:
     # Conformance response with required conformance classes
     conformance_response = _R200_CONFORMANCE.copy()
     if profile.required_conformance_classes:
-        conformance_response["content"]["application/json"]["schema"]["properties"]["conformsTo"]["items"] = {
-            "type": "string",
-            "enum": profile.required_conformance_classes
-        }
+        if version == "3.1.0":
+            conformance_response["content"]["application/json"]["schema"]["properties"]["conformsTo"]["contains"] = {
+                "enum": profile.required_conformance_classes
+            }
+        else:
+            conformance_response["content"]["application/json"]["schema"]["properties"]["conformsTo"]["items"] = {
+                "type": "string",
+                "enum": profile.required_conformance_classes
+            }
     
     return {
         "/": {"get": {
