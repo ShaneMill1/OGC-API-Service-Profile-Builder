@@ -849,6 +849,10 @@ class ServiceProfile(BaseModel):
     name: Annotated[str, Field(pattern=r"^[a-z0-9_]+$")]
     title: str
     version: str = "1.0"
+    openapi_version: Literal["3.0.0", "3.1.0"] = Field(
+        default="3.0.0",
+        description="OpenAPI version to generate (3.0.0 for compatibility, 3.1.0 for latest features)"
+    )
     description: str | None = Field(
         default=None,
         description=(

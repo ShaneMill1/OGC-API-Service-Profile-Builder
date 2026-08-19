@@ -3182,6 +3182,16 @@
       "description": "Per-conformance-class constraints keyed by class short name (e.g. 'insitu-observations', 'nwp'). Applied only to collections whose conformance_classes list includes the key. Lets one profile document model several EDR Part 3 requirements classes with different mandatory data-query sets. The flat required_data_queries / radius_within_units_required fields still apply to every collection; class-scoped constraints are additive on top of them.",
       "title": "Conformance Class Requirements",
       "type": "object"
+    },
+    "openapi_version": {
+      "default": "3.0.0",
+      "description": "OpenAPI version to generate (3.0.0 for compatibility, 3.1.0 for latest features)",
+      "enum": [
+        "3.0.0",
+        "3.1.0"
+      ],
+      "title": "Openapi Version",
+      "type": "string"
     }
   },
   "required": [

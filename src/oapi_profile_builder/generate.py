@@ -41,6 +41,16 @@ import yaml
 
 from edr_pydantic.collections import Collection
 from oapi_profile_builder.models import ServiceProfile
+def _const(val, version: str) -> dict:
+    if version == "3.1.0":
+        return {"const": val}
+    return {"enum": [val]}
+
+def _contains(schema: dict, version: str) -> dict:
+    if version == "3.1.0":
+        return {"contains": schema}
+    return {}
+
 
 
 class _NoAliasDumper(yaml.Dumper):
@@ -125,21 +135,30 @@ _LINK_SCHEMA = {
 _LINKS_ARRAY = {"type": "array", "items": _LINK_SCHEMA}
 
 # Landing page response with required profile link per REQ_publishing
-def _landing_page_schema(profile_uri: str, title: str = "", description: str = "", keywords: list | None = None) -> dict:
+def _landing_page_schema(profile_uri: str, version: str, title: str = "", description: str = "", keywords: list | None = None) -> dict:
     schema_props: dict = {
         "links": {
             "type": "array",
             "items": _LINK_SCHEMA,
+            **(_contains({
+                "type": "object",
+                "required": ["href", "rel"],
+                "properties": {
+                    "rel": _const("profile", version),
+                    "href": _const(profile_uri, version),
+                },
+            }, version) if version == "3.1.0" else {}),
         },
     }
     if title:
-        schema_props["title"] = {"type": "string", "enum": [title]}
+        schema_props["title"] = {"type": "string", **_const(title, version)}
     if description:
         schema_props["description"] = {"type": "string"}
     if keywords:
         schema_props["keywords"] = {
             "type": "array",
-            "items": {"type": "string", "enum": keywords},
+            "items": {"type": "string"},
+            **(_contains({"enum": keywords}, version) if version == "3.1.0" else {"items": {"type": "string", "enum": keywords}}),
         }
 
     return {
@@ -173,26 +192,29 @@ _R200_CONFORMANCE = {
     }
 }
 _R200_COLLECTION = {"description": "Collection metadata", "content": {"application/json": {"schema": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}, "title": {"type": "string"}, "description": {"type": "string"}, "links": _LINKS_ARRAY}}}}}
-_R200_FEATURES = {
-    "description": "Feature collection",
-    "content": {
-        "application/json": {
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "type": {"type": "string", "enum": ["FeatureCollection"]},
-                    "features": {
-                        "type": "array",
-                        "items": {"type": "object"},
+def _features_schema(version: str) -> dict:
+    return {
+        "description": "Feature collection",
+        "content": {
+            "application/json": {
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "type": {"type": "string", **_const("FeatureCollection", version)},
+                        "features": {
+                            "type": "array",
+                            "items": {"type": "object"},
+                        },
                     },
                 },
             }
-        }
-    },
-}
+        },
+    }
 
 def _locations_response_schema(profile: "ServiceProfile | None") -> dict:
     """Build the 200 response for a /locations query.
+
+    version = profile.openapi_version if profile else "3.0.0"
 
     Per the EDR locations-response requirement (and the MetOcean profile's
     /req/core/locations_query_response_format), the response is a GeoJSON
@@ -214,7 +236,7 @@ def _locations_response_schema(profile: "ServiceProfile | None") -> dict:
         "type": "object",
         "required": ["type", "id", "properties"],
         "properties": {
-            "type": {"type": "string", "const": "Feature"},
+            "type": {"type": "string", **_const("Feature", version)},
             "id": {"type": "string", "description": "Location identifier usable at /locations/{locId}"},
             "geometry": {"type": "object", "description": "GeoJSON geometry of the location"},
             "properties": properties_schema,
@@ -228,7 +250,7 @@ def _locations_response_schema(profile: "ServiceProfile | None") -> dict:
                     "type": "object",
                     "required": ["type", "features"],
                     "properties": {
-                        "type": {"type": "string", "enum": ["FeatureCollection"]},
+                        "type": {"type": "string", **_const("FeatureCollection", version)},
                         "features": {"type": "array", "items": feature_schema},
                     },
                 }
@@ -540,7 +562,7 @@ def _collection_response_schema(coll: Collection,
         import copy
         param_item_schema = copy.deepcopy(profile.parameter_schema)
     else:
-        param_item_schema = _parameter_schema()
+        param_item_schema = _parameter_schema(profile.openapi_version)
 
     param_names_schema: dict = {
         "type": "object",
@@ -729,13 +751,13 @@ def _collection_response_schema(coll: Collection,
     }
 
 
-def _parameter_schema() -> dict:
+def _parameter_schema(version: str) -> dict:
     """OpenAPI schema for a single EDR Parameter object."""
     return {
         "type": "object",
         "required": ["type", "observedProperty"],
         "properties": {
-            "type": {"type": "string", "enum": ["Parameter"]},
+            "type": {"type": "string", **_const("Parameter", version)},
             "id": {"type": "string"},
             "label": {"type": "string"},
             "description": {"type": "string"},
@@ -925,7 +947,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
         "tags": [tag],
         "parameters": items_params,
         "responses": {
-            "200": _R200_FEATURES,
+            "200": _features_schema(profile.openapi_version if profile else "3.0.0"),
             "400": _ERR_400, "404": _ERR_404, "500": _ERR_500,
         },
     }}
@@ -939,7 +961,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
             _F, _LANG,
         ],
         "responses": {
-            "200": _R200_FEATURES,
+            "200": _features_schema(profile.openapi_version if profile else "3.0.0"),
             "400": _ERR_400, "404": _ERR_404, "500": _ERR_500,
         },
     }}
@@ -965,7 +987,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
                 "tags": [tag],
                 "parameters": [_F],
                 "responses": {
-                    "200": _R200_FEATURES,
+                    "200": _features_schema(profile.openapi_version if profile else "3.0.0"),
                     "400": _ERR_400, "500": _ERR_500,
                 },
             }}
@@ -983,7 +1005,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
                 "operationId": _operation_id("getInstance", coll.id),
                 "tags": [tag],
                 "parameters": [instance_id_param, _F],
-                "responses": {"200": _R200_FEATURES},
+                "responses": {"200": _features_schema(profile.openapi_version if profile else "3.0.0")},
             }}
             # instance-level query sub-paths — GET + optional POST
             for sub_qt in (active - {"instances"}):
@@ -1072,7 +1094,7 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
 
 def _core_paths(profile: ServiceProfile) -> dict:
     landing_response = _landing_page_schema(
-        profile.req_uri,
+        profile.req_uri, profile.openapi_version,
         title=profile.title,
         description=profile.description or "",
         keywords=profile.keywords or None,
@@ -1301,7 +1323,7 @@ def build_openapi(profile: ServiceProfile) -> dict:
         info["x-default-locale"] = profile.resource_default_locale
 
     return {
-        "openapi": "3.0.0",
+        "openapi": profile.openapi_version,
         "info": info,
         # Per OGC API - EDR Part 3 REQ_publishing: this profile is implementation-independent.
         # The placeholder server URL "/" is required by OpenAPI validators but implementations
@@ -1344,6 +1366,7 @@ def build_openapi(profile: ServiceProfile) -> dict:
 # ---------------------------------------------------------------------------
 
 def build_asyncapi(profile: ServiceProfile) -> dict:
+    version = profile.openapi_version
     if not profile.pubsub:
         raise ValueError("profile has no pubsub configuration")
 
@@ -1388,7 +1411,7 @@ def build_asyncapi(profile: ServiceProfile) -> dict:
                 "type": "object",
                 "required": ["type", "properties"],
                 "properties": {
-                    "type": {"type": "string", "const": "Feature"},
+                    "type": {"type": "string", **_const("Feature", version)},
                     "properties": {
                         "type": "object",
                         "required": ["id", "timestamp"],
