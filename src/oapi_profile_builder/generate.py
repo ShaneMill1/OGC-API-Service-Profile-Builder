@@ -44,7 +44,7 @@ from oapi_profile_builder.models import ServiceProfile
 def _const(val, version: str) -> dict:
     if version == "3.1.0":
         return {"const": val}
-    return {"enum": [val]}
+    return {"enum": [val], "default": val}
 
 def _contains(schema: dict, version: str) -> dict:
     if version == "3.1.0":
@@ -189,7 +189,7 @@ def _landing_page_schema(profile: "ServiceProfile") -> dict:
         schema_props["keywords"] = {
             "type": "array",
             "items": {"type": "string"},
-            "enum": [profile.keywords]
+            **_const(profile.keywords, version)
         }
     
     if profile.provider:
@@ -685,10 +685,20 @@ def _collection_response_schema(coll: Collection,
 
     output_formats_schema: dict = {"type": "array", "items": {"type": "string"}}
     if coll.output_formats:
-        output_formats_schema["items"] = {"type": "string", "enum": list(coll.output_formats)}
+        output_formats_schema = {
+            "type": "array",
+            "items": {"type": "string"},
+            **_const(list(coll.output_formats), version)
+        }
 
-    if coll.crs: crs_array_schema: dict = {"type": "array", "items": {"type": "string", "enum": list(coll.crs)}}
-    else: crs_array_schema = {"type": "array", "items": supported_crs_schema}
+    if coll.crs:
+        crs_array_schema: dict = {
+            "type": "array",
+            "items": {"type": "string"},
+            **_const(list(coll.crs), version)
+        }
+    else:
+        crs_array_schema = {"type": "array", "items": supported_crs_schema}
 
     extent_props: dict = {}
     if coll.extent and coll.extent.spatial:
@@ -783,8 +793,18 @@ def _collection_response_schema(coll: Collection,
             "id": {"type": "string", **_const(coll.id, version)},
             "title": {"type": "string", **_const(coll.title, version)} if coll.title else {"type": "string"},
             "description": {"type": "string", **_const(coll.description, version)} if coll.description else {"type": "string"},
-            "keywords": {"type": "array", "items": {"type": "string"}, "enum": [coll.keywords] if coll.keywords else [[]]},
-            "links": {"type": "array", "items": _LINK_SCHEMA, "enum": [links_to_show]}, "crs": crs_array_schema, "output_formats": output_formats_schema,
+            "keywords": {
+                "type": "array",
+                "items": {"type": "string"},
+                **(_const(coll.keywords, version) if coll.keywords else {})
+            },
+            "links": {
+                "type": "array",
+                "items": _LINK_SCHEMA,
+                **_const(links_to_show, version)
+            },
+            "crs": crs_array_schema,
+            "output_formats": output_formats_schema,
             "parameter_names": {**param_names_schema, "additionalProperties": False},
             "extent": {"type": "object", "required": ["spatial"], "properties": extent_props},
             "data_queries": {"type": "object", "properties": dq_props, "additionalProperties": False}
@@ -1123,11 +1143,10 @@ def _core_paths(profile: ServiceProfile) -> dict:
         if version == "3.1.0":
             schema["properties"]["conformsTo"]["contains"] = {"enum": profile.required_conformance_classes}
         else:
-            # Force listing all expected classes in Swagger UI by using enum at the array level
             schema["properties"]["conformsTo"] = {
                 "type": "array",
                 "items": {"type": "string"},
-                "enum": [profile.required_conformance_classes]
+                **_const(profile.required_conformance_classes, version)
             }
     
     return {
