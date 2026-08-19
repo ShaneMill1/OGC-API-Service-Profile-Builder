@@ -530,6 +530,7 @@ def _collection_response_schema(coll: Collection,
     - Full parameter_names objects with all fields
     - parameter_name_pattern as propertyNames constraint
     """
+    version = profile.openapi_version if profile else "3.0.0"
     crs_schema: dict = {"type": "string"}       # extent.spatial.crs
     trs_schema: dict = {"type": "string"}       # extent.temporal.trs
     vrs_schema: dict = {"type": "string"}       # extent.vertical.vrs
@@ -572,7 +573,7 @@ def _collection_response_schema(coll: Collection,
         param_names_schema["properties"] = {
             name: param_item_schema for name in coll.parameter_names.root
         }
-    if profile and profile.parameter_name_pattern:
+    if version == "3.1.0" and profile and profile.parameter_name_pattern:
         param_names_schema["propertyNames"] = {
             "type": "string",
             "pattern": profile.parameter_name_pattern,
@@ -631,7 +632,7 @@ def _collection_response_schema(coll: Collection,
                                 "type": "array",
                                 "items": {
                                     "type": "array",
-                                    "items": {
+                                    "items": {"type": "string", "format": "date-time", "nullable": True} if version == "3.0.0" else {
                                         "oneOf": [
                                             {"type": "string", "format": "date-time"},
                                             {"type": "null"},
