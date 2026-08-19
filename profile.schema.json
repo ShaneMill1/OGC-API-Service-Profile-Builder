@@ -17,6 +17,19 @@
           "minItems": 1,
           "title": "Steps",
           "type": "array"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional test method description",
+          "title": "Method"
         }
       },
       "required": [

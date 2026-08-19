@@ -261,6 +261,7 @@ class AbstractTest(BaseModel):
     id: str  # mirrors the requirement id it tests
     requirement_id: str
     steps: list[str] = Field(min_length=1)
+    method: str | None = Field(default=None, description="Optional test method description")
 
     @model_validator(mode="after")
     def ids_must_match(self) -> AbstractTest:
