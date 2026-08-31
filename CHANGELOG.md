@@ -1,5 +1,27 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.9.0] - 2026-08-31
+
+Addresses Met Office review feedback on the generated OpenAPI: metadata fidelity, standard link objects, the `/collections` structure, and WKT2 CRS handling.
+
+### Added
+- **`attribution`**: New profile- and collection-level field (standard OGC API landing-page/collection metadata, inherited from OGC API - Common). Surfaces as a plain `attribution` property in the landing page and each collection, and as `x-attribution` in the OpenAPI `info` block.
+- **Language selection**: New `default_language` and `supported_languages` fields drive the `lang` query parameter's `default` and `enum`, so the default can be changed from `en-US` and more than one language can be advertised.
+- **`/collections` structure**: The `/collections` 200 response now follows OGC API - EDR Part 1 (links + a `collections` array carrying full collection definitions) instead of a bare links stub.
+- **`/api` profile link**: The `/api` response advertises the `rel=profile` link to the profile URI.
+- **Collection metadata**: `provider`, `attribution`, and `classification` now flow from the input into each collection response (collection-level overrides profile-level).
+- **Items POST body**: The `items` POST request body is now populated (bbox/datetime/parameter-name/crs/z/f) instead of an empty object.
+
+### Changed
+- **Descriptive metadata as examples**: Descriptions, keywords, titles, extents, links, and provider details are now emitted as `example` values rather than single-value `enum`+`default` (3.0) / `const` (3.1), clearing the Swagger Editor warnings. Genuine spec constants (e.g. `type: Feature`) remain constrained.
+- **Profile URI as a link**: The profile URI is now published as a `rel=profile` link object (on `/`, `/api`, and `/collections`) rather than a bespoke `x-ogc-profile` schema property. Landing-page links are surfaced as data so Swagger shows real hrefs/rels. The default landing-page link set now includes `self`, `service-desc`, `service-doc`, `conformance`, `data`, and `profile`.
+- **Response-body metadata names**: Response bodies now use the plain input names (e.g. `hours`, `classification`, `metadata-date`) without the `x-` prefix. The OpenAPI `info` object retains the `x-` prefix where the spec requires it for extensions.
+- **Classification field names**: `Classification.level`/`system` renamed to `classification_level`/`classification_system` (a DGIWG requirement). The legacy `level`/`system` names are still accepted as input aliases for backward compatibility.
+
+### Fixed
+- **Description newline**: Trailing newlines from YAML folded scalars (`>`) are stripped from descriptions and other free-text fields.
+- **WKT2 CRS matching**: The `extent_requirements` allowed-list check for CRS values is now whitespace-tolerant for WKT2 strings, so semantically identical WKT2 values match regardless of token spacing (while quoted names stay significant). Added a YAML parse-error hint and README guidance on single-quoting WKT2 CRS strings.
+
 ## [3.8.0] - 2026-08-19
 
 Significant improvements to OpenAPI visibility and metadata strictness.
