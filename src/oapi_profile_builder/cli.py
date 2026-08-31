@@ -71,8 +71,40 @@ def _parse_datetimes(obj, _in_examples: bool = False):
 def load_config(path: Path) -> dict:
     text = path.read_text(encoding="utf-8")
     if path.suffix in {".yaml", ".yml"}:
-        return _parse_datetimes(yaml.safe_load(text))
+        try:
+            data = yaml.safe_load(text)
+        except yaml.YAMLError as exc:
+            raise SystemExit(_yaml_error_hint(exc)) from exc
+        return _parse_datetimes(data)
     return _parse_datetimes(json.loads(text))
+
+
+def _yaml_error_hint(exc: "yaml.YAMLError") -> str:
+    """Turn a raw PyYAML parse error into an actionable message.
+
+    The most common failure is an unquoted or double-quoted WKT2 CRS string.
+    WKT2 embeds double quotes, square brackets and commas
+    (e.g. GEOGCRS["WGS 84",...,ID["EPSG",4326]]), which YAML cannot parse as a
+    bare or double-quoted scalar. The value must be wrapped in SINGLE quotes
+    (or written as a block scalar with `|-`).
+    """
+    base = f"Failed to parse YAML config:\n{exc}"
+    text = str(exc)
+    looks_like_wkt = any(tok in text for tok in ("GEOGCRS", "PROJCRS", "BOUNDCRS", "COMPOUNDCRS", '"'))
+    if looks_like_wkt or "expected" in text:
+        base += (
+            "\n\nHint: if a CRS/TRS value is a WKT2 string (e.g. "
+            'GEOGCRS[\"WGS 84\",...,ID[\"EPSG\",4326]]), it contains double quotes, '
+            "square brackets and commas that YAML cannot parse unquoted or "
+            "double-quoted. Wrap the whole value in SINGLE quotes:\n"
+            "    crs:\n"
+            "      - 'GEOGCRS[\"WGS 84\",...,ID[\"EPSG\",4326]]'\n"
+            "or use a block scalar:\n"
+            "    crs:\n"
+            "      - |-\n"
+            '        GEOGCRS["WGS 84",...,ID["EPSG",4326]]'
+        )
+    return base
 
 
 def main() -> None:
