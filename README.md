@@ -473,6 +473,25 @@ extent_requirements:
 
 At least one of `extent_crs` or `supported_crs` is required. The same applies to TRS and VRS — all are optional individually but at least one CRS constraint must be present.
 
+#### CRS as WKT2 strings — quote with single quotes
+
+CRS/TRS values can be URIs (as above) **or** full WKT2 strings. A WKT2 string embeds double quotes, square brackets and commas — for example `GEOGCRS["WGS 84",...,ID["EPSG",4326]]`. YAML cannot parse this as a bare scalar or a **double-quoted** scalar (the inner `"` end the string early), so it must be wrapped in **single quotes**, or written as a block scalar:
+
+```yaml
+# Single-quoted (recommended) — the whole WKT2 value in one line:
+crs:
+  - 'GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",...,ID["EPSG",4326]]'
+
+# or a block scalar (`|-` keeps it on multiple lines with no trailing newline):
+extent_requirements:
+  extent_crs:
+    allowed:
+      - |-
+        GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",...,ID["EPSG",4326]]
+```
+
+Double-quoting (`"GEOGCRS["WGS 84"...]"`) will fail to parse. If a config fails with a YAML parse error near a CRS line, this is almost always the cause — the CLI prints a hint pointing here. Publish the `wkt` conformance class (`.../conf/wkt`) in `required_conformance_classes` when your CRS values are WKT2.
+
 #### Vertical direction (`positive`)
 
 OGC API - EDR's vertical extent has no field for which way values increase. This is ambiguous for VRS like pressure levels, which different providers order top-to-bottom or bottom-to-top inconsistently (pressure increases as altitude *decreases*). Set `extent.vertical.positive` to `up` or `down` on a collection (following the CF Conventions `positive` attribute) to make the ordering explicit:

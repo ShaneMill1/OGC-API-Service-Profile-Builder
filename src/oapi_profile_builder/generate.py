@@ -46,6 +46,20 @@ def _const(val, version: str) -> dict:
         return {"const": val}
     return {"enum": [val], "default": val}
 
+def _fixed(val, version: str) -> dict:
+    """Render a reference/example value WITHOUT constraining the schema.
+
+    Descriptive metadata (description, keywords, title, provider details,
+    extent values, the profile URI, ...) are reference values a conforming
+    service echoes, not the *only* allowed value. Emitting them via ``_const``
+    turned every such field into a single-value ``enum`` + ``default`` (OpenAPI
+    3.0) or ``const`` (3.1), which the Swagger Editor flags as a warning and
+    which wrongly implies the value is the sole permitted one. ``_fixed`` uses
+    ``example`` instead: the value is surfaced for documentation/Swagger's
+    "Example Value" pane, but the field stays an unconstrained typed schema.
+    """
+    return {"example": val}
+
 def _contains(schema: dict, version: str) -> dict:
     if version == "3.1.0":
         return {"contains": schema}
@@ -164,62 +178,82 @@ def _landing_page_schema(profile: "ServiceProfile") -> dict:
             if getattr(l, "hreflang", None): link_obj["hreflang"] = l.hreflang
             links_to_show.append(link_obj)
     else:
+        # Default EDR Part 1 landing-page link set: self, service-desc,
+        # service-doc, conformance, the collections resource (rel 'data'), and
+        # the profile document (rel 'profile' → the spec_uri_base/req/<name> URI).
         links_to_show = [
             {"href": "/", "rel": "self", "type": "application/json", "title": "this document"},
             {"href": "/api", "rel": "service-desc", "type": "application/vnd.oai.openapi+json;version=3.0.0", "title": "the API definition"},
+            {"href": "/api.html", "rel": "service-doc", "type": "text/html", "title": "the API documentation"},
             {"href": "/conformance", "rel": "conformance", "type": "application/json", "title": "OGC API conformance classes implemented by this server"},
             {"href": "/collections", "rel": "data", "type": "application/json", "title": "Information about the collections"},
-            {"href": profile_uri, "rel": "profile", "type": "text/html", "title": "The Service Profile for this API"}
+            {"href": profile_uri, "rel": "profile", "type": "application/yaml", "title": f"OpenAPI Specification Profile for {profile.name}"},
         ]
 
+    # Ensure a rel='profile' link is always present, even when the profile
+    # supplies its own links (Point 4/9: the profile URI belongs in a link
+    # object, not a bespoke x-ogc-profile property).
+    if not any(lk.get("rel") == "profile" for lk in links_to_show):
+        links_to_show.append(
+            {"href": profile_uri, "rel": "profile", "type": "application/yaml",
+             "title": f"OpenAPI Specification Profile for {profile.name}"}
+        )
+
+    # Links are surfaced as concrete data via `example` (not enum) so Swagger's
+    # "Example Value" pane shows the actual hrefs/rels rather than the schema
+    # stub ("href": "string", ...). The schema itself stays unconstrained.
     schema_props: dict = {
         "links": {
             "type": "array",
             "items": link_items,
-            "enum": [links_to_show]
+            "example": links_to_show,
         },
-        "title": {"type": "string", **_const(profile.title, version)},
-        "version": {"type": "string", **_const(profile.version, version)},
-        "x-ogc-profile": {"type": "string", **_const(profile_uri, version)}
+        "title": {"type": "string", **_fixed(profile.title, version)},
+        "version": {"type": "string", **_fixed(profile.version, version)},
     }
-    
+
     if profile.description:
-        schema_props["description"] = {"type": "string", **_const(profile.description, version)}
+        schema_props["description"] = {"type": "string", **_fixed(profile.description, version)}
     if profile.keywords:
         schema_props["keywords"] = {
             "type": "array",
             "items": {"type": "string"},
-            **_const(profile.keywords, version)
+            **_fixed(profile.keywords, version)
         }
-    
+
     if profile.provider:
         p = profile.provider
-        provider_props = {"name": {"type": "string", **_const(p.name, version)}}
-        if p.url: provider_props["url"] = {"type": "string", **_const(p.url, version)}
+        provider_props = {"name": {"type": "string", **_fixed(p.name, version)}}
+        if p.url: provider_props["url"] = {"type": "string", **_fixed(p.url, version)}
         if p.contact:
             c = p.contact
             contact_props = {}
-            if c.email: contact_props["email"] = {"type": "string", **_const(c.email, version)}
+            if c.email: contact_props["email"] = {"type": "string", **_fixed(c.email, version)}
+            # Response bodies are free-form JSON (not OpenAPI's restricted
+            # `info` object), so contact fields keep their input names — no
+            # x- prefix (Point 4).
             for key in ("phone", "hours", "instructions", "address", "postalcode", "city", "country"):
                 val = getattr(c, key, None)
-                if val: contact_props[f"x-{key}"] = {"type": "string", **_const(val, version)}
+                if val: contact_props[key] = {"type": "string", **_fixed(val, version)}
             if contact_props: provider_props["contact"] = {"type": "object", "properties": contact_props}
         schema_props["provider"] = {"type": "object", "properties": provider_props}
 
     if profile.classification:
         cl = profile.classification
-        schema_props["x-classification"] = {
+        schema_props["classification"] = {
             "type": "object",
             "properties": {
-                "level": {"type": "string", **_const(cl.level, version)},
-                "system": {"type": "string", **_const(cl.system, version)} if cl.system else {"type": "string"}
+                "classification_level": {"type": "string", **_fixed(cl.classification_level, version)},
+                "classification_system": {"type": "string", **_fixed(cl.classification_system, version)} if cl.classification_system else {"type": "string"}
             }
         }
 
+    if profile.attribution:
+        schema_props["attribution"] = {"type": "string", **_fixed(profile.attribution, version)}
     if profile.metadata_date:
-        schema_props["x-metadata-date"] = {"type": "string", **_const(profile.metadata_date, version)}
+        schema_props["metadata-date"] = {"type": "string", **_fixed(profile.metadata_date, version)}
     if profile.resource_service_publish_date:
-        schema_props["x-resource-publish-date"] = {"type": "string", **_const(profile.resource_service_publish_date, version)}
+        schema_props["resource-publish-date"] = {"type": "string", **_fixed(profile.resource_service_publish_date, version)}
 
     return {
         "description": "Landing page",
@@ -451,6 +485,26 @@ _POST_BODY_SCHEMAS: dict[str, dict] = {
             "corridor-height": {"type": "number", "description": "Height of the corridor"},
             "datetime": {"type": "string", "description": "RFC 3339 datetime or interval"},
             "crs": {"type": "string", "description": "Identifier for the coordinate reference system"},
+            "f": {"type": "string", "description": "Response format"},
+        },
+    },
+    # `items` POST mirrors the GET items query parameters (bbox filter,
+    # datetime, parameter-name, crs, z, f). Without this entry the POST body
+    # fell back to an empty {"type": "object"} (Point 10).
+    "items": {
+        "type": "object",
+        "properties": {
+            "bbox": {
+                "type": "array",
+                "description": "Bounding box filter [minLon, minLat, maxLon, maxLat]",
+                "items": {"type": "number"},
+                "minItems": 4,
+                "maxItems": 6,
+            },
+            "datetime": {"type": "string", "description": "RFC 3339 datetime or interval"},
+            "parameter-name": {"type": "string", "description": "Comma-separated list of parameter names to return"},
+            "crs": {"type": "string", "description": "Identifier for the coordinate reference system"},
+            "z": {"type": "string", "description": "Vertical level(s)"},
             "f": {"type": "string", "description": "Response format"},
         },
     },
@@ -688,14 +742,14 @@ def _collection_response_schema(coll: Collection,
         output_formats_schema = {
             "type": "array",
             "items": {"type": "string"},
-            **_const(list(coll.output_formats), version)
+            **_fixed(list(coll.output_formats), version)
         }
 
     if coll.crs:
         crs_array_schema: dict = {
             "type": "array",
             "items": {"type": "string"},
-            **_const(list(coll.crs), version)
+            **_fixed(list(coll.crs), version)
         }
     else:
         crs_array_schema = {"type": "array", "items": supported_crs_schema}
@@ -706,42 +760,42 @@ def _collection_response_schema(coll: Collection,
         extent_props["spatial"] = {
             "type": "object", "required": ["bbox", "crs"],
             "properties": {
-                "bbox": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}, **_const(s.bbox, version)},
-                "crs": {"type": "string", **_const(s.crs, version)}
+                "bbox": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}, **_fixed(s.bbox, version)},
+                "crs": {"type": "string", **_fixed(s.crs, version)}
             }
         }
     if coll.extent and coll.extent.temporal:
         t = coll.extent.temporal
-        temporal_props = {"trs": {"type": "string", **_const(t.trs, version)}}
+        temporal_props = {"trs": {"type": "string", **_fixed(t.trs, version)}}
         if t.interval:
             temporal_props["interval"] = {
                 "type": "array",
                 "items": {"type": "array", "items": {"type": "string", "nullable": True}},
-                **_const(t.interval, version)
+                **_fixed(t.interval, version)
             }
         if t.values:
             temporal_props["values"] = {
                 "type": "array",
                 "items": {"type": "string"},
-                **_const(t.values, version)
+                **_fixed(t.values, version)
             }
         extent_props["temporal"] = {"type": "object", "required": ["trs"], "properties": temporal_props}
     if coll.extent and coll.extent.vertical:
         v = coll.extent.vertical
-        vertical_props = {"vrs": {"type": "string", **_const(v.vrs, version)}}
+        vertical_props = {"vrs": {"type": "string", **_fixed(v.vrs, version)}}
         if v.interval:
             vertical_props["interval"] = {
                 "type": "array",
                 "items": {"type": "array", "items": {"type": "number"}},
-                **_const(v.interval, version)
+                **_fixed(v.interval, version)
             }
         if v.values:
             vertical_props["values"] = {
                 "type": "array",
                 "items": {"type": "string"},
-                **_const(v.values, version)
+                **_fixed(v.values, version)
             }
-        if getattr(v, "positive", None): vertical_props["positive"] = {"type": "string", **_const(v.positive, version)}
+        if getattr(v, "positive", None): vertical_props["positive"] = {"type": "string", **_fixed(v.positive, version)}
         extent_props["vertical"] = {"type": "object", "required": ["vrs"], "properties": vertical_props}
     if coll.extent and coll.extent.custom:
         custom_items = []
@@ -750,9 +804,9 @@ def _collection_response_schema(coll: Collection,
                 "type": "object",
                 "required": ["id", "interval", "reference"],
                 "properties": {
-                    "id": {"type": "string", **_const(c.id, version)},
-                    "interval": {"type": "array", "items": {"type": "string"}, **_const(c.interval, version)},
-                    "reference": {"type": "string", **_const(c.reference, version)},
+                    "id": {"type": "string", **_fixed(c.id, version)},
+                    "interval": {"type": "array", "items": {"type": "string"}, **_fixed(c.interval, version)},
+                    "reference": {"type": "string", **_fixed(c.reference, version)},
                 }
             })
         extent_props["custom"] = {"type": "array", "items": {"oneOf": custom_items}}
@@ -766,15 +820,15 @@ def _collection_response_schema(coll: Collection,
             if vars_obj:
                 for f in ("query_type", "default_output_format"):
                     v = getattr(vars_obj, f, None); 
-                    if v: vars_props[f] = {"type": "string", **_const(v, version)}
+                    if v: vars_props[f] = {"type": "string", **_fixed(v, version)}
                 if getattr(vars_obj, "output_formats", None):
-                    vars_props["output_formats"] = {"type": "array", "items": {"type": "string", "enum": list(vars_obj.output_formats)}}
+                    vars_props["output_formats"] = {"type": "array", "items": {"type": "string"}, **_fixed(list(vars_obj.output_formats), version)}
                 extra = getattr(vars_obj, "model_extra", {}) or {}
-                if "crs" in extra: vars_props["crs"] = {"type": "array", "items": {"type": "string"}, **_const(extra["crs"], version)}
-                if "crs_details" in extra: vars_props["crs_details"] = {"type": "array", **_const(extra["crs_details"], version)}
+                if "crs" in extra: vars_props["crs"] = {"type": "array", "items": {"type": "string"}, **_fixed(extra["crs"], version)}
+                if "crs_details" in extra: vars_props["crs_details"] = {"type": "array", **_fixed(extra["crs_details"], version)}
             dq_props[dq_name] = {"type": "object", "properties": {"link": {"type": "object", "properties": {
-                "href": {"type": "string", **_const(dq_val.link.href, version)},
-                "rel": {"type": "string", **_const(dq_val.link.rel, version)},
+                "href": {"type": "string", **_fixed(dq_val.link.href, version)},
+                "rel": {"type": "string", **_fixed(dq_val.link.rel, version)},
                 "variables": {"type": "object", "properties": vars_props}
             }}}}
 
@@ -787,28 +841,61 @@ def _collection_response_schema(coll: Collection,
             if getattr(l, "hreflang", None): link_obj["hreflang"] = l.hreflang
             links_to_show.append(link_obj)
 
+    coll_props: dict = {
+        "id": {"type": "string", **_fixed(coll.id, version)},
+        "title": {"type": "string", **_fixed(coll.title, version)} if coll.title else {"type": "string"},
+        "description": {"type": "string", **_fixed(coll.description, version)} if coll.description else {"type": "string"},
+        "keywords": {
+            "type": "array",
+            "items": {"type": "string"},
+            **(_fixed(coll.keywords, version) if coll.keywords else {})
+        },
+        "links": {
+            "type": "array",
+            "items": _LINK_SCHEMA,
+            **(_fixed(links_to_show, version) if links_to_show else {})
+        },
+        "crs": crs_array_schema,
+        "output_formats": output_formats_schema,
+        "parameter_names": {**param_names_schema, "additionalProperties": False},
+        "extent": {"type": "object", "required": ["spatial"], "properties": extent_props},
+        "data_queries": {"type": "object", "properties": dq_props, "additionalProperties": False}
+    }
+
+    # Per-collection metadata (provider, attribution, classification, dates,
+    # locale). Emitted with their plain input names in the response body
+    # (Point 4/13). Collection-level values override the profile-level ones.
+    prov = coll.provider or (profile.provider if profile else None)
+    if prov:
+        provider_props = {"name": {"type": "string", **_fixed(prov.name, version)}}
+        if prov.url: provider_props["url"] = {"type": "string", **_fixed(prov.url, version)}
+        if prov.contact:
+            c = prov.contact
+            contact_props = {}
+            if c.email: contact_props["email"] = {"type": "string", **_fixed(c.email, version)}
+            for key in ("phone", "hours", "instructions", "address", "postalcode", "city", "country"):
+                val = getattr(c, key, None)
+                if val: contact_props[key] = {"type": "string", **_fixed(val, version)}
+            if contact_props: provider_props["contact"] = {"type": "object", "properties": contact_props}
+        coll_props["provider"] = {"type": "object", "properties": provider_props}
+
+    attribution = coll.attribution or (profile.attribution if profile else None)
+    if attribution:
+        coll_props["attribution"] = {"type": "string", **_fixed(attribution, version)}
+
+    cl = coll.classification or (profile.classification if profile else None)
+    if cl:
+        coll_props["classification"] = {
+            "type": "object",
+            "properties": {
+                "classification_level": {"type": "string", **_fixed(cl.classification_level, version)},
+                "classification_system": {"type": "string", **_fixed(cl.classification_system, version)} if cl.classification_system else {"type": "string"}
+            }
+        }
+
     schema: dict = {
         "type": "object", "required": ["id", "links", "extent"],
-        "properties": {
-            "id": {"type": "string", **_const(coll.id, version)},
-            "title": {"type": "string", **_const(coll.title, version)} if coll.title else {"type": "string"},
-            "description": {"type": "string", **_const(coll.description, version)} if coll.description else {"type": "string"},
-            "keywords": {
-                "type": "array",
-                "items": {"type": "string"},
-                **(_const(coll.keywords, version) if coll.keywords else {})
-            },
-            "links": {
-                "type": "array",
-                "items": _LINK_SCHEMA,
-                **_const(links_to_show, version)
-            },
-            "crs": crs_array_schema,
-            "output_formats": output_formats_schema,
-            "parameter_names": {**param_names_schema, "additionalProperties": False},
-            "extent": {"type": "object", "required": ["spatial"], "properties": extent_props},
-            "data_queries": {"type": "object", "properties": dq_props, "additionalProperties": False}
-        }
+        "properties": coll_props,
     }
     return {"description": "Collection metadata", "content": {"application/json": {"schema": schema}}}
 def _f_enum(profile: "ServiceProfile | None") -> list[str]:
@@ -1132,6 +1219,95 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
     return paths
 
 
+def _collections_response_schema(profile: "ServiceProfile") -> dict:
+    """Build the /collections 200 response per OGC API - EDR Part 1 (§E.4).
+
+    The response is an object with:
+      - ``links``: a rel 'self' (application/json) and rel 'alternate'
+        (text/html) link, surfaced as example data (Point 5/7);
+      - ``collections``: an array whose items reuse each collection's own
+        response schema (id, title, description, extent, parameter_names,
+        data_queries, provider, ...), so the enumerated collection definitions
+        (e.g. the ``earth_observations_lightning`` collection with its
+        ``frequency_of_lightning_flashes_per_unit_area`` parameter) appear here
+        rather than only a bare links stub (Point 7).
+    """
+    version = profile.openapi_version
+
+    links_example = [
+        {"href": "/collections", "rel": "self", "type": "application/json", "title": "this document"},
+        {"href": "/collections?f=html", "rel": "alternate", "type": "text/html", "title": "this document as HTML"},
+    ]
+
+    # Each collection's item schema is the `schema` node of its own
+    # collection-metadata response, so /collections and /collections/{id}
+    # stay consistent.
+    collection_item_schemas = [
+        _collection_response_schema(coll, profile)["content"]["application/json"]["schema"]
+        for coll in profile.collections
+    ]
+    if len(collection_item_schemas) == 1:
+        collection_items_schema = collection_item_schemas[0]
+    else:
+        collection_items_schema = {"oneOf": collection_item_schemas}
+
+    schema = {
+        "type": "object",
+        "required": ["links", "collections"],
+        "properties": {
+            "links": {
+                "type": "array",
+                "items": _LINK_SCHEMA,
+                "example": links_example,
+            },
+            "collections": {
+                "type": "array",
+                "items": collection_items_schema,
+            },
+        },
+    }
+    return {"description": "Collections", "content": {"application/json": {"schema": schema}}}
+
+
+def _api_response_schema(profile: "ServiceProfile") -> dict:
+    """Build the /api 200 response.
+
+    The OpenAPI definition document is served here, and (Point 9) it advertises
+    the rel 'profile' link pointing at spec_uri_base/req/<name>, mirroring the
+    profile link in the landing page. The link is surfaced as example data.
+    """
+    profile_link = {
+        "href": profile.req_uri,
+        "rel": "profile",
+        "type": "application/yaml",
+        "title": f"OpenAPI Specification Profile for {profile.name}",
+    }
+    self_link = {
+        "href": "/api",
+        "rel": "self",
+        "type": "application/vnd.oai.openapi+json;version=3.0.0",
+        "title": "this document",
+    }
+    schema = {
+        "type": "object",
+        "description": "OpenAPI definition document",
+        "properties": {
+            "links": {
+                "type": "array",
+                "items": _LINK_SCHEMA,
+                "example": [self_link, profile_link],
+            },
+        },
+    }
+    return {
+        "description": "OpenAPI document",
+        "content": {
+            "application/vnd.oai.openapi+json;version=3.0.0": {"schema": schema},
+            "text/html": {"schema": {"type": "string"}},
+        },
+    }
+
+
 def _core_paths(profile: ServiceProfile) -> dict:
     version = profile.openapi_version
     landing_response = _landing_page_schema(profile)
@@ -1172,7 +1348,7 @@ def _core_paths(profile: ServiceProfile) -> dict:
             "operationId": "getCollections",
             "tags": ["server"],
             "parameters": [_F, _LANG],
-            "responses": {"200": {"description": "Collections list", "content": {"application/json": {"schema": {"type": "object", "properties": {"links": _LINKS_ARRAY}}}}}, "400": _ERR_400, "500": _ERR_500},
+            "responses": {"200": _collections_response_schema(profile), "400": _ERR_400, "500": _ERR_500},
         }},
         "/api": {"get": {
             "summary": "OpenAPI definition",
@@ -1180,7 +1356,7 @@ def _core_paths(profile: ServiceProfile) -> dict:
             "operationId": "getOpenAPI",
             "tags": ["server"],
             "parameters": [_F],
-            "responses": {"200": {"description": "OpenAPI document"}, "default": _ERR_DEFAULT},
+            "responses": {"200": _api_response_schema(profile), "default": _ERR_DEFAULT},
         }},
     }
 
@@ -1352,10 +1528,12 @@ def build_openapi(profile: ServiceProfile) -> dict:
     if profile.classification:
         info["x-classification"] = {
             k: v for k, v in (
-                ("level", profile.classification.level),
-                ("system", profile.classification.system),
+                ("classification_level", profile.classification.classification_level),
+                ("classification_system", profile.classification.classification_system),
             ) if v
         }
+    if profile.attribution:
+        info["x-attribution"] = profile.attribution
     if profile.metadata_date:
         info["x-metadata-date"] = profile.metadata_date
     if profile.resource_service_publish_date:
@@ -1392,7 +1570,7 @@ def build_openapi(profile: ServiceProfile) -> dict:
                 "lang": {
                     "name": "lang", "in": "query", "required": False,
                     "description": "The optional lang parameter instructs the server return a response in a certain language, if supported.",
-                    "schema": {"type": "string", "default": "en-US", "enum": ["en-US"]},
+                    "schema": {"type": "string", "default": profile.effective_language, "enum": profile.effective_languages},
                 },
             },
             "responses": {
@@ -2360,7 +2538,7 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
     classification_banner = ""
     if profile.classification:
         cl = profile.classification
-        label = cl.level + (f" ({cl.system})" if cl.system else "")
+        label = cl.classification_level + (f" ({cl.classification_system})" if cl.classification_system else "")
         classification_banner = f"*SECURITY CLASSIFICATION: {label}*\n\n"
 
     # --- Point of contact paragraph (from provider) ---

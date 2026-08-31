@@ -47,7 +47,15 @@ from annotated_types import Len
 from edr_pydantic.link import Link
 from edr_pydantic.collections import Collection as EDRCollection
 from edr_pydantic.extent import Custom, Extent as EDRExtent, Spatial, Vertical
-from pydantic import AwareDatetime, BaseModel, Field, field_validator, model_validator
+from pydantic import (
+    AliasChoices,
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -110,9 +118,27 @@ class ExtentWithNullBounds(EDRExtent):
 
 
 class Classification(BaseModel):
-    """Security classification metadata (e.g. for DGIWG / military profiles)."""
-    level: str = Field(description="Classification level, e.g. 'NATO RESTRICTED (NR)'")
-    system: str | None = Field(default=None, description="Classification system, e.g. 'NATO'")
+    """Security classification metadata (e.g. for DGIWG / military profiles).
+
+    The canonical field names are ``classification_level`` and
+    ``classification_system`` (a DGIWG requirement). The legacy names
+    ``level`` and ``system`` are accepted as input aliases so existing
+    profiles keep validating, but the generated output uses the DGIWG names.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    classification_level: str = Field(
+        validation_alias=AliasChoices("classification_level", "level"),
+        serialization_alias="classification_level",
+        description="Classification level, e.g. 'NATO RESTRICTED (NR)'",
+    )
+    classification_system: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("classification_system", "system"),
+        serialization_alias="classification_system",
+        description="Classification system, e.g. 'NATO'",
+    )
 
 
 class ProviderContact(BaseModel):
@@ -175,6 +201,14 @@ class Collection(EDRCollection):
     # value for this collection. Round-tripped into profile_config.json.
     classification: Optional[Classification] = None
     provider: Optional[Provider] = None
+    attribution: Optional[str] = Field(
+        default=None,
+        description=(
+            "Attribution / acknowledgement for this collection (OGC API collection "
+            "metadata). Overrides the profile-level attribution for this collection. "
+            "Surfaces as a plain 'attribution' property in the collection object."
+        ),
+    )
     metadata_date: Optional[str] = None
     resource_service_publish_date: Optional[str] = None
     resource_default_locale: Optional[str] = None
@@ -217,6 +251,15 @@ class Collection(EDRCollection):
                 "type, properties, $ref, allOf, anyOf, oneOf"
             )
         return v
+
+    @field_validator("description", "attribution")
+    @classmethod
+    def _strip_freetext(cls, v: str | None) -> str | None:
+        # YAML folded scalars ('>') append a trailing newline; strip it so it
+        # doesn't leak into the generated collection metadata.
+        if v is None:
+            return v
+        return v.strip()
 
 
 # ---------------------------------------------------------------------------
@@ -861,6 +904,17 @@ class ServiceProfile(BaseModel):
             "OpenAPI info block and the landing page response."
         ),
     )
+    attribution: str | None = Field(
+        default=None,
+        description=(
+            "Attribution / acknowledgement for the service or its data, per the "
+            "OGC API landing-page metadata (title/description/attribution). Surfaces "
+            "as a plain 'attribution' property in the landing page response and in "
+            "each collection object (collection-level overrides this profile-level "
+            "value). Aligns with EDR Part 3 ATS A.5, which inherits it from OGC API - "
+            "Common."
+        ),
+    )
     keywords: list[str] = Field(
         default_factory=list,
         description=(
@@ -899,6 +953,23 @@ class ServiceProfile(BaseModel):
     resource_default_locale: str | None = Field(
         default=None,
         description="Default locale of the resource (e.g. 'eng'). Surfaces as info.x-default-locale.",
+    )
+    default_language: str | None = Field(
+        default=None,
+        description=(
+            "Default value for the `lang` query parameter (e.g. 'en-US', 'en-GB', "
+            "'fr'). When unset, falls back to 'en-US'. Drives the `lang` parameter's "
+            "`default` in the generated OpenAPI."
+        ),
+    )
+    supported_languages: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Languages the service supports for the `lang` query parameter. When set, "
+            "drives the `lang` parameter's `enum` in the generated OpenAPI (allowing "
+            "more than one language). When empty, the enum contains just the effective "
+            "default language."
+        ),
     )
     collections: list[Collection] = Field(min_length=1)
     collection_examples: dict[str, dict] = Field(default_factory=dict)
@@ -1032,6 +1103,30 @@ class ServiceProfile(BaseModel):
         ),
     )
 
+    @field_validator("description", "attribution")
+    @classmethod
+    def _strip_freetext(cls, v: str | None) -> str | None:
+        # YAML folded scalars ('>') append a trailing newline; strip surrounding
+        # whitespace so it doesn't leak into the OpenAPI/landing-page output.
+        if v is None:
+            return v
+        return v.strip()
+
+    @property
+    def effective_language(self) -> str:
+        """Default `lang` value: explicit default_language, else 'en-US'."""
+        return self.default_language or "en-US"
+
+    @property
+    def effective_languages(self) -> list[str]:
+        """Enum of `lang` values: supported_languages, else just the default."""
+        if self.supported_languages:
+            langs = list(dict.fromkeys(self.supported_languages))
+            if self.effective_language not in langs:
+                langs.insert(0, self.effective_language)
+            return langs
+        return [self.effective_language]
+
     # OGC identifiers derived from name and spec_uri_base — not user-supplied directly
     @property
     def req_uri(self) -> str:
@@ -1127,7 +1222,7 @@ class ServiceProfile(BaseModel):
         def _check(label: str, value: str, constraint: "CrsConstraint | None") -> None:
             if constraint is None:
                 return
-            if constraint.allowed is not None and value not in constraint.allowed:
+            if constraint.allowed is not None and not _crs_in_allowed(value, constraint.allowed):
                 raise ValueError(
                     f"{label} '{value}' is not in allowed list {constraint.allowed}"
                 )
@@ -1421,3 +1516,42 @@ def _compile_optional_pattern(label: str, pattern: str | None) -> re.Pattern | N
         return re.compile(pattern)
     except re.error as exc:
         raise ValueError(f"Invalid {label} regex '{pattern}': {exc}") from exc
+
+
+def _normalize_crs(value: str) -> str:
+    """Normalize a CRS value for tolerant comparison.
+
+    URI CRS values are compared verbatim (after stripping). WKT2 CRS strings
+    (e.g. GEOGCRS["WGS 84",...,ID["EPSG",4326]]) carry insignificant whitespace
+    between tokens — after commas, around brackets — that differs by hand-
+    editing but does not change meaning. Comparing such strings byte-for-byte
+    makes an `allowed` list extremely fragile: a single space (e.g.
+    '...ensemble", MEMBER[' vs '...ensemble",MEMBER[') fails the match.
+
+    For WKT-looking values (containing '[' and ']'), this collapses whitespace
+    that sits OUTSIDE double-quoted substrings, so token spacing no longer
+    matters while quoted names (e.g. "WGS 84") are preserved exactly.
+    """
+    v = value.strip()
+    if "[" not in v or "]" not in v:
+        return v
+    out: list[str] = []
+    in_quotes = False
+    for ch in v:
+        if ch == '"':
+            in_quotes = not in_quotes
+            out.append(ch)
+        elif ch.isspace() and not in_quotes:
+            # drop insignificant whitespace between WKT tokens
+            continue
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def _crs_in_allowed(value: str, allowed: list[str]) -> bool:
+    """True if *value* matches any entry in *allowed*, WKT-whitespace tolerant."""
+    if value in allowed:
+        return True
+    nv = _normalize_crs(value)
+    return any(nv == _normalize_crs(a) for a in allowed)
