@@ -107,6 +107,40 @@ def _yaml_error_hint(exc: "yaml.YAMLError") -> str:
     return base
 
 
+def _print_quality_assessment(profile: ServiceProfile) -> None:
+    """Print an informative RFC 2119 quality assessment (KPI) for the profile.
+
+    The tooling validates requirements (SHALL) as mandatory. Recommendations
+    (SHOULD) and permissions (MAY) are reported here for visibility but never
+    cause a non-zero exit — they are informative guidance, not conformance
+    gates. This mirrors the SHALL-only conformance model of EDR Part 3.
+    """
+    kpi = profile.requirement_kpis()
+    lvl = kpi["by_level"]
+    print("\nQuality assessment (RFC 2119 statement levels):")
+    print(f"  requirements  (SHALL) : {lvl['requirement']}  [conformance-tested]")
+    print(f"  recommendations (SHOULD): {lvl['recommendation']}  [informative]")
+    print(f"  permissions     (MAY)   : {lvl['permission']}  [informative]")
+    print(f"  abstract tests          : {kpi['abstract_tests']}")
+
+    if len(kpi["by_class"]) > 1:
+        print("  by conformance class:")
+        for cls, counts in kpi["by_class"].items():
+            print(
+                f"    - {cls}: {counts['requirement']} req / "
+                f"{counts['recommendation']} rec / {counts['permission']} perm"
+            )
+
+    untested = kpi["normative_untested"]
+    if untested:
+        # Informational only: highlights SHALL requirements with no abstract test.
+        print(
+            "  note: "
+            f"{len(untested)} requirement(s) have no abstract test: "
+            + ", ".join(untested)
+        )
+
+
 def main() -> None:
     import argparse
 
@@ -191,9 +225,11 @@ def main() -> None:
 
     if args.command == "validate":
         print(f"Profile '{profile.name}' is valid.")
+        _print_quality_assessment(profile)
         return
 
     generate(profile, args.output)
+    _print_quality_assessment(profile)
 
     if args.pdf:
         compile_pdf(args.output.resolve(), profile=profile)

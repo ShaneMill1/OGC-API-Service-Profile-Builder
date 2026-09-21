@@ -273,6 +273,22 @@ class FilterType(str, Enum):
     boolean = "boolean"
 
 
+class RequirementLevel(str, Enum):
+    """RFC 2119 conformance level of a profile statement.
+
+    OGC API - EDR Part 3 profiles are validated on requirements only:
+    the tooling implements SHALL-level statements as the normative,
+    conformance-testable body of the profile. Recommendations (SHOULD)
+    and permissions (MAY) are carried informatively — they are rendered
+    with the appropriate Metanorma obligation and summarised in a quality
+    assessment, but they never cause validation to fail.
+    """
+
+    requirement = "requirement"      # SHALL / SHALL NOT — normative, testable
+    recommendation = "recommendation"  # SHOULD / SHOULD NOT — informative
+    permission = "permission"        # MAY / OPTIONAL — informative
+
+
 # ---------------------------------------------------------------------------
 # Sub-models
 # ---------------------------------------------------------------------------
@@ -281,6 +297,19 @@ class Requirement(BaseModel):
     id: Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9\-]*$")]
     statement: str
     parts: list[str] = Field(min_length=1)
+    level: RequirementLevel = Field(
+        default=RequirementLevel.requirement,
+        description=(
+            "RFC 2119 conformance level of this statement. 'requirement' (SHALL) "
+            "statements form the normative, conformance-tested body of the profile "
+            "and are the only level the tooling validates as mandatory. "
+            "'recommendation' (SHOULD) and 'permission' (MAY) statements are carried "
+            "informatively: they are rendered with the matching Metanorma obligation "
+            "and reported in the profile's quality assessment, but they never cause "
+            "validation to fail. When omitted, the level is inferred from the RFC 2119 "
+            "keyword in the statement text, defaulting to 'requirement'."
+        ),
+    )
     conformance_class: str | None = Field(
         default=None,
         description=(
@@ -299,6 +328,34 @@ class Requirement(BaseModel):
         if v.endswith("-"):
             raise ValueError("requirement id must not end with a dash")
         return v
+
+    @model_validator(mode="before")
+    @classmethod
+    def infer_level(cls, data):
+        """Infer the RFC 2119 level from the statement text when not set.
+
+        SHALL/SHALL NOT/MUST -> requirement, SHOULD/SHOULD NOT/RECOMMENDED ->
+        recommendation, MAY/OPTIONAL -> permission. An explicit `level` always
+        wins; a mixed statement falls back to the strongest keyword present so
+        the tooling never silently downgrades a mandatory statement.
+        """
+        if not isinstance(data, dict) or data.get("level") is not None:
+            return data
+        text = " ".join(
+            str(x) for x in ([data.get("statement", "")] + list(data.get("parts") or []))
+        ).upper()
+        if re.search(r"\bSHALL\b|\bMUST\b", text):
+            data["level"] = RequirementLevel.requirement.value
+        elif re.search(r"\bSHOULD\b|\bRECOMMENDED\b", text):
+            data["level"] = RequirementLevel.recommendation.value
+        elif re.search(r"\bMAY\b|\bOPTIONAL\b", text):
+            data["level"] = RequirementLevel.permission.value
+        return data
+
+    @property
+    def is_normative(self) -> bool:
+        """True for SHALL-level statements — the conformance-tested body."""
+        return self.level == RequirementLevel.requirement
 
 
 class AbstractTest(BaseModel):
@@ -1135,6 +1192,38 @@ class ServiceProfile(BaseModel):
     @property
     def conf_uri(self) -> str:
         return f"{self.spec_uri_base.rstrip('/')}/conf/{self.name}"
+
+    @property
+    def normative_requirements(self) -> list[Requirement]:
+        """SHALL-level requirements — the only conformance-tested statements."""
+        return [r for r in self.requirements if r.is_normative]
+
+    def requirement_kpis(self) -> dict:
+        """Quality-assessment summary of statements by RFC 2119 level.
+
+        The tooling validates requirements (SHALL) as mandatory. Recommendations
+        (SHOULD) and permissions (MAY) are informative and reported here rather
+        than enforced, so a profile that declares them is never failed for it.
+        Grouped per conformance class when the profile uses per-class grouping.
+        """
+        totals = {level.value: 0 for level in RequirementLevel}
+        per_class: dict[str, dict[str, int]] = {}
+        for r in self.requirements:
+            totals[r.level.value] += 1
+            cls = r.conformance_class or "core"
+            per_class.setdefault(cls, {lv.value: 0 for lv in RequirementLevel})
+            per_class[cls][r.level.value] += 1
+        return {
+            "total": len(self.requirements),
+            "by_level": totals,
+            "by_class": per_class,
+            "abstract_tests": len(self.abstract_tests),
+            "normative_untested": [
+                r.id
+                for r in self.normative_requirements
+                if r.id not in {t.requirement_id for t in self.abstract_tests}
+            ],
+        }
 
     @model_validator(mode="after")
     def tests_reference_valid_requirements(self) -> ServiceProfile:

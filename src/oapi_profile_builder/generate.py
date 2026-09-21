@@ -1678,6 +1678,22 @@ def build_asyncapi(profile: ServiceProfile) -> dict:
 # AsciiDoc / Metanorma
 # ---------------------------------------------------------------------------
 
+# Metanorma block type + list-item keyword for each RFC 2119 level.
+# SHALL statements are normative requirements; SHOULD/MAY are informative
+# recommendations/permissions rendered with the matching obligation so the
+# profile document never mislabels a non-normative statement as a requirement.
+_LEVEL_BLOCK = {
+    "requirement": "requirement",
+    "recommendation": "recommendation",
+    "permission": "permission",
+}
+
+
+def _level_of(req) -> str:
+    lvl = getattr(req, "level", None)
+    return getattr(lvl, "value", lvl) or "requirement"
+
+
 def _req_adoc(profile: ServiceProfile) -> str:
     lines = [
         f"[[req_class_{profile.name}]]",
@@ -1688,12 +1704,15 @@ def _req_adoc(profile: ServiceProfile) -> str:
         f"target-type:: {profile.title} Profile Standard",
     ]
     for req in profile.requirements:
-        lines.append(f"requirement:: /req/{profile.name}/{req.id}")
+        keyword = _LEVEL_BLOCK[_level_of(req)]
+        lines.append(f"{keyword}:: /req/{profile.name}/{req.id}")
     lines.append("====")
     return "\n".join(lines) + "\n"
 
 
 def _conf_adoc(profile: ServiceProfile) -> str:
+    # Conformance is tested against normative (SHALL) requirements only.
+    normative_ids = {r.id for r in profile.requirements if _level_of(r) == "requirement"}
     lines = [
         f"[[ats_class_{profile.name}]]",
         "[conformance_class]",
@@ -1703,6 +1722,8 @@ def _conf_adoc(profile: ServiceProfile) -> str:
         f"target:: {profile.req_uri}",
     ]
     for test in profile.abstract_tests:
+        if test.requirement_id not in normative_ids:
+            continue
         lines.append(f"abstract-test:: /conf/{profile.name}/{test.id}")
     lines.append("====")
     return "\n".join(lines) + "\n"
@@ -1711,9 +1732,10 @@ def _conf_adoc(profile: ServiceProfile) -> str:
 def _individual_req_adoc(profile: ServiceProfile, req_id: str) -> str:
     req = next(r for r in profile.requirements if r.id == req_id)
     anchor = f"req_{profile.name}_{req.id}".replace("/", "_").replace("-", "_")
+    block = _LEVEL_BLOCK[_level_of(req)]
     lines = [
         f"[[{anchor}]]",
-        "[requirement]",
+        f"[{block}]",
         "====",
         "[%metadata]",
         f"identifier:: /req/{profile.name}/{req.id}",
@@ -1793,12 +1815,17 @@ def _req_class_adoc_for(profile: ServiceProfile, cls: str, reqs: list) -> str:
         f"target-type:: {profile.title} Profile Standard",
     ]
     for req in reqs:
-        lines.append(f"requirement:: /req/{cls}/{req.id}")
+        keyword = _LEVEL_BLOCK[_level_of(req)]
+        lines.append(f"{keyword}:: /req/{cls}/{req.id}")
     lines.append("====")
     return "\n".join(lines) + "\n"
 
 
-def _conf_class_adoc_for(profile: ServiceProfile, cls: str, tests: list) -> str:
+def _conf_class_adoc_for(profile: ServiceProfile, cls: str, tests: list, reqs: list | None = None) -> str:
+    # Conformance is tested against normative (SHALL) requirements only.
+    normative_ids = (
+        {r.id for r in reqs if _level_of(r) == "requirement"} if reqs is not None else None
+    )
     lines = [
         f"[[ats_class_{cls}]]".replace("-", "_"),
         "[conformance_class]",
@@ -1808,6 +1835,8 @@ def _conf_class_adoc_for(profile: ServiceProfile, cls: str, tests: list) -> str:
         f"target:: {_class_req_uri(profile, cls)}",
     ]
     for test in tests:
+        if normative_ids is not None and test.requirement_id not in normative_ids:
+            continue
         lines.append(f"abstract-test:: /conf/{cls}/{test.id}")
     lines.append("====")
     return "\n".join(lines) + "\n"
@@ -1815,9 +1844,10 @@ def _conf_class_adoc_for(profile: ServiceProfile, cls: str, tests: list) -> str:
 
 def _individual_req_adoc_for(profile: ServiceProfile, cls: str, req) -> str:
     anchor = f"req_{cls}_{req.id}".replace("/", "_").replace("-", "_")
+    block = _LEVEL_BLOCK[_level_of(req)]
     lines = [
         f"[[{anchor}]]",
-        "[requirement]",
+        f"[{block}]",
         "====",
         "[%metadata]",
         f"identifier:: /req/{cls}/{req.id}",
@@ -2621,6 +2651,15 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
         ),
         "sections/06-requirements.adoc": (
             "== Requirements\n\n"
+            "[NOTE]\n"
+            "====\n"
+            "Conformance with this profile is assessed against its requirements "
+            "(\"shall\") only. Recommendations (\"should\") and permissions (\"may\") "
+            "are provided as informative guidance: they are not conformance-tested "
+            "and an implementation is not made non-conformant by not following them. "
+            "See the quality-assessment summary emitted by the profile tooling for a "
+            "count of the recommendations and permissions defined by this profile.\n"
+            "====\n\n"
             + (req_class_includes + "\n\n" if req_class_includes else "")
             + req_includes + "\n"
         ),
@@ -2687,7 +2726,7 @@ def generate(profile: ServiceProfile, output_dir: Path) -> None:
                 )
             safe_write(
                 f"abstract_tests/ATS_class_{cls}.adoc",
-                _conf_class_adoc_for(profile, cls, members["tests"]),
+                _conf_class_adoc_for(profile, cls, members["tests"], members["reqs"]),
             )
             for test in members["tests"]:
                 safe_write(

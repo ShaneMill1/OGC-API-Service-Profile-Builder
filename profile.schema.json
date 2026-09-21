@@ -131,14 +131,14 @@
       "type": "object"
     },
     "Classification": {
-      "description": "Security classification metadata (e.g. for DGIWG / military profiles).",
+      "description": "Security classification metadata (e.g. for DGIWG / military profiles).\n\nThe canonical field names are ``classification_level`` and\n``classification_system`` (a DGIWG requirement). The legacy names\n``level`` and ``system`` are accepted as input aliases so existing\nprofiles keep validating, but the generated output uses the DGIWG names.",
       "properties": {
-        "level": {
+        "classification_level": {
           "description": "Classification level, e.g. 'NATO RESTRICTED (NR)'",
-          "title": "Level",
+          "title": "Classification Level",
           "type": "string"
         },
-        "system": {
+        "classification_system": {
           "anyOf": [
             {
               "type": "string"
@@ -149,11 +149,11 @@
           ],
           "default": null,
           "description": "Classification system, e.g. 'NATO'",
-          "title": "System"
+          "title": "Classification System"
         }
       },
       "required": [
-        "level"
+        "classification_level"
       ],
       "title": "Classification",
       "type": "object"
@@ -325,6 +325,19 @@
             }
           ],
           "default": null
+        },
+        "attribution": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Attribution / acknowledgement for this collection (OGC API collection metadata). Overrides the profile-level attribution for this collection. Surfaces as a plain 'attribution' property in the collection object.",
+          "title": "Attribution"
         },
         "metadata_date": {
           "anyOf": [
@@ -2441,6 +2454,15 @@
           "title": "Parts",
           "type": "array"
         },
+        "level": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/RequirementLevel"
+            }
+          ],
+          "default": "requirement",
+          "description": "RFC 2119 conformance level of this statement. 'requirement' (SHALL) statements form the normative, conformance-tested body of the profile and are the only level the tooling validates as mandatory. 'recommendation' (SHOULD) and 'permission' (MAY) statements are carried informatively: they are rendered with the matching Metanorma obligation and reported in the profile's quality assessment, but they never cause validation to fail. When omitted, the level is inferred from the RFC 2119 keyword in the statement text, defaulting to 'requirement'."
+        },
         "conformance_class": {
           "anyOf": [
             {
@@ -2462,6 +2484,16 @@
       ],
       "title": "Requirement",
       "type": "object"
+    },
+    "RequirementLevel": {
+      "description": "RFC 2119 conformance level of a profile statement.\n\nOGC API - EDR Part 3 profiles are validated on requirements only:\nthe tooling implements SHALL-level statements as the normative,\nconformance-testable body of the profile. Recommendations (SHOULD)\nand permissions (MAY) are carried informatively \u2014 they are rendered\nwith the appropriate Metanorma obligation and summarised in a quality\nassessment, but they never cause validation to fail.",
+      "enum": [
+        "requirement",
+        "recommendation",
+        "permission"
+      ],
+      "title": "RequirementLevel",
+      "type": "string"
     },
     "RootModel_Dict_str__Parameter__": {
       "additionalProperties": {
@@ -2881,6 +2913,16 @@
       "title": "Version",
       "type": "string"
     },
+    "openapi_version": {
+      "default": "3.0.0",
+      "description": "OpenAPI version to generate (3.0.0 for compatibility, 3.1.0 for latest features)",
+      "enum": [
+        "3.0.0",
+        "3.1.0"
+      ],
+      "title": "Openapi Version",
+      "type": "string"
+    },
     "description": {
       "anyOf": [
         {
@@ -2893,6 +2935,19 @@
       "default": null,
       "description": "Human-readable description of the service profile. Surfaces in the OpenAPI info block and the landing page response.",
       "title": "Description"
+    },
+    "attribution": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Attribution / acknowledgement for the service or its data, per the OGC API landing-page metadata (title/description/attribution). Surfaces as a plain 'attribution' property in the landing page response and in each collection object (collection-level overrides this profile-level value). Aligns with EDR Part 3 ATS A.5, which inherits it from OGC API - Common.",
+      "title": "Attribution"
     },
     "keywords": {
       "description": "Service-level keywords describing what this profile provides. Surfaces in the OpenAPI info block (as x-keywords) and the landing page response. Distinct from document_metadata.keywords, which are for the OGC PDF header.",
@@ -2965,6 +3020,14 @@
       "description": "Date the resource/service was published (ISO 8601 string). Surfaces as info.x-resource-publish-date.",
       "title": "Resource Service Publish Date"
     },
+    "links": {
+      "description": "Landing page links",
+      "items": {
+        "$ref": "#/$defs/Link"
+      },
+      "title": "Links",
+      "type": "array"
+    },
     "resource_default_locale": {
       "anyOf": [
         {
@@ -2977,6 +3040,27 @@
       "default": null,
       "description": "Default locale of the resource (e.g. 'eng'). Surfaces as info.x-default-locale.",
       "title": "Resource Default Locale"
+    },
+    "default_language": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Default value for the `lang` query parameter (e.g. 'en-US', 'en-GB', 'fr'). When unset, falls back to 'en-US'. Drives the `lang` parameter's `default` in the generated OpenAPI.",
+      "title": "Default Language"
+    },
+    "supported_languages": {
+      "description": "Languages the service supports for the `lang` query parameter. When set, drives the `lang` parameter's `enum` in the generated OpenAPI (allowing more than one language). When empty, the enum contains just the effective default language.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Supported Languages",
+      "type": "array"
     },
     "collections": {
       "items": {
@@ -3182,16 +3266,6 @@
       "description": "Per-conformance-class constraints keyed by class short name (e.g. 'insitu-observations', 'nwp'). Applied only to collections whose conformance_classes list includes the key. Lets one profile document model several EDR Part 3 requirements classes with different mandatory data-query sets. The flat required_data_queries / radius_within_units_required fields still apply to every collection; class-scoped constraints are additive on top of them.",
       "title": "Conformance Class Requirements",
       "type": "object"
-    },
-    "openapi_version": {
-      "default": "3.0.0",
-      "description": "OpenAPI version to generate (3.0.0 for compatibility, 3.1.0 for latest features)",
-      "enum": [
-        "3.0.0",
-        "3.1.0"
-      ],
-      "title": "Openapi Version",
-      "type": "string"
     }
   },
   "required": [
