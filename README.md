@@ -291,8 +291,11 @@ collections:
           label: Celsius
           symbol: "°C"
 
-# ── Normative requirements and abstract tests ─────────────────────────────
-# Drive the AsciiDoc/PDF output. Tests must reference a valid requirement id.
+# ── Requirements and abstract tests ────────────────────────────────────────
+# Drive the AsciiDoc/PDF output. Each requirement has an RFC 2119 `level`:
+# requirement (SHALL, conformance-tested), recommendation (SHOULD) or
+# permission (MAY) — the latter two are informative and never fail validation.
+# Tests must reference a valid requirement id.
 requirements: []
 abstract_tests: []
 ```
@@ -329,8 +332,9 @@ abstract_tests: []
 | `locations_feature_required_properties` | list | no | Feature properties (e.g. `[name]`) marked required in the generated `/locations` GeoJSON response schema, in addition to the always-required string `id` |
 | `conformance_class_requirements` | object | no | Map of conformance-class short name → constraints (`required_data_queries`, `radius_within_units_required`) applied only to collections that declare the class. Lets one profile document model several EDR Part 3 requirements classes (see below) |
 | `processes` | list | no | OGC API Processes to expose in the OpenAPI |
-| `requirements` | list | no | Normative requirements for the AsciiDoc/PDF |
-| `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id` |
+| `requirements` | list | no | Requirements for the AsciiDoc/PDF. Each may set `level` (`requirement`/`recommendation`/`permission`) — see below |
+| `requirements[].level` | string | no | RFC 2119 level. `requirement` (SHALL) is conformance-tested; `recommendation` (SHOULD) and `permission` (MAY) are informative and never fail validation. Inferred from the statement keyword when omitted; defaults to `requirement` |
+| `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id`. Only SHALL-level requirements are listed in the conformance class |
 | `abstract_tests[].method` | string | no | Optional test method description |
 | `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
 | `collection_examples` | object | no | `{collectionId: {instanceId: "..."}}` — used by `validate-server` |

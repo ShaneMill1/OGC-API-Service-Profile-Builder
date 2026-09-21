@@ -180,8 +180,8 @@ oapi-profile-builder cite-test-features \
 | `locations_feature_required_properties` | list | no | Feature properties marked required in the generated `/locations` response (in addition to string `id`) |
 | `conformance_class_requirements` | object | no | Per-conformance-class constraints applied only to collections declaring the class (see multi-class section) |
 | `processes` | list | no | OGC API Processes to expose in the OpenAPI |
-| `requirements` | list | no | Normative requirements for the AsciiDoc/PDF |
-| `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id` |
+| `requirements` | list | no | Requirements for the AsciiDoc/PDF; each may set `level` (`requirement`/`recommendation`/`permission`) — see [Requirement levels](#requirement-levels-shall--should--may) |
+| `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id` (only SHALL-level requirements are conformance-tested) |
 | `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
 | `collection_examples` | object | no | `{collectionId: {instanceId: "..."}}` — used by `validate-server` |
 | `paging` | object | no | Features `/items` paging — adds a validated `limit` query parameter to the OpenAPI (see below) |
@@ -406,6 +406,30 @@ abstract_tests:
       - Send GET request to /collections/{id}/position?coords=POINT(lon lat).
       - Verify the response Content-Type is application/prs.coverage+json.
 ```
+
+#### Requirement levels (SHALL / SHOULD / MAY)
+
+By design, EDR Part 3 profiles are validated on **requirements (SHALL) only** — those are the normative, conformance-tested body of the profile. The tooling also supports **recommendations (SHOULD)** and **permissions (MAY)** so a profile can capture best-practice guidance without those statements becoming hard conformance gates. Non-normative statements are carried informatively and the tool never fails a profile for defining them.
+
+Set the level explicitly with the `level` field (`requirement`, `recommendation`, or `permission`). When omitted, the level is inferred from the RFC 2119 keyword in the statement text (SHALL/MUST → requirement, SHOULD/RECOMMENDED → recommendation, MAY/OPTIONAL → permission); the strongest keyword present wins, so a mixed statement is never silently downgraded. Existing profiles without a `level` continue to behave exactly as before.
+
+```yaml
+requirements:
+  - id: rfc9457-errors
+    level: recommendation
+    statement: 4xx responses SHOULD comply with RFC 9457 problem details.
+    parts:
+      - Error bodies SHOULD use application/problem+json.
+  - id: identifier-postfix
+    level: permission
+    statement: A collection identifier MAY include a postfix.
+    parts:
+      - The postfix MAY encode a run or reference time.
+```
+
+In the generated OGC document, requirements render as Metanorma `[requirement]` blocks, recommendations as `[recommendation]`, and permissions as `[permission]`. Only SHALL-level requirements are listed in the conformance class / Abstract Test Suite. Every `validate` and `generate` run prints a quality-assessment summary (counts by level, per conformance class, and any SHALL requirements missing an abstract test) so recommendations and permissions are visible as KPIs rather than enforced.
+
+> Recommendations and permissions are the on-ramp for future normative requirements: a best practice can be authored as a `recommendation` in a profile and later graduate into a `requirement` (SHALL) once it is agreed and testable.
 
 ---
 

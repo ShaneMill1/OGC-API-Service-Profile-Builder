@@ -1,5 +1,18 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.10.0] - 2026-09-21
+
+Adds RFC 2119 requirement-level handling so profiles can carry recommendations (SHOULD) and permissions (MAY) alongside requirements (SHALL). By design the tooling still validates SHALL only — recommendations and permissions are informative and never cause validation to fail.
+
+### Added
+- **`Requirement.level`**: New field (`requirement` | `recommendation` | `permission`) on each requirement. When omitted, the level is inferred from the RFC 2119 keyword in the statement (SHALL/MUST → requirement, SHOULD/RECOMMENDED → recommendation, MAY/OPTIONAL → permission); the strongest keyword present wins. Defaults to `requirement`, so existing profiles are unchanged.
+- **Quality-assessment summary**: `validate` and `generate` now print a KPI summary — counts by level, per conformance class, and any SHALL requirements missing an abstract test — so recommendations/permissions are surfaced informatively rather than enforced.
+
+### Changed
+- **Metanorma obligation mapping**: The generated document renders requirements as `[requirement]`, recommendations as `[recommendation]`, and permissions as `[permission]` blocks (and lists them with the matching `requirement::`/`recommendation::`/`permission::` keyword in the requirements class). Previously every statement was emitted as a normative `[requirement]`.
+- **Conformance class scope**: Only SHALL-level requirements (and their abstract tests) are listed in the conformance class / Abstract Test Suite; abstract tests targeting non-normative statements are excluded from the conformance block.
+- **Requirements section note**: The generated Requirements section now carries an informative note stating that conformance is assessed against requirements (SHALL) only and that recommendations/permissions are guidance.
+
 ## [3.9.0] - 2026-08-31
 
 Addresses Met Office review feedback on the generated OpenAPI: metadata fidelity, standard link objects, the `/collections` structure, and WKT2 CRS handling.
