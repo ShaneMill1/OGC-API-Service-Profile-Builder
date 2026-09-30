@@ -41,7 +41,7 @@ Six working examples are included:
 
 | File | What it shows |
 |---|---|
-| [`examples/minimal_profile.yaml`](examples/minimal_profile.yaml) | Smallest valid profile — one collection, one requirement |
+| [`examples/minimal_profile.yaml`](examples/minimal_profile.yaml) | Smallest valid profile — one collection; a requirement (SHALL), recommendation (SHOULD) and permission (MAY) demonstrating [requirement levels](#requirement-levels-shall--should--may) |
 | [`examples/insitu_observations_profile.yaml`](examples/insitu_observations_profile.yaml) | Full meteorological profile — 8 parameters with QUDT units, CF standard names, metocean extensions, CRS listing, temporal extent, custom dimensions, `parameter_schema` |
 | [`examples/nws_connect_profile.yaml`](examples/nws_connect_profile.yaml) | PubSub profile — generates `asyncapi.yaml` alongside the OpenAPI |
 | [`examples/nwsviz_profile.yaml`](examples/nwsviz_profile.yaml) | Production profile — 13 collections, 3 OGC API Processes, PDF metadata |
@@ -332,8 +332,8 @@ abstract_tests: []
 | `locations_feature_required_properties` | list | no | Feature properties (e.g. `[name]`) marked required in the generated `/locations` GeoJSON response schema, in addition to the always-required string `id` |
 | `conformance_class_requirements` | object | no | Map of conformance-class short name → constraints (`required_data_queries`, `radius_within_units_required`) applied only to collections that declare the class. Lets one profile document model several EDR Part 3 requirements classes (see below) |
 | `processes` | list | no | OGC API Processes to expose in the OpenAPI |
-| `requirements` | list | no | Requirements for the AsciiDoc/PDF. Each may set `level` (`requirement`/`recommendation`/`permission`) — see below |
-| `requirements[].level` | string | no | RFC 2119 level. `requirement` (SHALL) is conformance-tested; `recommendation` (SHOULD) and `permission` (MAY) are informative and never fail validation. Inferred from the statement keyword when omitted; defaults to `requirement` |
+| `requirements` | list | no | Requirements for the AsciiDoc/PDF. Each may set `level` (`requirement`/`recommendation`/`permission`) — see [Requirement levels](#requirement-levels-shall--should--may) |
+| `requirements[].level` | string | no | RFC 2119 level. `requirement` (SHALL) is conformance-tested; `recommendation` (SHOULD) and `permission` (MAY) are informative and never fail validation. Inferred from the statement keyword when omitted; defaults to `requirement`. See [Requirement levels](#requirement-levels-shall--should--may) |
 | `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id`. Only SHALL-level requirements are listed in the conformance class |
 | `abstract_tests[].method` | string | no | Optional test method description |
 | `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
@@ -522,6 +522,94 @@ extent_requirements:
     allowed: ["http://www.opengis.net/def/crs/OGC/1.3/CRS84"]
   require_vertical_direction: true
 ```
+
+---
+
+### Requirement levels (SHALL / SHOULD / MAY)
+
+Every entry in `requirements` carries an RFC 2119 conformance `level`. This lets a profile
+express normative rules, best-practice recommendations, and optional permissions in one
+document while keeping the EDR Part 3 design intent that **only SHALL statements are
+conformance-tested**.
+
+| `level` | RFC 2119 keyword | Meaning | Conformance-tested? |
+|---|---|---|---|
+| `requirement` (default) | SHALL / SHALL NOT / MUST | Normative — mandatory for a conforming implementation | Yes — listed in the conformance class, needs an abstract test |
+| `recommendation` | SHOULD / SHOULD NOT / RECOMMENDED | Informative best practice | No — reported but never fails validation |
+| `permission` | MAY / OPTIONAL | Informative option | No — reported but never fails validation |
+
+#### Setting the level
+
+You can set `level` explicitly, or let the tool infer it from the RFC 2119 keyword in the
+statement text. When `level` is omitted, the strongest keyword present wins
+(SHALL/MUST → `requirement`, SHOULD/RECOMMENDED → `recommendation`, MAY/OPTIONAL →
+`permission`); if no keyword is found it defaults to `requirement`. An explicit `level`
+always overrides inference — so a statement can never be silently downgraded from mandatory.
+
+```yaml
+requirements:
+  # requirement (SHALL) — conformance-tested. `level` defaults to requirement.
+  - id: temperature-geojson
+    statement: The temperature collection SHALL return GeoJSON features.
+    parts:
+      - The response Content-Type SHALL be application/geo+json.
+
+  # recommendation (SHOULD) — informative. Level set explicitly.
+  - id: temperature-units-label
+    level: recommendation
+    statement: The temperature collection SHOULD label its unit as Celsius.
+    parts:
+      - Each temp parameter SHOULD expose a unit.label of "Celsius".
+
+  # permission (MAY) — informative. No `level:`; inferred from "MAY".
+  - id: temperature-post-query
+    statement: The service MAY support POST queries for the temperature collection.
+    parts:
+      - Implementations MAY offer POST alongside GET on data query endpoints.
+
+# Only requirements (SHALL) are conformance-tested, so only the SHALL statement
+# gets an abstract test.
+abstract_tests:
+  - id: temperature-geojson
+    requirement_id: temperature-geojson
+    steps:
+      - Send GET request to /collections/temperature/items.
+      - Verify the response Content-Type is application/geo+json.
+```
+
+This is exactly `examples/minimal_profile.yaml` — run it to see the levels in action.
+
+#### What each level does
+
+- **Document rendering.** Requirements render as Metanorma `[requirement]`, recommendations
+  as `[recommendation]`, permissions as `[permission]`, each with the matching obligation, so
+  the generated AsciiDoc/PDF never mislabels a non-normative statement.
+- **Conformance class / Abstract Test Suite.** Only SHALL-level requirements are listed in
+  the conformance class, and abstract tests are meaningful only for them. Recommendations and
+  permissions are summarised informatively.
+- **Quality assessment (KPI).** `validate` and `generate` print a per-level summary — counts
+  by level (and per conformance class when the profile groups by class), plus any SHALL
+  requirement missing an abstract test. Recommendations/permissions are surfaced for
+  visibility and never cause a non-zero exit.
+
+Running `validate` on the example above prints:
+
+```text
+Profile 'minimal_profile' is valid.
+Quality assessment (RFC 2119 statement levels):
+  requirements  (SHALL) : 1  [conformance-tested]
+  recommendations (SHOULD): 1  [informative]
+  permissions     (MAY)   : 1  [informative]
+  abstract tests          : 1
+```
+
+#### Graduation path
+
+A best practice can be authored as a `recommendation` (SHOULD) today and promoted to a
+`requirement` (SHALL) once it is agreed and testable: change its `level` to `requirement`
+(or reword the statement to use SHALL) and add a matching entry in `abstract_tests`. Because
+`level` defaults to `requirement`, existing profiles that predate this field are unaffected —
+every statement without a `level` stays a SHALL requirement.
 
 ---
 

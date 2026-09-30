@@ -50,15 +50,43 @@ collections:
             value: "°C"
             type: "http://www.opengis.net/def/uom/UCUM/degC"
 
-# ── Normative requirements and abstract tests ─────────────────────────────
-# Drive the AsciiDoc/PDF output. Tests must reference a valid requirement id.
+# ── Requirements, recommendations, permissions ────────────────────────────
+# Drive the AsciiDoc/PDF output. Each statement has an RFC 2119 `level`:
+#
+#   requirement    (SHALL) — normative, the only conformance-tested level.
+#   recommendation (SHOULD) — informative best practice; never fails validation.
+#   permission     (MAY)    — informative option; never fails validation.
+#
+# `level` may be set explicitly (see the recommendation below). When omitted it
+# is inferred from the RFC 2119 keyword in the statement text — the permission
+# below has no `level:` and is classified as a permission from its "MAY".
+# Abstract tests only apply to requirements (SHALL); recommendations and
+# permissions are reported in the quality assessment but not conformance-tested.
 requirements:
+  # requirement (SHALL) — conformance-tested. Level defaults to `requirement`.
   - id: temperature-geojson
     statement: The temperature collection SHALL return GeoJSON features.
     parts:
       - The service SHALL provide a /collections/temperature/items endpoint.
       - The response Content-Type SHALL be application/geo+json.
 
+  # recommendation (SHOULD) — informative. Level is set explicitly here.
+  - id: temperature-units-label
+    level: recommendation
+    statement: The temperature collection SHOULD label its unit as Celsius.
+    parts:
+      - Each temp parameter SHOULD expose a unit.label of "Celsius".
+
+  # permission (MAY) — informative. No `level:` set; inferred from "MAY".
+  - id: temperature-post-query
+    statement: The service MAY support POST queries for the temperature collection.
+    parts:
+      - Implementations MAY offer POST alongside GET on data query endpoints.
+
+# Only requirements (SHALL) are conformance-tested, so only the SHALL statement
+# has an abstract test. A recommendation can graduate into a requirement later:
+# change its `level` to `requirement` (or reword the statement to SHALL) and add
+# a matching abstract test here.
 abstract_tests:
   - id: temperature-geojson
     requirement_id: temperature-geojson
