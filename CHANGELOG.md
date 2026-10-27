@@ -1,5 +1,17 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.12.0] - 2026-10-27
+
+Completes the remaining MetOcean gap-analysis document-fidelity items (abbreviated-terms table and per-class dependency/pre-conditions rows). See `docs/metocean-profile-fidelity.md` and issue #10.
+
+### Added
+- **Abbreviated terms table**: `document_metadata.body.abbreviated_terms` (abbreviation → term) renders a `=== Abbreviated terms` table in the Terms clause, matching an OGC document's §4.1. `document_metadata.body.terms_text` supplies verbatim Terms-clause intro prose, replacing the generic boilerplate.
+- **Requirements-class dependency / pre-conditions rows**: `document_metadata.body.class_metadata` (keyed by conformance-class short name) adds `target-type`, `dependency`, and `pre-condition` rows to a class's generated `[requirements_class]` block, mirroring the source requirements-class tables.
+- The MetOcean example now reproduces the §4.1 abbreviations table (29 entries) and all four classes' Dependency/Pre-conditions rows verbatim.
+
+### Changed
+- All new fields are optional and additive; profiles without them are unchanged.
+
 ## [3.11.0] - 2026-10-27
 
 Lets a single YAML config reproduce a hand-authored OGC profile document verbatim, and makes generated requirement identifiers match a multi-class source document exactly. Driven by reproducing the MetOcean EDR Profile (OGC 26-027) — see `docs/metocean-profile-fidelity.md`.

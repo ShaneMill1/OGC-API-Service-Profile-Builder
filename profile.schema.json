@@ -1,5 +1,26 @@
 {
   "$defs": {
+    "AbbreviatedTerm": {
+      "description": "One row of the Terms clause 'Abbreviated terms' table (abbreviation + term).",
+      "properties": {
+        "abbreviation": {
+          "description": "The abbreviation, e.g. 'HTTP'.",
+          "title": "Abbreviation",
+          "type": "string"
+        },
+        "term": {
+          "description": "The expansion, e.g. 'Hypertext Transfer Protocol'.",
+          "title": "Term",
+          "type": "string"
+        }
+      },
+      "required": [
+        "abbreviation",
+        "term"
+      ],
+      "title": "AbbreviatedTerm",
+      "type": "object"
+    },
     "AbstractTest": {
       "properties": {
         "id": {
@@ -998,6 +1019,27 @@
           "description": "AsciiDoc body for the Abstract, replacing the generic default.",
           "title": "Abstract"
         },
+        "terms_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "AsciiDoc body for the Terms and Definitions clause intro, replacing the generic boilerplate. Rendered under the '== Terms and definitions' heading, before any `terms` sub-clauses and the abbreviated-terms table.",
+          "title": "Terms Text"
+        },
+        "abbreviated_terms": {
+          "description": "Rows for the Terms clause 'Abbreviated terms' table (abbreviation -> term). Rendered as a '=== Abbreviated terms' table, matching the source document's \u00a74.1.",
+          "items": {
+            "$ref": "#/$defs/AbbreviatedTerm"
+          },
+          "title": "Abbreviated Terms",
+          "type": "array"
+        },
         "clauses": {
           "description": "Extra authored top-level clauses (e.g. Conventions, Introduction/informative text) slotted into the document by their 'position'.",
           "items": {
@@ -1012,6 +1054,14 @@
           },
           "description": "Per-conformance-class lead-in prose, keyed by class short name (e.g. 'core', 'nwp'). Rendered immediately under the class heading, before its requirements.",
           "title": "Class Intros",
+          "type": "object"
+        },
+        "class_metadata": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RequirementsClassInfo"
+          },
+          "description": "Per-conformance-class extra requirements-class table rows (target type, dependencies, pre-conditions), keyed by class short name. Lets the generated requirements-class block carry the same Dependency / Pre-conditions rows as the source document.",
+          "title": "Class Metadata",
           "type": "object"
         },
         "requirement_intros": {
@@ -2775,6 +2825,42 @@
       ],
       "title": "RequirementLevel",
       "type": "string"
+    },
+    "RequirementsClassInfo": {
+      "description": "Optional extra rows for a conformance class's requirements-class table.\n\nMirrors the Dependency / Pre-conditions rows an OGC requirements-class table\ncarries (e.g. Core depends on OGC API - EDR Part 1 Core + Collections). These\nrender as additional `[%metadata]` rows in the generated `[requirements_class]`\nblock, keyed in DocumentBody.class_metadata by conformance-class short name.",
+      "properties": {
+        "target_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Target type row (e.g. 'Web API'). Overrides the generated default.",
+          "title": "Target Type"
+        },
+        "dependencies": {
+          "description": "Dependency rows (one per entry), e.g. 'OGC API - EDR Part 1: Core'.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "preconditions": {
+          "description": "Pre-conditions rows (one per entry).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Preconditions",
+          "type": "array"
+        }
+      },
+      "title": "RequirementsClassInfo",
+      "type": "object"
     },
     "RevisionHistoryEntry": {
       "description": "One row of the revision-history annex table.",

@@ -73,6 +73,14 @@ source's bare names — see §2).
 - Document metadata: doc number 26-027, `profile` subtype, draft status, editors
   Håvard Futsæter (MET Norway) and Tom Kralidis (MSC), submitting organizations,
   dates (2026-05-08), keywords, external id.
+- Terms clause: the verbatim clause-4 intro (ModSpec/Policy Directive 49 prose)
+  plus the full §4.1 **Abbreviated terms** table (all 29 abbreviations) via
+  `document_metadata.body.terms_text` + `abbreviated_terms`.
+- Requirements-class tables carry the source's **Dependency** and
+  **Pre-conditions** rows for every class via `document_metadata.body.class_metadata`
+  (e.g. Core depends on OGC API - EDR Part 1 Core + Collections, with the
+  conformance pre-condition; insitu/nwp/data-query-response-format depend on
+  Core and their second class).
 
 ## 3. Intentional deviations from the source (reviewed)
 

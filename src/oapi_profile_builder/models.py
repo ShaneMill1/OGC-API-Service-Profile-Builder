@@ -812,6 +812,34 @@ class RevisionHistoryEntry(BaseModel):
         return v
 
 
+class AbbreviatedTerm(BaseModel):
+    """One row of the Terms clause 'Abbreviated terms' table (abbreviation + term)."""
+    abbreviation: str = Field(description="The abbreviation, e.g. 'HTTP'.")
+    term: str = Field(description="The expansion, e.g. 'Hypertext Transfer Protocol'.")
+
+
+class RequirementsClassInfo(BaseModel):
+    """Optional extra rows for a conformance class's requirements-class table.
+
+    Mirrors the Dependency / Pre-conditions rows an OGC requirements-class table
+    carries (e.g. Core depends on OGC API - EDR Part 1 Core + Collections). These
+    render as additional `[%metadata]` rows in the generated `[requirements_class]`
+    block, keyed in DocumentBody.class_metadata by conformance-class short name.
+    """
+    target_type: str | None = Field(
+        default=None,
+        description="Target type row (e.g. 'Web API'). Overrides the generated default.",
+    )
+    dependencies: list[str] = Field(
+        default_factory=list,
+        description="Dependency rows (one per entry), e.g. 'OGC API - EDR Part 1: Core'.",
+    )
+    preconditions: list[str] = Field(
+        default_factory=list,
+        description="Pre-conditions rows (one per entry).",
+    )
+
+
 class BibliographyEntry(BaseModel):
     """One entry in the (informative) bibliography annex.
 
@@ -847,6 +875,22 @@ class DocumentBody(BaseModel):
         default=None,
         description="AsciiDoc body for the Abstract, replacing the generic default.",
     )
+    terms_text: str | None = Field(
+        default=None,
+        description=(
+            "AsciiDoc body for the Terms and Definitions clause intro, replacing the "
+            "generic boilerplate. Rendered under the '== Terms and definitions' "
+            "heading, before any `terms` sub-clauses and the abbreviated-terms table."
+        ),
+    )
+    abbreviated_terms: list[AbbreviatedTerm] = Field(
+        default_factory=list,
+        description=(
+            "Rows for the Terms clause 'Abbreviated terms' table (abbreviation -> "
+            "term). Rendered as a '=== Abbreviated terms' table, matching the source "
+            "document's §4.1."
+        ),
+    )
     clauses: list[DocumentClause] = Field(
         default_factory=list,
         description=(
@@ -860,6 +904,15 @@ class DocumentBody(BaseModel):
             "Per-conformance-class lead-in prose, keyed by class short name "
             "(e.g. 'core', 'nwp'). Rendered immediately under the class heading, "
             "before its requirements."
+        ),
+    )
+    class_metadata: dict[str, RequirementsClassInfo] = Field(
+        default_factory=dict,
+        description=(
+            "Per-conformance-class extra requirements-class table rows "
+            "(target type, dependencies, pre-conditions), keyed by class short "
+            "name. Lets the generated requirements-class block carry the same "
+            "Dependency / Pre-conditions rows as the source document."
         ),
     )
     requirement_intros: dict[str, str] = Field(

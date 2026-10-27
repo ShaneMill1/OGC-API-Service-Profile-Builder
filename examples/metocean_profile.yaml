@@ -226,6 +226,46 @@ document_metadata:
 
       This specification defines the conformance requirements for the MetOcean EDR Profile.  Annex A defines the abstract test suite. Annex B provides normative information on schemas.  Annex C provides informative examples.
 
+    # Clause 4 — Terms and definitions intro (verbatim from
+    # clause_4_terms_and_definitions.adoc).
+    terms_text: |
+      This document uses the terms defined in https://portal.ogc.org/public_ogc/directives/directives.php[OGC Policy Directive 49], which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of International Standards. In particular, the word “SHALL” (not “must”) is the verb form used to indicate a requirement to be strictly followed to conform to this Standard and OGC documents do not use the equivalent phrases in the ISO/IEC Directives, Part 2.
+
+      This document also uses terms defined in the OGC Standard for Modular specifications (https://portal.opengeospatial.org/files/?artifact_id=34762[OGC 08-131r3]), also known as the 'ModSpec'. The definitions of terms such as standard, specification, requirement, and conformance test are provided in the ModSpec.
+
+      The following additional terms and definitions also apply.
+
+    # §4.1 Abbreviated terms (Table 2) — verbatim from the source.
+    abbreviated_terms:
+      - { abbreviation: API, term: Application Programming Interface }
+      - { abbreviation: EU, term: European Union }
+      - { abbreviation: EUMETNET, term: European National Meteorological and Hydrological Services }
+      - { abbreviation: FAIR, term: "Findable, Accessible, Interoperable, Reusable" }
+      - { abbreviation: FEMDI, term: Federated European Meteo-hydrological Data Infrastructure }
+      - { abbreviation: GIS, term: Geographic Information System }
+      - { abbreviation: HVD, term: High Value Datasets }
+      - { abbreviation: HTML, term: Hypertext Markup Language }
+      - { abbreviation: HTTP, term: Hypertext Transfer Protocol }
+      - { abbreviation: HTTPS, term: Hypertext Transfer Protocol Secure }
+      - { abbreviation: IANA, term: Internet Assigned Numbers Authority }
+      - { abbreviation: IETF, term: Internet Engineering Task Force }
+      - { abbreviation: ISO, term: International Organization for Standardization }
+      - { abbreviation: JSON, term: JavaScript Object Notation }
+      - { abbreviation: MIME, term: Multipurpose Internet Mail Extensions }
+      - { abbreviation: NMHS, term: National Meteorological and Hydrological Service }
+      - { abbreviation: NWP, term: Numerical Weather Prediction }
+      - { abbreviation: OGC, term: Open Geospatial Consortium }
+      - { abbreviation: REST, term: Representational State Transfer }
+      - { abbreviation: ROA, term: Resource-oriented architecture }
+      - { abbreviation: RODEO, term: The provision of open access to public meteorological data and development of shared federated data infrastructure for the development of information products and services }
+      - { abbreviation: S3, term: Simple Storage Service }
+      - { abbreviation: SEO, term: Search engine optimization }
+      - { abbreviation: SOA, term: Service-oriented architecture }
+      - { abbreviation: URI, term: Uniform Resource Identifier }
+      - { abbreviation: URL, term: Uniform Resource Locator }
+      - { abbreviation: W3C, term: World Wide Web Consortium }
+      - { abbreviation: XML, term: eXtensible Markup Language }
+
     # ── Figure (available, NOT embedded) ────────────────────────────────────
     # The source repo ships images/metadata-discovery-workflow.png but its
     # Introduction clause contains no image:: directive, so the figure is not
@@ -315,6 +355,31 @@ document_metadata:
 
     # Per-class lead-in prose (rendered directly under each class heading).
     class_intros: {}
+
+    # Per-class requirements-class table rows (Dependency / Pre-conditions),
+    # verbatim from the source requirements_class_*.adoc tables.
+    class_metadata:
+      core:
+        target_type: Web API
+        dependencies:
+          - "OGC API - Environmental Data Retrieval Standard - Part 1: Core (2023) footnote:[https://docs.ogc.org/is/19-086r6/19-086r6.html]"
+        preconditions:
+          - "The API conforms to OGC API - Environmental Data Retrieval - Part 1: Core, Requirements Class: Core and Requirements Class: Collections"
+      data-query-response-format:
+        target_type: Web API
+        dependencies:
+          - "Core"
+          - "CoverageJSON"
+      insitu-observations:
+        target_type: Web API
+        dependencies:
+          - "Core"
+          - "Data query response format"
+      nwp:
+        target_type: Web API
+        dependencies:
+          - "Core"
+          - "Data query response format"
 
     # Per-requirement lead-in prose + sub-headings, matching clause 7..10 of the
     # source document. Keys are requirement/recommendation ids from this config.

@@ -1834,14 +1834,23 @@ def _class_conf_uri(profile: ServiceProfile, cls: str) -> str:
 
 
 def _req_class_adoc_for(profile: ServiceProfile, cls: str, reqs: list) -> str:
+    body = _doc_body(profile)
+    info = body.class_metadata.get(cls) if body else None
+    target_type = (info.target_type if info and info.target_type else f"{profile.title} Profile Standard")
     lines = [
         f"[[req_class_{cls}]]".replace("-", "_"),
         "[requirements_class]",
         "====",
         "[%metadata]",
         f"identifier:: {_class_req_uri(profile, cls)}",
-        f"target-type:: {profile.title} Profile Standard",
+        f"target-type:: {target_type}",
     ]
+    # Dependency / Pre-conditions rows mirror the source requirements-class table.
+    if info:
+        for dep in info.dependencies:
+            lines.append(f"dependency:: {dep}")
+        for pre in info.preconditions:
+            lines.append(f"pre-condition:: {pre}")
     for req in reqs:
         keyword = _LEVEL_BLOCK[_level_of(req)]
         lines.append(f"{keyword}:: /{_req_uri_seg(req)}/{cls}/{req.id}")
@@ -2665,17 +2674,27 @@ def _build_document_adoc(profile: ServiceProfile) -> str:
 
 
 def _terms_adoc(profile: ServiceProfile) -> str:
-    """Render profile-supplied terms as Metanorma term clauses, or empty string."""
+    """Render profile-supplied terms + abbreviated-terms table, or empty string."""
     m = profile.document_metadata
     terms = getattr(m, "terms", None) if m else None
-    if not terms:
+    body = _doc_body(profile)
+    abbrevs = body.abbreviated_terms if body else []
+    if not terms and not abbrevs:
         return ""
     out = ["\n"]
-    for t in terms:
+    for t in (terms or []):
         out.append(f"=== {t.term}\n\n{t.definition}\n")
         if t.source:
             out.append(f"\n_{t.source}_\n")
         out.append("\n")
+    if abbrevs:
+        out.append("\n=== Abbreviated terms\n\n")
+        out.append(".Symbols and abbreviated terms\n")
+        out.append("|===\n")
+        out.append("|Abbreviation |Term\n")
+        for a in abbrevs:
+            out.append(f"\n|{a.abbreviation}\n|{a.term}\n")
+        out.append("|===\n")
     return "".join(out)
 
 
@@ -2861,11 +2880,17 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
             + "\n".join(reference_lines) + "\n"
         ),
         "sections/05-terms.adoc": (
-            "== Terms, Definitions and Abbreviated Terms\n\n"
-            "This document uses the terms defined in https://portal.ogc.org/public_ogc/directives/directives.php[OGC Policy Directive 49], "
-            "which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of International Standards. "
-            "In particular, the word \"shall\" (not \"must\") is the verb form used to indicate a requirement to be strictly followed to conform to this standard.\n\n"
-            "This document also uses terms defined in OGC API - EDR Part 1: Core.\n"
+            "== Terms and definitions\n\n"
+            + (
+                (body.terms_text.rstrip() + "\n")
+                if body and body.terms_text
+                else (
+                    "This document uses the terms defined in https://portal.ogc.org/public_ogc/directives/directives.php[OGC Policy Directive 49], "
+                    "which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of International Standards. "
+                    "In particular, the word \"shall\" (not \"must\") is the verb form used to indicate a requirement to be strictly followed to conform to this standard.\n\n"
+                    "This document also uses terms defined in OGC API - EDR Part 1: Core.\n"
+                )
+            )
             + _terms_adoc(profile)
         ),
         "sections/06-requirements.adoc": requirements_section,
