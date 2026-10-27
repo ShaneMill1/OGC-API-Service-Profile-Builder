@@ -10,6 +10,19 @@
           "title": "Requirement Id",
           "type": "string"
         },
+        "conformance_class": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Short key of the conformance class this test belongs to (e.g. 'core', 'nwp'). Needed only when requirement ids are reused across classes \u2014 which is allowed, since requirement ids are unique WITHIN a class, not globally. When set, it must match the conformance_class of the requirement this test targets. When omitted, the test is linked to the single requirement that carries its requirement_id (unambiguous only when that id is not reused across classes).",
+          "title": "Conformance Class"
+        },
         "steps": {
           "items": {
             "type": "string"
@@ -38,6 +51,34 @@
         "steps"
       ],
       "title": "AbstractTest",
+      "type": "object"
+    },
+    "BibliographyEntry": {
+      "description": "One entry in the (informative) bibliography annex.\n\nRendered as a Metanorma bibliography item\n``* [[[<anchor>,<citation>]]], <title>``. Distinct from\n``normative_references`` (which land in the normative References clause).",
+      "properties": {
+        "anchor": {
+          "description": "Cross-reference anchor, e.g. 'RODEO'.",
+          "pattern": "^[A-Za-z0-9_\\-]+$",
+          "title": "Anchor",
+          "type": "string"
+        },
+        "citation": {
+          "description": "Short citation label shown in brackets.",
+          "title": "Citation",
+          "type": "string"
+        },
+        "title": {
+          "description": "Full reference title.",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "anchor",
+        "citation",
+        "title"
+      ],
+      "title": "BibliographyEntry",
       "type": "object"
     },
     "Boilerplate": {
@@ -890,6 +931,199 @@
       "title": "DataQueries",
       "type": "object"
     },
+    "DocumentAnnex": {
+      "description": "A hand-authored annex rendered after the Abstract Test Suite.\n\nAnnexes carry supporting material a profile document normally keeps in\nannex_*.adoc files: JSON schemas, worked examples, parameter-name tables,\netc. The ``body`` is raw AsciiDoc; the generator adds the ``[appendix]``\nwrapper and obligation.",
+      "properties": {
+        "id": {
+          "description": "Stable id/anchor for the annex, e.g. 'annex-schemas'.",
+          "pattern": "^[A-Za-z0-9_\\-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "description": "Annex heading text, e.g. 'Schemas'.",
+          "title": "Title",
+          "type": "string"
+        },
+        "body": {
+          "description": "Raw AsciiDoc body of the annex. The config is the single source of truth: author the full verbatim content here.",
+          "title": "Body",
+          "type": "string"
+        },
+        "obligation": {
+          "default": "informative",
+          "description": "Metanorma obligation for the annex (normative or informative).",
+          "enum": [
+            "normative",
+            "informative"
+          ],
+          "title": "Obligation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "body"
+      ],
+      "title": "DocumentAnnex",
+      "type": "object"
+    },
+    "DocumentBody": {
+      "description": "Authored document-body content woven into the generated document.adoc.\n\nThis is the heart of 'Option A': it lets one YAML config reproduce a\ncontent-complete OGC profile document (prose clauses, per-requirement\nlead-in text, figures, annexes, bibliography, revision history) rather than\nthe generic templated sections the generator emits by default. Every field\nis optional and additive \u2014 an empty/absent document_body leaves output\nunchanged.",
+      "properties": {
+        "scope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "AsciiDoc body for the Scope clause, replacing the generic one-line scope the generator emits by default.",
+          "title": "Scope"
+        },
+        "abstract": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "AsciiDoc body for the Abstract, replacing the generic default.",
+          "title": "Abstract"
+        },
+        "clauses": {
+          "description": "Extra authored top-level clauses (e.g. Conventions, Introduction/informative text) slotted into the document by their 'position'.",
+          "items": {
+            "$ref": "#/$defs/DocumentClause"
+          },
+          "title": "Clauses",
+          "type": "array"
+        },
+        "class_intros": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Per-conformance-class lead-in prose, keyed by class short name (e.g. 'core', 'nwp'). Rendered immediately under the class heading, before its requirements.",
+          "title": "Class Intros",
+          "type": "object"
+        },
+        "requirement_intros": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Per-requirement lead-in prose, keyed by requirement/recommendation id. Rendered as a sub-heading + paragraph immediately before that requirement's box, matching how OGC clauses introduce each requirement.",
+          "title": "Requirement Intros",
+          "type": "object"
+        },
+        "requirement_headings": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional human-readable sub-heading for each requirement, keyed by id (e.g. 'collection-license' -> 'Collection license'). Used with requirement_intros to title the per-requirement sub-clause. When omitted, the requirement id is title-cased.",
+          "title": "Requirement Headings",
+          "type": "object"
+        },
+        "annexes": {
+          "description": "Authored annexes rendered after the Abstract Test Suite.",
+          "items": {
+            "$ref": "#/$defs/DocumentAnnex"
+          },
+          "title": "Annexes",
+          "type": "array"
+        },
+        "figures": {
+          "description": "Images copied into images/ and referenceable from any authored body.",
+          "items": {
+            "$ref": "#/$defs/Figure"
+          },
+          "title": "Figures",
+          "type": "array"
+        },
+        "bibliography": {
+          "description": "Informative bibliography annex entries.",
+          "items": {
+            "$ref": "#/$defs/BibliographyEntry"
+          },
+          "title": "Bibliography",
+          "type": "array"
+        },
+        "revision_history": {
+          "description": "Rows for a Revision History annex table.",
+          "items": {
+            "$ref": "#/$defs/RevisionHistoryEntry"
+          },
+          "title": "Revision History",
+          "type": "array"
+        },
+        "render_requirement_clauses": {
+          "default": false,
+          "description": "When true, render each conformance class as an OGC-style clause with per-requirement sub-headings and intro prose (using class_intros / requirement_intros / requirement_headings), instead of the flat Requirements section. Enables a faithful clause-7..n layout.",
+          "title": "Render Requirement Clauses",
+          "type": "boolean"
+        }
+      },
+      "title": "DocumentBody",
+      "type": "object"
+    },
+    "DocumentClause": {
+      "description": "A hand-authored top-level clause (prose section) in the document body.\n\nRendered as a Metanorma level-1 section (``== Title``) with the supplied\nAsciiDoc ``body``. Use ``position`` to slot the clause into the canonical\nOGC document order relative to the generated machinery.",
+      "properties": {
+        "id": {
+          "description": "Stable id/anchor for the clause (letters, digits, dash, underscore).",
+          "pattern": "^[A-Za-z0-9_\\-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "description": "Clause heading text, e.g. 'Conventions'.",
+          "title": "Title",
+          "type": "string"
+        },
+        "body": {
+          "description": "Raw AsciiDoc body of the clause (may contain sub-headings '===', lists, tables, figure refs, footnotes \u2014 anything Metanorma accepts). The config is the single source of truth: author the full verbatim prose here.",
+          "title": "Body",
+          "type": "string"
+        },
+        "position": {
+          "default": "after-terms",
+          "description": "Where to place this clause in the canonical document order. OGC convention: Scope, Conformance, References, Terms, Conventions, Introduction/informative text, then the requirements clauses. Use 'after-terms' for Conventions, 'before-requirements' for an introduction/informative clause.",
+          "enum": [
+            "after-scope",
+            "after-conformance",
+            "after-references",
+            "after-terms",
+            "before-requirements",
+            "after-requirements"
+          ],
+          "title": "Position",
+          "type": "string"
+        },
+        "obligation": {
+          "default": "normative",
+          "description": "Metanorma obligation for the clause (normative or informative).",
+          "enum": [
+            "normative",
+            "informative"
+          ],
+          "title": "Obligation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "body"
+      ],
+      "title": "DocumentClause",
+      "type": "object"
+    },
     "DocumentMetadata": {
       "description": "Metanorma/OGC document header metadata for PDF compilation.",
       "properties": {
@@ -1228,6 +1462,18 @@
           "default": null,
           "description": "Optional text (e.g. 'DRAFT') rendered as a light diagonal watermark on every PDF page via a PDF stylesheet override. Distinct from cover.watermark, which only marks the generated cover image. Coupled to the OGC Metanorma flavor.",
           "title": "Page Watermark"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DocumentBody"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Authored document-body content (scope/conventions/introduction prose, per-requirement lead-in text, figures, annexes, bibliography, revision history) woven into the generated document.adoc so a single config can reproduce a content-complete OGC profile document. Optional and additive: omit it and the generator emits its generic templated sections."
         }
       },
       "required": [
@@ -1546,6 +1792,41 @@
         "spatial"
       ],
       "title": "ExtentWithNullBounds",
+      "type": "object"
+    },
+    "Figure": {
+      "description": "An image to copy into the generated document and reference from prose.\n\nThe source file is copied verbatim into ``images/<filename>`` beside the\ngenerated document.adoc. Reference it from any authored body via the anchor,\ne.g. ``<<fig-workflow>>``.",
+      "properties": {
+        "id": {
+          "description": "Cross-reference anchor for the figure, e.g. 'fig-workflow'",
+          "pattern": "^[A-Za-z0-9_\\-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "path": {
+          "description": "Path to the source image file, relative to the config file's directory (or absolute). Copied into images/<filename> in the output.",
+          "title": "Path",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Figure caption",
+          "title": "Title"
+        }
+      },
+      "required": [
+        "id",
+        "path"
+      ],
+      "title": "Figure",
       "type": "object"
     },
     "FilterType": {
@@ -2438,7 +2719,7 @@
     "Requirement": {
       "properties": {
         "id": {
-          "pattern": "^[a-z0-9][a-z0-9\\-]*$",
+          "pattern": "^[a-z0-9][a-z0-9_\\-]*$",
           "title": "Id",
           "type": "string"
         },
@@ -2494,6 +2775,45 @@
       ],
       "title": "RequirementLevel",
       "type": "string"
+    },
+    "RevisionHistoryEntry": {
+      "description": "One row of the revision-history annex table.",
+      "properties": {
+        "date": {
+          "description": "Revision date (YYYY-MM-DD).",
+          "title": "Date",
+          "type": "string"
+        },
+        "release": {
+          "description": "Release/stage label, e.g. 'Draft' or '1.0'.",
+          "title": "Release",
+          "type": "string"
+        },
+        "editor": {
+          "description": "Editor responsible for the revision.",
+          "title": "Editor",
+          "type": "string"
+        },
+        "clauses": {
+          "default": "all",
+          "description": "Primary clauses modified.",
+          "title": "Clauses",
+          "type": "string"
+        },
+        "description": {
+          "description": "Summary of the change.",
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "date",
+        "release",
+        "editor",
+        "description"
+      ],
+      "title": "RevisionHistoryEntry",
+      "type": "object"
     },
     "RootModel_Dict_str__Parameter__": {
       "additionalProperties": {

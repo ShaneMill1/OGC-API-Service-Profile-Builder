@@ -1,5 +1,18 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.11.0] - 2026-10-27
+
+Lets a single YAML config reproduce a hand-authored OGC profile document verbatim, and makes generated requirement identifiers match a multi-class source document exactly. Driven by reproducing the MetOcean EDR Profile (OGC 26-027) — see `docs/metocean-profile-fidelity.md`.
+
+### Added
+- **Authored document body (`document_metadata.body`)**: Carry the full prose of a standard in the config — `abstract`/`scope`, extra `clauses` (e.g. Conventions, Introduction) positioned in the canonical OGC order, per-class/per-requirement lead-in prose (`class_intros`, `requirement_intros`, `requirement_headings`, `render_requirement_clauses`), `annexes`, `bibliography`, `revision_history`, and `figures` (copied into `images/`). All optional and additive; absent `body` leaves output unchanged.
+- **`AbstractTest.conformance_class`**: Optional class key so a test can be linked unambiguously when a requirement id is reused across classes.
+
+### Changed
+- **Class-scoped requirement identifiers**: Requirement ids are now unique *within a conformance class and obligation* rather than globally, so a multi-class profile can use the source document's bare names (e.g. `collection_data_queries` in both `insitu-observations` and `nwp`). Generated identifiers read `/req/<class>/<name>`, matching such a source verbatim. `Requirement.id` now also permits underscores.
+- **Obligation-aware identifier namespaces**: Recommendations now emit `/rec/<class>/<name>` identifiers (`REC_` files) and permissions `/per/<class>/<name>` (`PER_` files), instead of all levels using `/req/`. This lets a requirement and a recommendation share a bare name within one class (as the source does for `collection_parameter_names` in the insitu-observations class).
+- Single-class profiles (no `conformance_class` on any requirement) are unaffected — the legacy `core` layout and `/req/<profile>/<id>` identifiers are unchanged.
+
 ## [3.10.0] - 2026-09-21
 
 Adds RFC 2119 requirement-level handling so profiles can carry recommendations (SHOULD) and permissions (MAY) alongside requirements (SHALL). By design the tooling still validates SHALL only — recommendations and permissions are informative and never cause validation to fail.
@@ -188,7 +201,7 @@ Addresses the MetOcean EDR Profile (OGC 26-027, Draft) gap analysis (issue #10) 
   - The flat `required_data_queries` / `radius_within_units_required` fields still apply to every collection; class-scoped constraints are additive on top, so single-class profiles are unaffected.
 - **Per-collection `parameter_schema`**: `Collection.parameter_schema` (optional) overrides the profile-level `parameter_schema` for a single collection in the generated OpenAPI. Precedence is collection → profile → built-in default. This lets collections in one profile carry different parameter constraints — e.g. an insitu collection requiring `metocean:standard_name`/`metocean:level`/`measurementType` while an NWP collection requires an ECMWF short-name `id`.
 - **Multi-class requirements/conformance documents**: `Requirement.conformance_class` (optional). When any requirement sets it, the generated AsciiDoc/PDF is organised into one requirements class and one conformance class per key — each with its own class URI under `spec_uri_base`, its own `requirements/<class>/` and `abstract_tests/<class>/` folders, and all classes included in order in the Requirements and Abstract Test Suite sections. When unset on all requirements, the generator keeps its single-class (`core`) layout, so existing profiles' generated documents are unchanged.
-- **`examples/metocean_profile.yaml`**: a reverse-engineered MetOcean EDR Profile (OGC 26-027), transcribed from the authoritative AsciiDoc source. One document modelling the Core, Insitu observations, NWP, and Data-query-response-format classes as four EDR Part 3 conformance classes — an insitu collection (locations/area/radius) and an NWP `weather_forecast` collection (instances + position/cube) enforced per class, the full Annex D ECMWF NWP parameter matrix, and all 19 normative requirements + abstract tests grouped by class. Divergences from the source are recorded in `docs/metocean-profile-differences.md`.
+- **`examples/metocean_profile.yaml`**: a reverse-engineered MetOcean EDR Profile (OGC 26-027), transcribed from the authoritative AsciiDoc source. One document modelling the Core, Insitu observations, NWP, and Data-query-response-format classes as four EDR Part 3 conformance classes — an insitu collection (locations/area/radius) and an NWP `weather_forecast` collection (instances + position/cube) enforced per class, the full Annex D ECMWF NWP parameter matrix, and all 19 normative requirements + abstract tests grouped by class. Provenance — what is reproduced verbatim and the intentional deviations — is recorded in `docs/metocean-profile-fidelity.md`.
 - The `insitu_observations_profile.yaml` example now opts into the flat Core constraints to demonstrate a MetOcean-aligned single-class configuration; regenerated its artifacts and `profile.schema.json`.
 
 ## [3.4.1] - 2026-07-17

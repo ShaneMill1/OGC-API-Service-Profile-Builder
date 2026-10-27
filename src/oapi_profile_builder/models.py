@@ -294,7 +294,11 @@ class RequirementLevel(str, Enum):
 # ---------------------------------------------------------------------------
 
 class Requirement(BaseModel):
-    id: Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9\-]*$")]
+    # Lowercase alnum with hyphen or underscore separators. Underscores are
+    # permitted so a profile can mirror the source document's requirement names
+    # verbatim (e.g. `collection_data_queries`) in the generated
+    # /req/<class>/<name> identifiers.
+    id: Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9_\-]*$")]
     statement: str
     parts: list[str] = Field(min_length=1)
     level: RequirementLevel = Field(
@@ -361,6 +365,18 @@ class Requirement(BaseModel):
 class AbstractTest(BaseModel):
     id: str  # mirrors the requirement id it tests
     requirement_id: str
+    conformance_class: str | None = Field(
+        default=None,
+        description=(
+            "Short key of the conformance class this test belongs to (e.g. 'core', "
+            "'nwp'). Needed only when requirement ids are reused across classes — "
+            "which is allowed, since requirement ids are unique WITHIN a class, not "
+            "globally. When set, it must match the conformance_class of the "
+            "requirement this test targets. When omitted, the test is linked to the "
+            "single requirement that carries its requirement_id (unambiguous only "
+            "when that id is not reused across classes)."
+        ),
+    )
     steps: list[str] = Field(min_length=1)
     method: str | None = Field(default=None, description="Optional test method description")
 
@@ -679,6 +695,217 @@ class Boilerplate(BaseModel):
     feedback: str | None = Field(default=None, description="Feedback/comments paragraph")
 
 
+# ---------------------------------------------------------------------------
+# Authored document body (Option A: faithful reproduction of a hand-written
+# OGC profile document from the YAML config).
+#
+# These models let a profile carry the bespoke prose, figures and annexes that
+# a Metanorma OGC document normally keeps in hand-authored .adoc files, so a
+# single config round-trips to a content-complete document (e.g. matching the
+# MetOcean EDR Profile's scope/conventions/introduction clauses, per-requirement
+# lead-in prose, Annex B schemas, Annex C examples, Annex D parameter table,
+# bibliography and revision history). Everything here is optional; omit the
+# document_body block entirely and the generator emits its generic templated
+# sections exactly as before.
+# ---------------------------------------------------------------------------
+
+_OBLIGATION = Literal["normative", "informative"]
+
+
+class Figure(BaseModel):
+    """An image to copy into the generated document and reference from prose.
+
+    The source file is copied verbatim into ``images/<filename>`` beside the
+    generated document.adoc. Reference it from any authored body via the anchor,
+    e.g. ``<<fig-workflow>>``.
+    """
+    id: Annotated[str, Field(pattern=r"^[A-Za-z0-9_\-]+$")] = Field(
+        description="Cross-reference anchor for the figure, e.g. 'fig-workflow'",
+    )
+    path: str = Field(
+        description=(
+            "Path to the source image file, relative to the config file's directory "
+            "(or absolute). Copied into images/<filename> in the output."
+        ),
+    )
+    title: str | None = Field(default=None, description="Figure caption")
+
+
+class DocumentClause(BaseModel):
+    """A hand-authored top-level clause (prose section) in the document body.
+
+    Rendered as a Metanorma level-1 section (``== Title``) with the supplied
+    AsciiDoc ``body``. Use ``position`` to slot the clause into the canonical
+    OGC document order relative to the generated machinery.
+    """
+    id: Annotated[str, Field(pattern=r"^[A-Za-z0-9_\-]+$")] = Field(
+        description="Stable id/anchor for the clause (letters, digits, dash, underscore).",
+    )
+    title: str = Field(description="Clause heading text, e.g. 'Conventions'.")
+    body: str = Field(
+        description=(
+            "Raw AsciiDoc body of the clause (may contain sub-headings '===', lists, "
+            "tables, figure refs, footnotes — anything Metanorma accepts). The config "
+            "is the single source of truth: author the full verbatim prose here."
+        ),
+    )
+    position: Literal[
+        "after-scope",
+        "after-conformance",
+        "after-references",
+        "after-terms",
+        "before-requirements",
+        "after-requirements",
+    ] = Field(
+        default="after-terms",
+        description=(
+            "Where to place this clause in the canonical document order. OGC "
+            "convention: Scope, Conformance, References, Terms, Conventions, "
+            "Introduction/informative text, then the requirements clauses. Use "
+            "'after-terms' for Conventions, 'before-requirements' for an "
+            "introduction/informative clause."
+        ),
+    )
+    obligation: _OBLIGATION = Field(
+        default="normative",
+        description="Metanorma obligation for the clause (normative or informative).",
+    )
+
+
+class DocumentAnnex(BaseModel):
+    """A hand-authored annex rendered after the Abstract Test Suite.
+
+    Annexes carry supporting material a profile document normally keeps in
+    annex_*.adoc files: JSON schemas, worked examples, parameter-name tables,
+    etc. The ``body`` is raw AsciiDoc; the generator adds the ``[appendix]``
+    wrapper and obligation.
+    """
+    id: Annotated[str, Field(pattern=r"^[A-Za-z0-9_\-]+$")] = Field(
+        description="Stable id/anchor for the annex, e.g. 'annex-schemas'.",
+    )
+    title: str = Field(description="Annex heading text, e.g. 'Schemas'.")
+    body: str = Field(
+        description=(
+            "Raw AsciiDoc body of the annex. The config is the single source of "
+            "truth: author the full verbatim content here."
+        ),
+    )
+    obligation: _OBLIGATION = Field(
+        default="informative",
+        description="Metanorma obligation for the annex (normative or informative).",
+    )
+
+
+class RevisionHistoryEntry(BaseModel):
+    """One row of the revision-history annex table."""
+    date: str = Field(description="Revision date (YYYY-MM-DD).")
+    release: str = Field(description="Release/stage label, e.g. 'Draft' or '1.0'.")
+    editor: str = Field(description="Editor responsible for the revision.")
+    clauses: str = Field(default="all", description="Primary clauses modified.")
+    description: str = Field(description="Summary of the change.")
+
+    @field_validator("date")
+    @classmethod
+    def _valid_date(cls, v: str) -> str:
+        if not _DATE_RE.match(v):
+            raise ValueError("revision history date must be in YYYY-MM-DD format")
+        return v
+
+
+class BibliographyEntry(BaseModel):
+    """One entry in the (informative) bibliography annex.
+
+    Rendered as a Metanorma bibliography item
+    ``* [[[<anchor>,<citation>]]], <title>``. Distinct from
+    ``normative_references`` (which land in the normative References clause).
+    """
+    anchor: Annotated[str, Field(pattern=r"^[A-Za-z0-9_\-]+$")] = Field(
+        description="Cross-reference anchor, e.g. 'RODEO'.",
+    )
+    citation: str = Field(description="Short citation label shown in brackets.")
+    title: str = Field(description="Full reference title.")
+
+
+class DocumentBody(BaseModel):
+    """Authored document-body content woven into the generated document.adoc.
+
+    This is the heart of 'Option A': it lets one YAML config reproduce a
+    content-complete OGC profile document (prose clauses, per-requirement
+    lead-in text, figures, annexes, bibliography, revision history) rather than
+    the generic templated sections the generator emits by default. Every field
+    is optional and additive — an empty/absent document_body leaves output
+    unchanged.
+    """
+    scope: str | None = Field(
+        default=None,
+        description=(
+            "AsciiDoc body for the Scope clause, replacing the generic one-line "
+            "scope the generator emits by default."
+        ),
+    )
+    abstract: str | None = Field(
+        default=None,
+        description="AsciiDoc body for the Abstract, replacing the generic default.",
+    )
+    clauses: list[DocumentClause] = Field(
+        default_factory=list,
+        description=(
+            "Extra authored top-level clauses (e.g. Conventions, Introduction/"
+            "informative text) slotted into the document by their 'position'."
+        ),
+    )
+    class_intros: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Per-conformance-class lead-in prose, keyed by class short name "
+            "(e.g. 'core', 'nwp'). Rendered immediately under the class heading, "
+            "before its requirements."
+        ),
+    )
+    requirement_intros: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Per-requirement lead-in prose, keyed by requirement/recommendation id. "
+            "Rendered as a sub-heading + paragraph immediately before that "
+            "requirement's box, matching how OGC clauses introduce each requirement."
+        ),
+    )
+    requirement_headings: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Optional human-readable sub-heading for each requirement, keyed by id "
+            "(e.g. 'collection-license' -> 'Collection license'). Used with "
+            "requirement_intros to title the per-requirement sub-clause. When "
+            "omitted, the requirement id is title-cased."
+        ),
+    )
+    annexes: list[DocumentAnnex] = Field(
+        default_factory=list,
+        description="Authored annexes rendered after the Abstract Test Suite.",
+    )
+    figures: list[Figure] = Field(
+        default_factory=list,
+        description="Images copied into images/ and referenceable from any authored body.",
+    )
+    bibliography: list[BibliographyEntry] = Field(
+        default_factory=list,
+        description="Informative bibliography annex entries.",
+    )
+    revision_history: list[RevisionHistoryEntry] = Field(
+        default_factory=list,
+        description="Rows for a Revision History annex table.",
+    )
+    render_requirement_clauses: bool = Field(
+        default=False,
+        description=(
+            "When true, render each conformance class as an OGC-style clause with "
+            "per-requirement sub-headings and intro prose (using class_intros / "
+            "requirement_intros / requirement_headings), instead of the flat "
+            "Requirements section. Enables a faithful clause-7..n layout."
+        ),
+    )
+
+
 class DocumentMetadata(BaseModel):
     """Metanorma/OGC document header metadata for PDF compilation."""
     doc_number: str
@@ -844,6 +1071,16 @@ class DocumentMetadata(BaseModel):
             "Optional text (e.g. 'DRAFT') rendered as a light diagonal watermark on every "
             "PDF page via a PDF stylesheet override. Distinct from cover.watermark, which "
             "only marks the generated cover image. Coupled to the OGC Metanorma flavor."
+        ),
+    )
+    body: DocumentBody | None = Field(
+        default=None,
+        description=(
+            "Authored document-body content (scope/conventions/introduction prose, "
+            "per-requirement lead-in text, figures, annexes, bibliography, revision "
+            "history) woven into the generated document.adoc so a single config can "
+            "reproduce a content-complete OGC profile document. Optional and additive: "
+            "omit it and the generator emits its generic templated sections."
         ),
     )
 
@@ -1219,19 +1456,90 @@ class ServiceProfile(BaseModel):
             "by_class": per_class,
             "abstract_tests": len(self.abstract_tests),
             "normative_untested": [
-                r.id
+                f"{self._req_class_key(r)}/{r.id}"
                 for r in self.normative_requirements
-                if r.id not in {t.requirement_id for t in self.abstract_tests}
+                if (self._req_class_key(r), r.id)
+                not in {(self._test_class_key(t), t.requirement_id) for t in self.abstract_tests}
             ],
         }
 
+    # --- Requirement/test class-scoped identity ----------------------------
+    # Requirement ids are unique WITHIN a conformance class, not globally. This
+    # lets a multi-class profile reuse the source's bare requirement names (e.g.
+    # `collection_parameter_names` in core, insitu-observations and nwp) and emit
+    # `/req/<class>/<name>` identifiers that match the source document verbatim.
+    # Single-class profiles (no conformance_class anywhere) are unaffected: every
+    # key resolves to "core".
+
+    @staticmethod
+    def _req_class_key(req: "Requirement") -> str:
+        return getattr(req, "conformance_class", None) or "core"
+
+    @staticmethod
+    def _req_level_seg(req: "Requirement") -> str:
+        """OGC identifier namespace segment for a requirement's RFC 2119 level."""
+        lvl = getattr(getattr(req, "level", None), "value", None) or "requirement"
+        return {"requirement": "req", "recommendation": "rec", "permission": "per"}[lvl]
+
+    def _test_class_key(self, test: "AbstractTest") -> str:
+        """Resolve the class a test belongs to.
+
+        Prefers the test's explicit conformance_class; otherwise infers it from
+        the (unique) requirement carrying its requirement_id.
+        """
+        explicit = getattr(test, "conformance_class", None)
+        if explicit:
+            return explicit
+        matches = {
+            self._req_class_key(r) for r in self.requirements if r.id == test.requirement_id
+        }
+        # Exactly one class owns this id when it is not reused; fall back to core.
+        return next(iter(matches)) if len(matches) == 1 else "core"
+
+    @model_validator(mode="after")
+    def requirement_ids_unique_per_class(self) -> ServiceProfile:
+        # Unique key is (class, obligation-segment, id): a requirement and a
+        # recommendation may share a bare name within one class because they
+        # occupy different OGC identifier namespaces (/req/ vs /rec/), exactly
+        # as the source document does for collection_parameter_names in the
+        # insitu-observations class.
+        seen: set[tuple[str, str, str]] = set()
+        for r in self.requirements:
+            key = (self._req_class_key(r), self._req_level_seg(r), r.id)
+            if key in seen:
+                raise ValueError(
+                    f"duplicate requirement id '{r.id}' ({key[1]}) within conformance "
+                    f"class '{key[0]}' (ids must be unique per class per obligation)"
+                )
+            seen.add(key)
+        return self
+
     @model_validator(mode="after")
     def tests_reference_valid_requirements(self) -> ServiceProfile:
+        req_keys = {(self._req_class_key(r), r.id) for r in self.requirements}
         req_ids = {r.id for r in self.requirements}
         for test in self.abstract_tests:
+            explicit = getattr(test, "conformance_class", None)
+            if explicit is not None:
+                if (explicit, test.requirement_id) not in req_keys:
+                    raise ValueError(
+                        f"AbstractTest '{test.id}' references unknown requirement "
+                        f"'{test.requirement_id}' in conformance class '{explicit}'"
+                    )
+                continue
+            # No explicit class: the referenced id must exist and be unambiguous.
             if test.requirement_id not in req_ids:
                 raise ValueError(
                     f"AbstractTest '{test.id}' references unknown requirement '{test.requirement_id}'"
+                )
+            owning = {
+                self._req_class_key(r) for r in self.requirements if r.id == test.requirement_id
+            }
+            if len(owning) > 1:
+                raise ValueError(
+                    f"AbstractTest '{test.id}' is ambiguous: requirement id "
+                    f"'{test.requirement_id}' is defined in multiple conformance classes "
+                    f"({', '.join(sorted(owning))}). Set the test's conformance_class."
                 )
         return self
 

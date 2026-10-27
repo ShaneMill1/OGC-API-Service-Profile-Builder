@@ -1688,10 +1688,35 @@ _LEVEL_BLOCK = {
     "permission": "permission",
 }
 
+# OGC identifier prefix + individual-file prefix per RFC 2119 level. Normative
+# requirements live under /req/ (REQ_ files); recommendations under /rec/ (REC_);
+# permissions under /per/ (PER_). Scoping the identifier namespace by obligation
+# is what lets a requirement and a recommendation share the same bare name inside
+# one conformance class (e.g. /req/insitu-observations/collection_parameter_names
+# and /rec/insitu-observations/collection_parameter_names in the source).
+_LEVEL_URI_SEG = {
+    "requirement": "req",
+    "recommendation": "rec",
+    "permission": "per",
+}
+_LEVEL_FILE_PREFIX = {
+    "requirement": "REQ",
+    "recommendation": "REC",
+    "permission": "PER",
+}
+
 
 def _level_of(req) -> str:
     lvl = getattr(req, "level", None)
     return getattr(lvl, "value", lvl) or "requirement"
+
+
+def _req_uri_seg(req) -> str:
+    return _LEVEL_URI_SEG[_level_of(req)]
+
+
+def _req_file_prefix(req) -> str:
+    return _LEVEL_FILE_PREFIX[_level_of(req)]
 
 
 def _req_adoc(profile: ServiceProfile) -> str:
@@ -1786,13 +1811,16 @@ def _requirement_class_groups(profile: ServiceProfile):
         return None
     from collections import OrderedDict
     groups: "OrderedDict[str, dict]" = OrderedDict()
-    req_class: dict[str, str] = {}
+    # Requirement ids are unique within a class (not globally), so a test is
+    # resolved to its class via ServiceProfile._test_class_key — which prefers
+    # the test's explicit conformance_class and otherwise infers it from the
+    # single requirement carrying its id. This lets the source's bare names
+    # (reused across classes) produce /req/<class>/<name> identifiers.
     for r in profile.requirements:
-        cls = getattr(r, "conformance_class", None) or "core"
-        req_class[r.id] = cls
+        cls = profile._req_class_key(r)
         groups.setdefault(cls, {"reqs": [], "tests": []})["reqs"].append(r)
     for t in profile.abstract_tests:
-        cls = req_class.get(t.requirement_id, "core")
+        cls = profile._test_class_key(t)
         groups.setdefault(cls, {"reqs": [], "tests": []})["tests"].append(t)
     return groups
 
@@ -1816,7 +1844,7 @@ def _req_class_adoc_for(profile: ServiceProfile, cls: str, reqs: list) -> str:
     ]
     for req in reqs:
         keyword = _LEVEL_BLOCK[_level_of(req)]
-        lines.append(f"{keyword}:: /req/{cls}/{req.id}")
+        lines.append(f"{keyword}:: /{_req_uri_seg(req)}/{cls}/{req.id}")
     lines.append("====")
     return "\n".join(lines) + "\n"
 
@@ -1843,14 +1871,15 @@ def _conf_class_adoc_for(profile: ServiceProfile, cls: str, tests: list, reqs: l
 
 
 def _individual_req_adoc_for(profile: ServiceProfile, cls: str, req) -> str:
-    anchor = f"req_{cls}_{req.id}".replace("/", "_").replace("-", "_")
+    seg = _req_uri_seg(req)
+    anchor = f"{seg}_{cls}_{req.id}".replace("/", "_").replace("-", "_")
     block = _LEVEL_BLOCK[_level_of(req)]
     lines = [
         f"[[{anchor}]]",
         f"[{block}]",
         "====",
         "[%metadata]",
-        f"identifier:: /req/{cls}/{req.id}",
+        f"identifier:: /{seg}/{cls}/{req.id}",
         f"statement:: {req.statement}",
     ]
     for part in req.parts:
@@ -2366,6 +2395,137 @@ def _build_boilerplate_xml(profile: ServiceProfile) -> str | None:
     )
 
 
+# ---------------------------------------------------------------------------
+# Authored document body (Option A) — helpers
+#
+# These turn the DocumentBody config into AsciiDoc fragments and section files
+# that slot into the generated Metanorma document. All are no-ops when the
+# profile carries no document_metadata.body, so default output is unchanged.
+# ---------------------------------------------------------------------------
+
+def _doc_body(profile: ServiceProfile):
+    m = profile.document_metadata
+    return getattr(m, "body", None) if m else None
+
+
+def _titleize(req_id: str) -> str:
+    return req_id.replace("-", " ").replace("_", " ").strip().capitalize()
+
+
+def _authored_clause_section(clause) -> str:
+    """Render a DocumentClause as a standalone section file body."""
+    obligation = f"[obligation={clause.obligation}]\n" if clause.obligation else ""
+    return (
+        f"[[{clause.id}]]\n"
+        f"{obligation}"
+        f"== {clause.title}\n\n"
+        f"{clause.body.rstrip()}\n"
+    )
+
+
+def _clauses_at(body, position: str) -> list:
+    if not body:
+        return []
+    return [c for c in body.clauses if c.position == position]
+
+
+def _clause_includes_for(body, position: str) -> str:
+    """Return newline-joined include directives for clauses at a position."""
+    out = []
+    for c in _clauses_at(body, position):
+        out.append(f"include::sections/clause-{c.id}.adoc[]")
+    return "\n".join(out)
+
+
+def _requirement_clause_sections(profile: ServiceProfile, groups) -> str:
+    """Render conformance classes as OGC-style clauses with per-requirement prose.
+
+    Used when document_body.render_requirement_clauses is true. Each class gets
+    a level-1 clause with its requirements-class block, optional class intro,
+    then one sub-clause (=== heading + intro prose + REQ/REC include) per
+    requirement and recommendation, mirroring the hand-authored clause_7..n of
+    an OGC profile document.
+    """
+    body = _doc_body(profile)
+    class_intros = body.class_intros if body else {}
+    req_intros = body.requirement_intros if body else {}
+    req_headings = body.requirement_headings if body else {}
+
+    # Human-readable class titles; fall back to a title-cased key.
+    class_titles = {
+        "core": "Core",
+        "insitu-observations": "Insitu observations",
+        "nwp": "Numerical Weather Prediction",
+        "data-query-response-format": "Data query response format",
+    }
+    blocks: list[str] = []
+    for cls, members in groups.items():
+        title = class_titles.get(cls, cls.replace("-", " ").replace("_", " ").title())
+        lines = [f"== {title}", ""]
+        lines.append(f'=== Requirements Class "{title}"')
+        lines.append(f"include::../requirements/requirements_class_{cls}.adoc[]")
+        lines.append("")
+        if class_intros.get(cls):
+            lines.append(class_intros[cls].rstrip())
+            lines.append("")
+        for r in members["reqs"]:
+            # Headings/intros are keyed by bare id, with an optional
+            # class-scoped override "<cls>/<id>" (and obligation-scoped
+            # "<cls>/<seg>/<id>") to disambiguate names reused across classes or
+            # between a requirement and a recommendation in the same class.
+            seg = _req_uri_seg(r)
+            heading = (
+                req_headings.get(f"{cls}/{seg}/{r.id}")
+                or req_headings.get(f"{cls}/{r.id}")
+                or req_headings.get(r.id)
+                or _titleize(r.id)
+            )
+            intro = (
+                req_intros.get(f"{cls}/{seg}/{r.id}")
+                or req_intros.get(f"{cls}/{r.id}")
+                or req_intros.get(r.id)
+            )
+            lines.append(f"=== {heading}")
+            if intro:
+                lines.append(intro.rstrip())
+            lines.append(f"include::../requirements/{cls}/{_req_file_prefix(r)}_{r.id}.adoc[]")
+            lines.append("")
+        blocks.append("\n".join(lines).rstrip() + "\n")
+    return "\n\n".join(blocks)
+
+
+def _annex_section(annex) -> str:
+    return (
+        f"[appendix,obligation={annex.obligation}]\n"
+        f"[[{annex.id}]]\n"
+        f"== {annex.title}\n\n"
+        f"{annex.body.rstrip()}\n"
+    )
+
+
+def _bibliography_section(entries) -> str:
+    lines = ["[appendix,obligation=informative]", "[bibliography]", "== Bibliography", ""]
+    for e in entries:
+        lines.append(f"* [[[{e.anchor},{e.citation}]]], {e.title}")
+    return "\n".join(lines) + "\n"
+
+
+def _revision_history_section(entries) -> str:
+    lines = [
+        "[appendix,obligation=informative]",
+        "== Revision History",
+        "",
+        '[cols="12,18,12,12,46",options="header"]',
+        "|===",
+        "|Date |Release |Editor |Primary clauses modified |Description",
+        "",
+    ]
+    for e in entries:
+        lines.append(f"|{e.date} |{e.release} |{e.editor} |{e.clauses} |{e.description}")
+    lines.append("|===")
+    return "\n".join(lines) + "\n"
+
+
 def _build_document_adoc(profile: ServiceProfile) -> str:
     m = profile.document_metadata
     year = m.copyright_year if m else 2026
@@ -2453,23 +2613,54 @@ def _build_document_adoc(profile: ServiceProfile) -> str:
         ":mn-document-class: ogc",
         ":mn-output-extensions: xml,html,pdf",
         ":local-cache-only:",
+    ]
+    # When the profile supplies figures, copy them into images/ (done in
+    # generate()) and point Metanorma's image resolver at that directory so
+    # `image::<filename>[]` in any authored clause/annex resolves. data-uri-image
+    # embeds them in the single-file HTML/PDF output.
+    if _doc_body(profile) and _doc_body(profile).figures:
+        lines.append(":imagesdir: images")
+        lines.append(":data-uri-image:")
+    lines += [
         "",
         "include::sections/00-abstract.adoc[]",
         "",
         "include::sections/01-preface.adoc[]",
         "",
         "include::sections/02-scope.adoc[]",
-        "",
-        "include::sections/03-conformance.adoc[]",
-        "",
-        "include::sections/04-references.adoc[]",
-        "",
-        "include::sections/05-terms.adoc[]",
-        "",
-        "include::sections/06-requirements.adoc[]",
-        "",
-        "include::sections/07-abstract-tests.adoc[]",
     ]
+
+    body = _doc_body(profile)
+
+    def _append_authored(position: str) -> None:
+        inc = _clause_includes_for(body, position)
+        if inc:
+            lines.append("")
+            lines.append(inc)
+
+    _append_authored("after-scope")
+    lines += ["", "include::sections/03-conformance.adoc[]"]
+    _append_authored("after-conformance")
+    lines += ["", "include::sections/04-references.adoc[]"]
+    _append_authored("after-references")
+    lines += ["", "include::sections/05-terms.adoc[]"]
+    # OGC convention: Conventions + Introduction/informative clauses sit between
+    # Terms and the requirements clauses.
+    _append_authored("after-terms")
+    _append_authored("before-requirements")
+    lines += ["", "include::sections/06-requirements.adoc[]"]
+    _append_authored("after-requirements")
+    lines += ["", "include::sections/07-abstract-tests.adoc[]"]
+
+    # Authored annexes (schemas, examples, parameter tables, ...) after the ATS.
+    if body:
+        for annex in body.annexes:
+            lines += ["", f"include::sections/annex-{annex.id}.adoc[]"]
+        if body.bibliography:
+            lines += ["", "include::sections/annex-bibliography.adoc[]"]
+        if body.revision_history:
+            lines += ["", "include::sections/annex-revision-history.adoc[]"]
+
     return "\n".join(lines) + "\n"
 
 
@@ -2514,7 +2705,7 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
             req_blocks.append(
                 f"include::../requirements/requirements_class_{cls}.adoc[]\n\n"
                 + "\n".join(
-                    f"include::../requirements/{cls}/REQ_{r.id}.adoc[]"
+                    f"include::../requirements/{cls}/{_req_file_prefix(r)}_{r.id}.adoc[]"
                     for r in members["reqs"]
                 )
             )
@@ -2602,15 +2793,44 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
             + "".join(parts_) + "\n"
         )
 
-    return {
+    body = _doc_body(profile)
+    authored_abstract = (body.abstract.rstrip() + "\n") if body and body.abstract else (
+        f"This document defines the {profile.title}, "
+        "an OGC API - Environmental Data Retrieval (EDR) Part 3 Service Profile. "
+        "It specifies normative requirements and conformance tests for server implementations "
+        "conforming to this profile.\n"
+    )
+    authored_scope = (body.scope.rstrip() + "\n") if body and body.scope else (
+        f"This standard defines the {profile.title}. "
+        "It specifies requirements and conformance tests for implementations of this profile.\n"
+    )
+
+    # Requirements section: either the OGC-style per-class clauses (with authored
+    # intro prose) or the flat default Requirements section.
+    if body and body.render_requirement_clauses and groups is not None:
+        requirements_section = _requirement_clause_sections(profile, groups)
+    else:
+        requirements_section = (
+            "== Requirements\n\n"
+            "[NOTE]\n"
+            "====\n"
+            "Conformance with this profile is assessed against its requirements "
+            "(\"shall\") only. Recommendations (\"should\") and permissions (\"may\") "
+            "are provided as informative guidance: they are not conformance-tested "
+            "and an implementation is not made non-conformant by not following them. "
+            "See the quality-assessment summary emitted by the profile tooling for a "
+            "count of the recommendations and permissions defined by this profile.\n"
+            "====\n\n"
+            + (req_class_includes + "\n\n" if req_class_includes else "")
+            + req_includes + "\n"
+        )
+
+    sections = {
         "sections/00-abstract.adoc": (
             "[abstract]\n== Abstract\n\n"
             + classification_banner
-            + f"This document defines the {profile.title}, "
-            "an OGC API - Environmental Data Retrieval (EDR) Part 3 Service Profile. "
-            "It specifies normative requirements and conformance tests for server implementations "
-            f"conforming to this profile.\n"
-            "\n"
+            + authored_abstract
+            + "\n"
             "[.preface]\n== Submitters\n\n"
             "All questions regarding this document should be directed to the editor or the submitters:\n\n"
             "[%unnumbered]\n"
@@ -2628,8 +2848,7 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
         ),
         "sections/02-scope.adoc": (
             "== Scope\n\n"
-            f"This standard defines the {profile.title}. "
-            "It specifies requirements and conformance tests for implementations of this profile.\n"
+            + authored_scope
         ),
         "sections/03-conformance.adoc": (
             "== Conformance\n\n"
@@ -2649,20 +2868,7 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
             "This document also uses terms defined in OGC API - EDR Part 1: Core.\n"
             + _terms_adoc(profile)
         ),
-        "sections/06-requirements.adoc": (
-            "== Requirements\n\n"
-            "[NOTE]\n"
-            "====\n"
-            "Conformance with this profile is assessed against its requirements "
-            "(\"shall\") only. Recommendations (\"should\") and permissions (\"may\") "
-            "are provided as informative guidance: they are not conformance-tested "
-            "and an implementation is not made non-conformant by not following them. "
-            "See the quality-assessment summary emitted by the profile tooling for a "
-            "count of the recommendations and permissions defined by this profile.\n"
-            "====\n\n"
-            + (req_class_includes + "\n\n" if req_class_includes else "")
-            + req_includes + "\n"
-        ),
+        "sections/06-requirements.adoc": requirements_section,
         "sections/07-abstract-tests.adoc": (
             "[appendix,obligation=normative]\n== Abstract Test Suite\n\n"
             + (ats_class_includes + "\n\n" if ats_class_includes else "")
@@ -2670,14 +2876,36 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
         ),
     }
 
+    # Authored body: extra prose clauses, annexes, bibliography, revision history.
+    if body:
+        for clause in body.clauses:
+            sections[f"sections/clause-{clause.id}.adoc"] = _authored_clause_section(clause)
+        for annex in body.annexes:
+            sections[f"sections/annex-{annex.id}.adoc"] = _annex_section(annex)
+        if body.bibliography:
+            sections["sections/annex-bibliography.adoc"] = _bibliography_section(body.bibliography)
+        if body.revision_history:
+            sections["sections/annex-revision-history.adoc"] = _revision_history_section(
+                body.revision_history
+            )
+
+    return sections
+
 
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
-def generate(profile: ServiceProfile, output_dir: Path) -> None:
-    """Write all profile artifacts to output_dir."""
+def generate(profile: ServiceProfile, output_dir: Path, base_dir: Path | None = None) -> None:
+    """Write all profile artifacts to output_dir.
+
+    ``base_dir`` is the directory that relative paths in the config (e.g.
+    document_metadata.body.figures[].path) are resolved against — typically the
+    directory containing the config file. Defaults to the current working
+    directory for backward compatibility.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
+    base_dir = Path(base_dir).resolve() if base_dir else Path.cwd()
 
     # Resolve output_dir to an absolute path to prevent traversal
     output_dir = output_dir.resolve()
@@ -2721,7 +2949,7 @@ def generate(profile: ServiceProfile, output_dir: Path) -> None:
             )
             for req in members["reqs"]:
                 safe_write(
-                    f"requirements/{cls}/REQ_{req.id}.adoc",
+                    f"requirements/{cls}/{_req_file_prefix(req)}_{req.id}.adoc",
                     _individual_req_adoc_for(profile, cls, req),
                 )
             safe_write(
@@ -2744,6 +2972,26 @@ def generate(profile: ServiceProfile, output_dir: Path) -> None:
     safe_write("document.adoc", _build_document_adoc(profile))
     for path, content in _build_sections(profile).items():
         safe_write(path, content)
+
+    # Authored figures: copy each source image into images/<filename> so the
+    # generated document (and any authored body referencing it) can embed it.
+    _body = _doc_body(profile)
+    if _body and _body.figures:
+        import shutil
+        for fig in _body.figures:
+            src = Path(fig.path)
+            if not src.is_absolute():
+                src = (base_dir / fig.path).resolve()
+            if not src.exists():
+                raise FileNotFoundError(
+                    f"Figure '{fig.id}' source not found: {src} "
+                    f"(resolved from '{fig.path}' relative to {base_dir})"
+                )
+            dest = (output_dir / "images" / src.name).resolve()
+            if not str(dest).startswith(str(output_dir)):
+                raise ValueError(f"Refusing to write figure outside output directory: {dest}")
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dest)
 
     # Custom cover-page image (only when document_metadata.cover.logo is set).
     m = profile.document_metadata

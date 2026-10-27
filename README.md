@@ -992,6 +992,76 @@ document_metadata:
       source: "SOURCE: OGC API - EDR Part 3: Service Profiles (draft)"
 ```
 
+#### Authored document body (`document_metadata.body`)
+
+By default the builder emits a standard set of templated sections (abstract, preface, scope, conformance, references, terms, a flat Requirements section, and the Abstract Test Suite). When you need to reproduce a **content-complete** OGC profile document — the kind normally hand-authored as a set of `.adoc` clause/annex files — supply a `document_metadata.body` block. Everything in it is optional and additive: omit the block and output is unchanged.
+
+It lets one YAML config carry the bespoke prose, figure and annexes of a full standard, so `generate --pdf` produces a document that matches a hand-authored one in structure and content. [`examples/metocean_profile.yaml`](examples/metocean_profile.yaml) uses this to reproduce the OGC MetOcean EDR Profile (26-027) — scope, a Conventions clause, an informative Introduction with a figure, the four requirements classes rendered as clauses with per-requirement lead-in prose, and Annexes for schemas, examples, the NWP parameter matrix, a bibliography and a revision history.
+
+| Field | Description |
+|---|---|
+| `abstract` / `scope` | AsciiDoc body overriding the generic Abstract / Scope prose |
+| `render_requirement_clauses` | When `true`, render each conformance class as an OGC-style clause (class heading → requirements-class block → one sub-clause per requirement/recommendation) instead of the flat Requirements section. Requires per-class requirement grouping (`conformance_class` on requirements) |
+| `class_intros` | Map of class short name → lead-in prose shown under the class heading |
+| `requirement_intros` | Map of requirement/recommendation id → lead-in sentence shown before that requirement's box |
+| `requirement_headings` | Map of requirement id → sub-clause heading (defaults to a title-cased id) |
+| `clauses` | Extra authored top-level clauses (e.g. Conventions, Introduction), each with `id`, `title`, raw AsciiDoc `body`, `obligation`, and a `position` slotting it into the canonical order (`after-scope`, `after-conformance`, `after-references`, `after-terms`, `before-requirements`, `after-requirements`) |
+| `figures` | Images copied into `images/` and referenceable from any authored body as `image::<filename>[]` (the builder sets `:imagesdir: images:` + `:data-uri-image:` automatically). `path` is resolved relative to the config file |
+| `annexes` | Authored annexes rendered after the Abstract Test Suite, each with `id`, `title`, AsciiDoc `body`, `obligation` |
+| `bibliography` | Informative bibliography annex entries (`anchor` + `citation` + `title`) |
+| `revision_history` | Rows (`date`, `release`, `editor`, `clauses`, `description`) rendered as a Revision History annex table |
+
+```yaml
+document_metadata:
+  body:
+    render_requirement_clauses: true
+    scope: |
+      This document defines the conventions, constraints and extensions of EDR
+      for the MetOcean community of practice.
+    figures:
+      - id: fig-workflow
+        path: assets/workflow.png
+        title: Metadata discovery workflow
+    clauses:
+      - id: conventions
+        title: Conventions
+        position: after-terms
+        body: |
+          === Identifiers
+          The normative provisions in this standard are denoted by the URI ...
+      - id: introduction
+        title: Introduction
+        position: before-requirements
+        obligation: informative
+        body: |
+          Background prose ...
+          image::workflow.png[Metadata discovery workflow]
+    requirement_headings:
+      core-openapi: OpenAPI
+    requirement_intros:
+      core-openapi: An OpenAPI specification provides a machine-readable description of the API interface.
+    annexes:
+      - id: appendix-d
+        title: NWP parameter name matrix
+        obligation: normative
+        body: |
+          [cols="10,10",options="header"]
+          |===
+          |Parameter |ECMWF short name
+          |Temperature |t
+          |===
+    bibliography:
+      - anchor: SPDX
+        citation: SPDX
+        title: "Linux Foundation: SPDX License List, https://spdx.org/licenses"
+    revision_history:
+      - date: "2026-01-16"
+        release: Draft
+        editor: Jane Smith
+        clauses: all
+        description: Add NWP requirements
+```
+
 ---
 
 ### `provider`, `classification`, and provenance metadata

@@ -315,7 +315,7 @@ requirements:
     parts: [ ... ]
 ```
 
-When any requirement sets `conformance_class`, the generated document is organised into one requirements class + conformance class per key, each with its own URI and `requirements/<class>/` and `abstract_tests/<class>/` folders. When no requirement sets it, the single-class layout is used. The flat `required_data_queries` / `radius_within_units_required` fields still apply to every collection; class-scoped constraints are additive. See [`examples/metocean_profile.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/metocean_profile.yaml) for a full profile spanning all four MetOcean classes, and [`docs/metocean-profile-differences.md`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/metocean-profile-differences.md) for how it maps to OGC 26-027.
+When any requirement sets `conformance_class`, the generated document is organised into one requirements class + conformance class per key, each with its own URI and `requirements/<class>/` and `abstract_tests/<class>/` folders. When no requirement sets it, the single-class layout is used. The flat `required_data_queries` / `radius_within_units_required` fields still apply to every collection; class-scoped constraints are additive. See [`examples/metocean_profile.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/metocean_profile.yaml) for a full profile spanning all four MetOcean classes, and [`docs/metocean-profile-fidelity.md`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/metocean-profile-fidelity.md) for how it maps to OGC 26-027.
 
 ---
 

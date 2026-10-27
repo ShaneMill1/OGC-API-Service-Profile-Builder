@@ -228,7 +228,7 @@ def main() -> None:
         _print_quality_assessment(profile)
         return
 
-    generate(profile, args.output)
+    generate(profile, args.output, base_dir=args.config.resolve().parent)
     _print_quality_assessment(profile)
 
     if args.pdf:
