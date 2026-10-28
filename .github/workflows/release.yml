@@ -48,6 +48,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history so the "commit refreshed generated/" step can place the
+          # refreshed artifacts on top of main and push (the workflow is
+          # tag-triggered — detached HEAD — so we switch to main in that step).
+          fetch-depth: 0
 
       - name: Determine version
         id: version
@@ -86,45 +91,76 @@ jobs:
             echo "pypi_ready=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Generate minimal profile artifacts
+      # Install the just-published package (with the [pdf] extra for cover-image
+      # generation) so the generator CLI is available for the regeneration loop.
+      - name: Install oapi-profile-builder
         if: steps.pypi_wait.outputs.pypi_ready == 'true'
-        continue-on-error: true
-        uses: ./
-        with:
-          config: examples/minimal_profile.yaml
-          output: ./release_artifacts/minimal_profile
-          version: ${{ steps.version.outputs.pip_version }}
+        run: pip install "oapi-profile-builder[pdf]==${{ steps.version.outputs.pip_version }}"
 
-      - name: Generate insitu observations profile artifacts
+      # Regenerate every example profile's artifacts (OpenAPI/AsyncAPI, AsciiDoc,
+      # and a Metanorma PDF) into generated/<name>/, so the committed snapshots in
+      # the repo always match the released version. Each profile is independent:
+      # a failure in one does not abort the others or the release.
+      - name: Regenerate committed profile artifacts (with PDF)
         if: steps.pypi_wait.outputs.pypi_ready == 'true'
-        continue-on-error: true
-        uses: ./
-        with:
-          config: examples/insitu_observations_profile.yaml
-          output: ./release_artifacts/insitu_observations_profile
-          version: ${{ steps.version.outputs.pip_version }}
-
-      - name: Generate nwsviz profile artifacts
-        if: steps.pypi_wait.outputs.pypi_ready == 'true'
-        continue-on-error: true
-        uses: ./
-        with:
-          config: examples/nwsviz_profile.yaml
-          output: ./release_artifacts/nwsviz_profile
-          version: ${{ steps.version.outputs.pip_version }}
-
-      - name: Package artifacts
         continue-on-error: true
         run: |
+          set +e
           mkdir -p release_artifacts
-          cd release_artifacts
-          shopt -s nullglob
-          for dir in */; do
-            name="${dir%/}"
-            zip -r "../${name}_artifacts.zip" "$dir"
-            echo "Packaged ${name}_artifacts.zip"
+          for cfg in examples/*.yaml; do
+            name="$(basename "$cfg" .yaml)"
+            echo "::group::Generating $name (with PDF)"
+            tmp="$(mktemp -d)"
+            oapi-profile-builder generate --config "$cfg" --output "$tmp" --pdf
+            status=$?
+            if [ $status -ne 0 ] || [ ! -f "$tmp/document.adoc" ]; then
+              echo "::warning::generation failed for $name (exit $status); keeping existing committed artifacts"
+              echo "::endgroup::"
+              continue
+            fi
+            # Metanorma runs in Docker as root and leaves a root-owned relaton/
+            # cache plus build logs; drop build byproducts, keep meaningful output.
+            sudo rm -rf "$tmp/relaton" 2>/dev/null || rm -rf "$tmp/relaton" 2>/dev/null || true
+            rm -f "$tmp"/*.log.txt "$tmp/document.err.html" \
+                  "$tmp/document.presentation.xml" "$tmp/document.xml" "$tmp"/*.pdf.err 2>/dev/null || true
+            # Replace the committed snapshot with the fresh output.
+            rm -rf "generated/$name"
+            mkdir -p "generated/$name"
+            cp -a "$tmp"/. "generated/$name"/
+            rm -rf "$tmp"
+            # Package a zip of the full artifact set (top-level folder = <name>/).
+            ( cd generated && zip -rq "$GITHUB_WORKSPACE/release_artifacts/${name}_artifacts.zip" "$name" )
+            # Stage the PDF under a clearly named release asset too.
+            if [ -f "generated/$name/document.pdf" ]; then
+              cp "generated/$name/document.pdf" "release_artifacts/${name}.pdf"
+            fi
+            echo "::endgroup::"
           done
-          ls -lh ../*.zip 2>/dev/null || echo "No artifact zips produced."
+          echo "Regenerated artifacts:"; ls -R generated/ | head -40
+
+      # Commit the refreshed generated/ snapshots back to the default branch so
+      # the repo's committed artifacts always track the latest release. The
+      # workflow is tag-triggered (detached HEAD), so commit explicitly to main.
+      - name: Commit refreshed generated/ artifacts to main
+        if: steps.pypi_wait.outputs.pypi_ready == 'true'
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # The workflow checks out the tag (detached HEAD). Move the freshly
+          # regenerated generated/ working-tree changes onto the tip of main so
+          # the commit lands on the branch, then push.
+          git fetch origin main
+          git stash push -u -- generated/ || true
+          git checkout -B main origin/main
+          git stash pop || true
+          git add generated/
+          if git diff --cached --quiet; then
+            echo "No changes to generated/ — committed artifacts already current."
+            exit 0
+          fi
+          git commit -m "ci: refresh generated/ profile artifacts for ${{ steps.version.outputs.tag }} [skip ci]"
+          git push origin main
 
       - name: Build release notes from CHANGELOG
         run: |
@@ -163,7 +199,12 @@ jobs:
             echo
             echo "### Generated Profile Artifacts"
             echo
-            echo "The attached zips contain the full set of generated artifacts (openapi.yaml, asyncapi.yaml when pubsub is configured, profile_config.json, document.adoc, requirements/, abstract_tests/, sections/) for each example profile."
+            echo "For each example profile, this release attaches:"
+            echo
+            echo "- \`<profile>_artifacts.zip\` — the full artifact set (openapi.yaml, asyncapi.yaml when pubsub is configured, profile_config.json, document.adoc, requirements/, abstract_tests/, sections/)."
+            echo "- \`<profile>.pdf\` — the compiled Metanorma document (e.g. \`metocean_profile.pdf\`)."
+            echo
+            echo "The same artifacts are also committed to the repository under \`generated/<profile>/\` and kept in sync with each release."
           } > release_notes.md
           echo "----- release_notes.md -----"
           cat release_notes.md
@@ -180,10 +221,12 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: Release ${{ steps.version.outputs.tag }}
           body_path: release_notes.md
+          # Attach every example profile's artifact zip and its compiled PDF
+          # (e.g. metocean_profile.pdf). Globs tolerate missing files so a
+          # partial artifact set never blocks the Release.
           files: |
-            minimal_profile_artifacts.zip
-            insitu_observations_profile_artifacts.zip
-            nwsviz_profile_artifacts.zip
+            release_artifacts/*_artifacts.zip
+            release_artifacts/*.pdf
           fail_on_unmatched_files: false
           draft: false
           prerelease: false
