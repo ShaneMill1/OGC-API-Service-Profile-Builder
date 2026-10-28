@@ -612,7 +612,8 @@ generate(profile, Path("./output"))
 │       ├── server_validation.py # schemathesis-based live server validation
 │       └── cli.py               # CLI entry point
 ├── examples/                    # Example profile configs
-├── generated/                   # Generated artifacts for each example
+├── generated/                   # Generated artifacts for each example (incl. document.pdf);
+│                                #   auto-refreshed and committed by the release workflow
 ├── profile.schema.json          # Machine-readable JSON Schema for profile configs
 └── pyproject.toml
 ```
