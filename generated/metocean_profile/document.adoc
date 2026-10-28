@@ -33,6 +33,20 @@ include::sections/04-references.adoc[]
 
 include::sections/05-terms.adoc[]
 
+include::sections/clause-conventions.adoc[]
+
+include::sections/clause-introduction.adoc[]
+
 include::sections/06-requirements.adoc[]
 
 include::sections/07-abstract-tests.adoc[]
+
+include::sections/annex-schemas.adoc[]
+
+include::sections/annex-examples.adoc[]
+
+include::sections/annex-appendix-d.adoc[]
+
+include::sections/annex-bibliography.adoc[]
+
+include::sections/annex-revision-history.adoc[]

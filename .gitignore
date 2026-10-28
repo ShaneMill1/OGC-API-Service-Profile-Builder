@@ -10,6 +10,16 @@ cite_results/
 # tracked part of the generated profile output referenced by document.adoc)
 *.pdf.err
 
+# Metanorma build byproducts inside generated/ profile outputs. We commit the
+# meaningful artifacts (document.adoc, document.pdf, sections/, requirements/,
+# abstract_tests/, openapi.yaml, profile_config.json, and branding assets like
+# cover.png / boilerplate.xml / *_override.xsl) but not the build cache/logs.
+generated/*/relaton/
+generated/**/*.log.txt
+generated/*/document.err.html
+generated/*/document.presentation.xml
+generated/*/document.xml
+
 # Local-only: private correspondence / scratch (never publish to the public repo)
 email_to_guy.txt
 tmp/

@@ -4,6 +4,6 @@
 [%metadata]
 identifier:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/data-query-response-format
 target:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/data-query-response-format
-abstract-test:: /conf/data-query-response-format/dqrf-encoding
-abstract-test:: /conf/data-query-response-format/dqrf-referencing
+abstract-test:: /conf/data-query-response-format/encoding
+abstract-test:: /conf/data-query-response-format/referencing
 ====

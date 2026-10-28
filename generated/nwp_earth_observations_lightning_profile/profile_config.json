@@ -2,7 +2,9 @@
   "name": "nwp_earth_observations_lightning",
   "title": "DGIWG NWP Earth Observations Lightning Profile",
   "version": "1.0",
-  "description": "Service profile for NWP Earth Observations Lightning data, providing frequency of lightning flashes per unit area via OGC API - EDR. Supports cube, radius, and items queries with GET and POST.\n",
+  "openapi_version": "3.0.0",
+  "description": "Service profile for NWP Earth Observations Lightning data, providing frequency of lightning flashes per unit area via OGC API - EDR. Supports cube, radius, and items queries with GET and POST.",
+  "attribution": null,
   "keywords": [
     "cube",
     "radius",
@@ -17,7 +19,10 @@
   "classification": null,
   "metadata_date": null,
   "resource_service_publish_date": null,
+  "links": [],
   "resource_default_locale": null,
+  "default_language": null,
+  "supported_languages": [],
   "collections": [
     {
       "id": "earth_observations_lightning",
@@ -172,6 +177,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -189,6 +195,7 @@
         "Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.",
         "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z."
       ],
+      "level": "requirement",
       "conformance_class": null
     },
     {
@@ -199,6 +206,7 @@
         "Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.",
         "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z."
       ],
+      "level": "requirement",
       "conformance_class": null
     },
     {
@@ -209,6 +217,7 @@
         "Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.",
         "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z."
       ],
+      "level": "requirement",
       "conformance_class": null
     }
   ],
@@ -216,27 +225,36 @@
     {
       "id": "items-endpoint",
       "requirement_id": "items-endpoint",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /collections/earth_observations_lightning/items.",
         "Verify response Content-Type is application/json.",
         "Verify each feature contains frequency_of_lightning_flashes_per_unit_area property.",
         "Verify each feature contains datetime property."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     },
     {
       "id": "cube-endpoint",
       "requirement_id": "cube-endpoint",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /collections/earth_observations_lightning/cube with a valid coordinate in crs_4326 and a radius of 1km.",
         "Verify response Content-Type is application/json.",
         "Verify each feature contains frequency_of_lightning_flashes_per_unit_area property.",
         "Verify each feature contains datetime property.",
         "Verify each feature is in projection crs_4326."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     },
     {
       "id": "radius-endpoint",
       "requirement_id": "radius-endpoint",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /collections/earth_observations_lightning/radius with a valid coordinate in crs_4326.",
         "Verify response Content-Type is application/json.",
@@ -244,7 +262,10 @@
         "Verify each feature contains datetime property.",
         "Verify each feature is in projection crs_4326.",
         "Verify each feature is returned within the radius area."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     }
   ],
   "pubsub": null,
@@ -361,7 +382,8 @@
     "plain_section_numbers": false,
     "suppress_title_underlines": false,
     "suppress_design_elements": true,
-    "page_watermark": "DRAFT"
+    "page_watermark": "DRAFT",
+    "body": null
   },
   "paging": {
     "enabled": true,

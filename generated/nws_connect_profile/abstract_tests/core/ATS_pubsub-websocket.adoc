@@ -1,12 +1,22 @@
 [[ats_nws_connect_pubsub_websocket]]
-[abstract_test]
 ====
 [%metadata]
-identifier:: /conf/nws_connect/pubsub-websocket
-target:: /req/nws_connect/pubsub-websocket
+label:: /conf/nws_connect/pubsub-websocket
+subject:: /req/nws_connect/pubsub-websocket
 test-purpose:: Validate that pubsub websocket is correctly implemented.
-test-method::
-step:: Connect to the native WebSocket endpoint at /ws (ws locally, wss in production).
-step:: Verify the connection succeeds and delivers GeoJSON feature notifications.
-step:: Verify notifications match those delivered over the AMQP 1.0 and MQTT transports.
+[.component,class=test method]
+=====
+[.component,class=step]
+--
+Connect to the native WebSocket endpoint at /ws (ws locally, wss in production).
+--
+[.component,class=step]
+--
+Verify the connection succeeds and delivers GeoJSON feature notifications.
+--
+[.component,class=step]
+--
+Verify notifications match those delivered over the AMQP 1.0 and MQTT transports.
+--
+=====
 ====

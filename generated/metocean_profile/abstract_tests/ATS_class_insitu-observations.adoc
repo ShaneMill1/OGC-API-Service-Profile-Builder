@@ -4,8 +4,8 @@
 [%metadata]
 identifier:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/insitu-observations
 target:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/insitu-observations
-abstract-test:: /conf/insitu-observations/insitu-collection-data-queries
-abstract-test:: /conf/insitu-observations/insitu-collection-parameter-names
-abstract-test:: /conf/insitu-observations/insitu-collection-custom-dimensions
-abstract-test:: /conf/insitu-observations/insitu-coveragejson-parameters
+abstract-test:: /conf/insitu-observations/collection_data_queries
+abstract-test:: /conf/insitu-observations/collection_parameter_names
+abstract-test:: /conf/insitu-observations/collection_custom_dimensions
+abstract-test:: /conf/insitu-observations/coveragejson_parameters
 ====

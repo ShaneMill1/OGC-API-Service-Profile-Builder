@@ -1,3 +1,7 @@
 == Scope
 
-This standard defines the MetOcean Profile for OGC API - EDR. It specifies requirements and conformance tests for implementations of this profile.
+This document defines the conventions, constraints and extensions of EDR in the context of the MetOcean community of practice.
+
+The MetOcean EDR Profile defined herein is an extension of the International Standard _OGC API - Environmental Data Retrieval - Part 1: Core_.
+
+This specification defines the conformance requirements for the MetOcean EDR Profile.  Annex A defines the abstract test suite. Annex B provides normative information on schemas.  Annex C provides informative examples.

@@ -1,12 +1,9 @@
-openapi: 3.1.0
+openapi: 3.0.0
 info:
   title: NWP Radar Profile
   version: '1.0'
-  description: 'Service profile for DGIWG NWP radar data, providing precipitation
-    amount via OGC API - EDR. Supports cube, radius, and items queries with GET and
-    POST.
-
-    '
+  description: Service profile for DGIWG NWP radar data, providing precipitation amount
+    via OGC API - EDR. Supports cube, radius, and items queries with GET and POST.
   x-ogc-profile: http://www.dgiwg.org/std/edr/1.0/req/nwp_radar
   x-keywords:
   - cube
@@ -26,8 +23,8 @@ info:
     x-city: Vienna
     x-country: Austria
   x-classification:
-    level: NATO RESTRICTED (NR)
-    system: NATO
+    classification_level: NATO RESTRICTED (NR)
+    classification_system: NATO
   x-metadata-date: 2026-06-25T07:31Z
   x-resource-publish-date: 2026-06-24T14:10Z
   x-default-locale: eng
@@ -75,37 +72,115 @@ paths:
                           type: string
                         rel:
                           type: string
+                          enum:
+                          - self
+                          - service-desc
+                          - service-doc
+                          - conformance
+                          - data
+                          - profile
                         type:
                           type: string
                         title:
                           type: string
-                    contains:
-                      type: object
-                      required:
-                      - href
-                      - rel
-                      properties:
-                        rel:
-                          const: profile
-                        href:
-                          const: http://www.dgiwg.org/std/edr/1.0/req/nwp_radar
+                        hreflang:
+                          type: string
+                    example:
+                    - href: /
+                      rel: self
+                      type: application/json
+                      title: this document
+                    - href: /api
+                      rel: service-desc
+                      type: application/vnd.oai.openapi+json;version=3.0.0
+                      title: the API definition
+                    - href: /api.html
+                      rel: service-doc
+                      type: text/html
+                      title: the API documentation
+                    - href: /conformance
+                      rel: conformance
+                      type: application/json
+                      title: OGC API conformance classes implemented by this server
+                    - href: /collections
+                      rel: data
+                      type: application/json
+                      title: Information about the collections
+                    - href: http://www.dgiwg.org/std/edr/1.0/req/nwp_radar
+                      rel: profile
+                      type: application/yaml
+                      title: OpenAPI Specification Profile for nwp_radar
                   title:
                     type: string
-                    const: NWP Radar Profile
+                    example: NWP Radar Profile
+                  version:
+                    type: string
+                    example: '1.0'
                   description:
                     type: string
+                    example: Service profile for DGIWG NWP radar data, providing precipitation
+                      amount via OGC API - EDR. Supports cube, radius, and items queries
+                      with GET and POST.
                   keywords:
                     type: array
                     items:
                       type: string
-                    contains:
-                      enum:
-                      - cube
-                      - radius
-                      - items
-                      - datetime
-                      - precipitation_amount
-                      - radar
+                    example:
+                    - cube
+                    - radius
+                    - items
+                    - datetime
+                    - precipitation_amount
+                    - radar
+                  provider:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: Austrian Military
+                      url:
+                        type: string
+                        example: https://www.bmlv.gv.at/english/forces/organisation.shtml
+                      contact:
+                        type: object
+                        properties:
+                          email:
+                            type: string
+                            example: presse@bmlvs.gv.at
+                          hours:
+                            type: string
+                            example: Monday to Friday 08:00 - 17:00
+                          instructions:
+                            type: string
+                            example: During hours of Service
+                          address:
+                            type: string
+                            example: Ministry of Defence, Kommunikation, Rossauer
+                              Lände 1
+                          postalcode:
+                            type: string
+                            example: A-1090
+                          city:
+                            type: string
+                            example: Vienna
+                          country:
+                            type: string
+                            example: Austria
+                  classification:
+                    type: object
+                    properties:
+                      classification_level:
+                        type: string
+                        example: NATO RESTRICTED (NR)
+                      classification_system:
+                        type: string
+                        example: NATO
+                  metadata-date:
+                    type: string
+                    example: 2026-06-25T07:31Z
+                  resource-publish-date:
+                    type: string
+                    example: 2026-06-24T14:10Z
         '400':
           description: Invalid or missing parameter
           content:
@@ -192,15 +267,22 @@ paths:
                     type: array
                     items:
                       type: string
-                    contains:
-                      enum:
-                      - http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core
+                    enum:
+                    - - http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core
                       - http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/oas30
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/html
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/coveragejson
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/wkt
+                    default:
+                    - http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core
+                    - http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/oas30
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/html
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/coveragejson
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/wkt
         '400':
           description: Invalid or missing parameter
           content:
@@ -275,11 +357,14 @@ paths:
       - $ref: '#/components/parameters/lang'
       responses:
         '200':
-          description: Collections list
+          description: Collections
           content:
             application/json:
               schema:
                 type: object
+                required:
+                - links
+                - collections
                 properties:
                   links:
                     type: array
@@ -297,6 +382,383 @@ paths:
                           type: string
                         title:
                           type: string
+                    example:
+                    - href: /collections
+                      rel: self
+                      type: application/json
+                      title: this document
+                    - href: /collections?f=html
+                      rel: alternate
+                      type: text/html
+                      title: this document as HTML
+                  collections:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - links
+                      - extent
+                      properties:
+                        id:
+                          type: string
+                          example: nwp_radar_precipitation
+                        title:
+                          type: string
+                          example: NWP Radar Collection
+                        description:
+                          type: string
+                          example: NWP Radar Observations providing precipitation
+                            information. Datetime values use RFC 3339 format in Zulu
+                            Gregorian time (e.g. 2026-04-12T21:20:50Z).
+                        keywords:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - NWP
+                          - earth observations
+                          - cube
+                          - radius
+                          - items
+                          - datetime
+                          - precipitation_amount
+                          - radar
+                        links:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                            - href
+                            - rel
+                            properties:
+                              href:
+                                type: string
+                              rel:
+                                type: string
+                              type:
+                                type: string
+                              title:
+                                type: string
+                          example:
+                          - href: https://example.com/collections/nwp_radar_precipitation
+                            rel: self
+                            type: application/json
+                            title: NWP Radar Profile
+                        crs:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                          - https://epsg.org/crs_4326/WGS-84.html
+                          - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+                        output_formats:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - CoverageJSON
+                          - GRIB2
+                          - GeoTIFF
+                          - HDF5
+                          - NetCDF4
+                          - PNG
+                        parameter_names:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            precipitation_amount:
+                              type: object
+                              required:
+                              - type
+                              - observedProperty
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                  - Parameter
+                                  default: Parameter
+                                description:
+                                  type: string
+                                  enum:
+                                  - Precipitation amount in kg m-2.
+                                  default: Precipitation amount in kg m-2.
+                                observedProperty:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Precipitation amount of water in all phases
+                                      default: Precipitation amount of water in all
+                                        phases
+                                    id:
+                                      type: string
+                                      enum:
+                                      - https://vocab.nerc.ac.uk/standard_name/precipitation_amount
+                                      default: https://vocab.nerc.ac.uk/standard_name/precipitation_amount
+                                  required:
+                                  - label
+                                unit:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - 'Precipitation amount of water in all phases:
+                                        kilograms per metres squared.'
+                                      default: 'Precipitation amount of water in all
+                                        phases: kilograms per metres squared.'
+                                    symbol:
+                                      type: object
+                                      required:
+                                      - value
+                                      - type
+                                      properties:
+                                        value:
+                                          type: string
+                                          enum:
+                                          - kg m-2
+                                          default: kg m-2
+                                        type:
+                                          type: string
+                                          enum:
+                                          - https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+                                          default: https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+                        extent:
+                          type: object
+                          required:
+                          - spatial
+                          properties:
+                            spatial:
+                              type: object
+                              required:
+                              - bbox
+                              - crs
+                              properties:
+                                bbox:
+                                  type: array
+                                  items:
+                                    type: array
+                                    items:
+                                      type: number
+                                  example:
+                                  - - -180.0
+                                    - -90.0
+                                    - 180.0
+                                    - 90.0
+                                crs:
+                                  type: string
+                                  example: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                            temporal:
+                              type: object
+                              required:
+                              - trs
+                              properties:
+                                trs:
+                                  type: string
+                                  example: http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
+                                interval:
+                                  type: array
+                                  items:
+                                    type: array
+                                    items:
+                                      type: string
+                                      nullable: true
+                                  example:
+                                  - - 2020-01-01 00:00:00+00:00
+                                    - null
+                                values:
+                                  type: array
+                                  items:
+                                    type: string
+                                  example:
+                                  - 2020-01-01T00:00:00Z/..
+                            vertical:
+                              type: object
+                              required:
+                              - vrs
+                              properties:
+                                vrs:
+                                  type: string
+                                  example: https://epsg.org/crs/wkt/id/3855
+                                interval:
+                                  type: array
+                                  items:
+                                    type: array
+                                    items:
+                                      type: number
+                                  example:
+                                  - - '0'
+                                    - '0'
+                                values:
+                                  type: array
+                                  items:
+                                    type: string
+                                  example:
+                                  - '0'
+                                positive:
+                                  type: string
+                                  example: up
+                        data_queries:
+                          type: object
+                          properties:
+                            radius:
+                              type: object
+                              properties:
+                                link:
+                                  type: object
+                                  properties:
+                                    href:
+                                      type: string
+                                      example: https://example.com/collections/nwp_radar_precipitation/radius
+                                    rel:
+                                      type: string
+                                      example: data
+                                    variables:
+                                      type: object
+                                      properties:
+                                        query_type:
+                                          type: string
+                                          example: radius
+                                        default_output_format:
+                                          type: string
+                                          example: GeoTIFF
+                                        output_formats:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - CoverageJSON
+                                          - GRIB2
+                                          - GeoTIFF
+                                          - HDF5
+                                          - NetCDF4
+                                          - PNG
+                                        crs:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - https://epsg.org/crs_4326/WGS-84.html
+                                          - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+                            cube:
+                              type: object
+                              properties:
+                                link:
+                                  type: object
+                                  properties:
+                                    href:
+                                      type: string
+                                      example: https://example.com/collections/nwp_radar_precipitation/cube
+                                    rel:
+                                      type: string
+                                      example: data
+                                    variables:
+                                      type: object
+                                      properties:
+                                        query_type:
+                                          type: string
+                                          example: cube
+                                        default_output_format:
+                                          type: string
+                                          example: GeoTIFF
+                                        output_formats:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - CoverageJSON
+                                          - GRIB2
+                                          - GeoTIFF
+                                          - HDF5
+                                          - NetCDF4
+                                          - PNG
+                                        crs:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - https://epsg.org/crs_4326/WGS-84.html
+                                          - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+                            items:
+                              type: object
+                              properties:
+                                link:
+                                  type: object
+                                  properties:
+                                    href:
+                                      type: string
+                                      example: https://example.com/collections/nwp_radar_precipitation/items
+                                    rel:
+                                      type: string
+                                      example: data
+                                    variables:
+                                      type: object
+                                      properties:
+                                        query_type:
+                                          type: string
+                                          example: items
+                                        default_output_format:
+                                          type: string
+                                          example: GeoTIFF
+                                        output_formats:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - CoverageJSON
+                                          - GRIB2
+                                          - GeoTIFF
+                                          - HDF5
+                                          - NetCDF4
+                                          - PNG
+                          additionalProperties: false
+                        provider:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: Austrian Military
+                            url:
+                              type: string
+                              example: https://www.bmlv.gv.at/english/forces/organisation.shtml
+                            contact:
+                              type: object
+                              properties:
+                                email:
+                                  type: string
+                                  example: presse@bmlvs.gv.at
+                                hours:
+                                  type: string
+                                  example: Monday to Friday 08:00 - 17:00
+                                instructions:
+                                  type: string
+                                  example: During hours of Service
+                                address:
+                                  type: string
+                                  example: Ministry of Defence, Kommunikation, Rossauer
+                                    Lände 1
+                                postalcode:
+                                  type: string
+                                  example: A-1090
+                                city:
+                                  type: string
+                                  example: Vienna
+                                country:
+                                  type: string
+                                  example: Austria
+                        classification:
+                          type: object
+                          properties:
+                            classification_level:
+                              type: string
+                              example: NATO RESTRICTED (NR)
+                            classification_system:
+                              type: string
+                              example: NATO
         '400':
           description: Invalid or missing parameter
           content:
@@ -359,7 +821,7 @@ paths:
                     format: uri-reference
                     description: A URI reference that identifies the specific occurrence
                       of the problem.
-  /openapi:
+  /api:
     get:
       summary: OpenAPI definition
       description: Retrieve the OpenAPI definition document for this API.
@@ -371,6 +833,40 @@ paths:
       responses:
         '200':
           description: OpenAPI document
+          content:
+            application/vnd.oai.openapi+json;version=3.0.0:
+              schema:
+                type: object
+                description: OpenAPI definition document
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    example:
+                    - href: /api
+                      rel: self
+                      type: application/vnd.oai.openapi+json;version=3.0.0
+                      title: this document
+                    - href: http://www.dgiwg.org/std/edr/1.0/req/nwp_radar
+                      rel: profile
+                      type: application/yaml
+                      title: OpenAPI Specification Profile for nwp_radar
+            text/html:
+              schema:
+                type: string
         default:
           $ref: '#/components/responses/default'
   /collections/nwp_radar_precipitation:
@@ -398,14 +894,28 @@ paths:
                 properties:
                   id:
                     type: string
+                    example: nwp_radar_precipitation
                   title:
                     type: string
+                    example: NWP Radar Collection
                   description:
                     type: string
+                    example: NWP Radar Observations providing precipitation information.
+                      Datetime values use RFC 3339 format in Zulu Gregorian time (e.g.
+                      2026-04-12T21:20:50Z).
                   keywords:
                     type: array
                     items:
                       type: string
+                    example:
+                    - NWP
+                    - earth observations
+                    - cube
+                    - radius
+                    - items
+                    - datetime
+                    - precipitation_amount
+                    - radar
                   links:
                     type: array
                     items:
@@ -422,94 +932,92 @@ paths:
                           type: string
                         title:
                           type: string
+                    example:
+                    - href: https://example.com/collections/nwp_radar_precipitation
+                      rel: self
+                      type: application/json
+                      title: NWP Radar Profile
                   crs:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
-                      - https://epsg.org/crs_4326/WGS-84.html
-                      - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+                    example:
+                    - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                    - https://epsg.org/crs_4326/WGS-84.html
+                    - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
                   output_formats:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - CoverageJSON
-                      - GRIB2
-                      - GeoTIFF
-                      - HDF5
-                      - NetCDF4
-                      - PNG
+                    example:
+                    - CoverageJSON
+                    - GRIB2
+                    - GeoTIFF
+                    - HDF5
+                    - NetCDF4
+                    - PNG
                   parameter_names:
                     type: object
-                    additionalProperties:
-                      type: object
-                      required:
-                      - type
-                      - observedProperty
-                      properties:
-                        type:
-                          type: string
-                          const: Parameter
-                        id:
-                          type: string
-                        label:
-                          type: string
-                        description:
-                          type: string
-                        data-type:
-                          type: string
-                          enum:
-                          - integer
-                          - float
-                          - string
-                        unit:
-                          type: object
-                          properties:
-                            id:
-                              type: string
-                            label:
-                              type: string
-                            symbol:
-                              oneOf:
-                              - type: string
-                              - type: object
+                    additionalProperties: false
+                    properties:
+                      precipitation_amount:
+                        type: object
+                        required:
+                        - type
+                        - observedProperty
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                            - Parameter
+                            default: Parameter
+                          description:
+                            type: string
+                            enum:
+                            - Precipitation amount in kg m-2.
+                            default: Precipitation amount in kg m-2.
+                          observedProperty:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Precipitation amount of water in all phases
+                                default: Precipitation amount of water in all phases
+                              id:
+                                type: string
+                                enum:
+                                - https://vocab.nerc.ac.uk/standard_name/precipitation_amount
+                                default: https://vocab.nerc.ac.uk/standard_name/precipitation_amount
+                            required:
+                            - label
+                          unit:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - 'Precipitation amount of water in all phases: kilograms
+                                  per metres squared.'
+                                default: 'Precipitation amount of water in all phases:
+                                  kilograms per metres squared.'
+                              symbol:
+                                type: object
                                 required:
                                 - value
                                 - type
                                 properties:
                                   value:
                                     type: string
+                                    enum:
+                                    - kg m-2
+                                    default: kg m-2
                                   type:
                                     type: string
-                        observedProperty:
-                          type: object
-                          required:
-                          - label
-                          properties:
-                            id:
-                              type: string
-                            label:
-                              type: string
-                            description:
-                              type: string
-                        measurementType:
-                          type: object
-                          required:
-                          - method
-                          - duration
-                          properties:
-                            method:
-                              type: string
-                            duration:
-                              type: string
-                        extent:
-                          type: object
-                      additionalProperties: true
-                    propertyNames:
-                      type: string
-                      pattern: ^[a-z][a-z0-9_]*$
+                                    enum:
+                                    - https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+                                    default: https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
                   extent:
                     type: object
                     required:
@@ -527,126 +1035,221 @@ paths:
                               type: array
                               items:
                                 type: number
-                              minItems: 4
-                              maxItems: 6
+                            example:
+                            - - -180.0
+                              - -90.0
+                              - 180.0
+                              - 90.0
                           crs:
                             type: string
-                            enum:
-                            - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                            example: http://www.opengis.net/def/crs/OGC/1.3/CRS84
                       temporal:
                         type: object
+                        required:
+                        - trs
                         properties:
-                          interval:
-                            type: array
-                            items:
-                              type: array
-                              items:
-                                oneOf:
-                                - type: string
-                                  format: date-time
-                                - type: 'null'
-                              minItems: 2
-                              maxItems: 2
-                          values:
-                            type: array
-                            items:
-                              type: string
                           trs:
                             type: string
-                            enum:
-                            - http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
-                      vertical:
-                        type: object
-                        properties:
+                            example: http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
                           interval:
                             type: array
                             items:
                               type: array
                               items:
                                 type: string
+                                nullable: true
+                            example:
+                            - - 2020-01-01 00:00:00+00:00
+                              - null
                           values:
                             type: array
                             items:
                               type: string
+                            example:
+                            - 2020-01-01T00:00:00Z/..
+                      vertical:
+                        type: object
+                        required:
+                        - vrs
+                        properties:
                           vrs:
                             type: string
+                            example: https://epsg.org/crs/wkt/id/3855
+                          interval:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                                type: number
+                            example:
+                            - - '0'
+                              - '0'
+                          values:
+                            type: array
+                            items:
+                              type: string
+                            example:
+                            - '0'
                           positive:
                             type: string
-                            enum:
-                            - up
-                            - down
-                            description: Direction in which vertical extent values
-                              increase (CF Conventions 'positive' attribute). Disambiguates
-                              interval ordering for VRS such as pressure levels.
-                      custom:
-                        type: array
-                        items:
-                          type: object
-                          required:
-                          - id
-                          - interval
-                          - reference
-                          properties:
-                            id:
-                              type: string
-                            interval:
-                              type: array
-                              items:
-                                type: string
-                            values:
-                              type: array
-                              items:
-                                type: string
-                            reference:
-                              type: string
+                            example: up
                   data_queries:
                     type: object
-                    description: Available EDR data query types for this collection
-                    additionalProperties:
-                      type: object
-                      properties:
-                        link:
-                          type: object
-                          properties:
-                            href:
-                              type: string
-                            rel:
-                              type: string
-                            variables:
-                              type: object
-                              properties:
-                                query_type:
-                                  type: string
-                                output_formats:
-                                  type: array
-                                  items:
+                    properties:
+                      radius:
+                        type: object
+                        properties:
+                          link:
+                            type: object
+                            properties:
+                              href:
+                                type: string
+                                example: https://example.com/collections/nwp_radar_precipitation/radius
+                              rel:
+                                type: string
+                                example: data
+                              variables:
+                                type: object
+                                properties:
+                                  query_type:
                                     type: string
-                                default_output_format:
-                                  type: string
-                                  description: Default output format for this data
-                                    query when f is omitted
-                                crs:
-                                  type: array
-                                  description: CRS values supported by this data query
-                                    (shorthand for crs_details)
-                                  items:
+                                    example: radius
+                                  default_output_format:
                                     type: string
-                                crs_details:
-                                  type: array
-                                  description: CRS values supported by this data query
-                                  items:
-                                    type: object
-                                    required:
-                                    - crs
-                                    properties:
-                                      crs:
-                                        type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
-                                        - https://epsg.org/crs_4326/WGS-84.html
-                                        - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
-                                      wkt:
-                                        type: string
+                                    example: GeoTIFF
+                                  output_formats:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - CoverageJSON
+                                    - GRIB2
+                                    - GeoTIFF
+                                    - HDF5
+                                    - NetCDF4
+                                    - PNG
+                                  crs:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - https://epsg.org/crs_4326/WGS-84.html
+                                    - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+                      cube:
+                        type: object
+                        properties:
+                          link:
+                            type: object
+                            properties:
+                              href:
+                                type: string
+                                example: https://example.com/collections/nwp_radar_precipitation/cube
+                              rel:
+                                type: string
+                                example: data
+                              variables:
+                                type: object
+                                properties:
+                                  query_type:
+                                    type: string
+                                    example: cube
+                                  default_output_format:
+                                    type: string
+                                    example: GeoTIFF
+                                  output_formats:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - CoverageJSON
+                                    - GRIB2
+                                    - GeoTIFF
+                                    - HDF5
+                                    - NetCDF4
+                                    - PNG
+                                  crs:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - https://epsg.org/crs_4326/WGS-84.html
+                                    - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+                      items:
+                        type: object
+                        properties:
+                          link:
+                            type: object
+                            properties:
+                              href:
+                                type: string
+                                example: https://example.com/collections/nwp_radar_precipitation/items
+                              rel:
+                                type: string
+                                example: data
+                              variables:
+                                type: object
+                                properties:
+                                  query_type:
+                                    type: string
+                                    example: items
+                                  default_output_format:
+                                    type: string
+                                    example: GeoTIFF
+                                  output_formats:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - CoverageJSON
+                                    - GRIB2
+                                    - GeoTIFF
+                                    - HDF5
+                                    - NetCDF4
+                                    - PNG
+                    additionalProperties: false
+                  provider:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: Austrian Military
+                      url:
+                        type: string
+                        example: https://www.bmlv.gv.at/english/forces/organisation.shtml
+                      contact:
+                        type: object
+                        properties:
+                          email:
+                            type: string
+                            example: presse@bmlvs.gv.at
+                          hours:
+                            type: string
+                            example: Monday to Friday 08:00 - 17:00
+                          instructions:
+                            type: string
+                            example: During hours of Service
+                          address:
+                            type: string
+                            example: Ministry of Defence, Kommunikation, Rossauer
+                              Lände 1
+                          postalcode:
+                            type: string
+                            example: A-1090
+                          city:
+                            type: string
+                            example: Vienna
+                          country:
+                            type: string
+                            example: Austria
+                  classification:
+                    type: object
+                    properties:
+                      classification_level:
+                        type: string
+                        example: NATO RESTRICTED (NR)
+                      classification_system:
+                        type: string
+                        example: NATO
         '400':
           description: Invalid or missing parameter
           content:
@@ -756,6 +1359,13 @@ paths:
           type: string
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/crs.yaml
+        schema:
+          type: string
+          enum:
+          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+          - https://epsg.org/crs_4326/WGS-84.html
+          - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - name: f
         in: query
@@ -791,9 +1401,6 @@ paths:
           description: Coverage data response
           content:
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/grib; edition=2:
@@ -892,14 +1499,21 @@ paths:
               type: object
               properties:
                 bbox:
-                  type: string
-                  description: Bounding box filter
+                  type: array
+                  description: Bounding box filter [minLon, minLat, maxLon, maxLat]
+                  items:
+                    type: number
+                  minItems: 4
+                  maxItems: 6
                 datetime:
                   type: string
                   description: RFC 3339 datetime or interval
                 parameter-name:
                   type: string
                   description: Comma-separated list of parameter names to return
+                crs:
+                  type: string
+                  description: Identifier for the coordinate reference system
                 z:
                   type: string
                   description: Vertical level(s)
@@ -912,9 +1526,6 @@ paths:
           description: Coverage data response
           content:
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/grib; edition=2:
@@ -1024,7 +1635,9 @@ paths:
                 properties:
                   type:
                     type: string
-                    const: FeatureCollection
+                    enum:
+                    - FeatureCollection
+                    default: FeatureCollection
                   features:
                     type: array
                     items:
@@ -1141,6 +1754,13 @@ paths:
           type: string
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/crs.yaml
+        schema:
+          type: string
+          enum:
+          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+          - https://epsg.org/crs_4326/WGS-84.html
+          - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - name: f
         in: query
@@ -1167,9 +1787,6 @@ paths:
           description: Coverage data response
           content:
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/grib; edition=2:
@@ -1286,6 +1903,9 @@ paths:
                 parameter-name:
                   type: string
                   description: Comma-separated list of parameter names to return
+                crs:
+                  type: string
+                  description: Identifier for the coordinate reference system
                 z:
                   type: string
                   description: Vertical level(s)
@@ -1298,9 +1918,6 @@ paths:
           description: Coverage data response
           content:
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/grib; edition=2:
@@ -1395,6 +2012,13 @@ paths:
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/bbox.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/crs.yaml
+        schema:
+          type: string
+          enum:
+          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+          - https://epsg.org/crs_4326/WGS-84.html
+          - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
       - name: f
         in: query
@@ -1421,9 +2045,6 @@ paths:
           description: Coverage data response
           content:
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/grib; edition=2:
@@ -1536,6 +2157,9 @@ paths:
                 parameter-name:
                   type: string
                   description: Comma-separated list of parameter names to return
+                crs:
+                  type: string
+                  description: Identifier for the coordinate reference system
                 z:
                   type: string
                   description: Vertical level(s)
@@ -1548,9 +2172,6 @@ paths:
           description: Coverage data response
           content:
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/grib; edition=2:

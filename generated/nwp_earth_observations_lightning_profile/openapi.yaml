@@ -1,12 +1,10 @@
-openapi: 3.1.0
+openapi: 3.0.0
 info:
   title: DGIWG NWP Earth Observations Lightning Profile
   version: '1.0'
-  description: 'Service profile for NWP Earth Observations Lightning data, providing
+  description: Service profile for NWP Earth Observations Lightning data, providing
     frequency of lightning flashes per unit area via OGC API - EDR. Supports cube,
     radius, and items queries with GET and POST.
-
-    '
   x-ogc-profile: http://www.dgiwg.org/std/edr/1.0/req/nwp_earth_observations_lightning
   x-keywords:
   - cube
@@ -64,38 +62,68 @@ paths:
                           type: string
                         rel:
                           type: string
+                          enum:
+                          - self
+                          - service-desc
+                          - service-doc
+                          - conformance
+                          - data
+                          - profile
                         type:
                           type: string
                         title:
                           type: string
-                    contains:
-                      type: object
-                      required:
-                      - href
-                      - rel
-                      properties:
-                        rel:
-                          const: profile
-                        href:
-                          const: http://www.dgiwg.org/std/edr/1.0/req/nwp_earth_observations_lightning
+                        hreflang:
+                          type: string
+                    example:
+                    - href: /
+                      rel: self
+                      type: application/json
+                      title: this document
+                    - href: /api
+                      rel: service-desc
+                      type: application/vnd.oai.openapi+json;version=3.0.0
+                      title: the API definition
+                    - href: /api.html
+                      rel: service-doc
+                      type: text/html
+                      title: the API documentation
+                    - href: /conformance
+                      rel: conformance
+                      type: application/json
+                      title: OGC API conformance classes implemented by this server
+                    - href: /collections
+                      rel: data
+                      type: application/json
+                      title: Information about the collections
+                    - href: http://www.dgiwg.org/std/edr/1.0/req/nwp_earth_observations_lightning
+                      rel: profile
+                      type: application/yaml
+                      title: OpenAPI Specification Profile for nwp_earth_observations_lightning
                   title:
                     type: string
-                    const: DGIWG NWP Earth Observations Lightning Profile
+                    example: DGIWG NWP Earth Observations Lightning Profile
+                  version:
+                    type: string
+                    example: '1.0'
                   description:
                     type: string
+                    example: Service profile for NWP Earth Observations Lightning
+                      data, providing frequency of lightning flashes per unit area
+                      via OGC API - EDR. Supports cube, radius, and items queries
+                      with GET and POST.
                   keywords:
                     type: array
                     items:
                       type: string
-                    contains:
-                      enum:
-                      - cube
-                      - radius
-                      - items
-                      - datetime
-                      - frequency_of_lightning_flashes_per_unit_area
-                      - lightning flashes
-                      - lightning
+                    example:
+                    - cube
+                    - radius
+                    - items
+                    - datetime
+                    - frequency_of_lightning_flashes_per_unit_area
+                    - lightning flashes
+                    - lightning
         '400':
           description: Invalid or missing parameter
           content:
@@ -182,9 +210,8 @@ paths:
                     type: array
                     items:
                       type: string
-                    contains:
-                      enum:
-                      - http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core
+                    enum:
+                    - - http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core
                       - http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/oas30
@@ -192,6 +219,15 @@ paths:
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/geojson
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/coveragejson
                       - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/wkt
+                    default:
+                    - http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core
+                    - http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/oas30
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/html
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/geojson
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/coveragejson
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/wkt
         '400':
           description: Invalid or missing parameter
           content:
@@ -266,11 +302,14 @@ paths:
       - $ref: '#/components/parameters/lang'
       responses:
         '200':
-          description: Collections list
+          description: Collections
           content:
             application/json:
               schema:
                 type: object
+                required:
+                - links
+                - collections
                 properties:
                   links:
                     type: array
@@ -288,6 +327,272 @@ paths:
                           type: string
                         title:
                           type: string
+                    example:
+                    - href: /collections
+                      rel: self
+                      type: application/json
+                      title: this document
+                    - href: /collections?f=html
+                      rel: alternate
+                      type: text/html
+                      title: this document as HTML
+                  collections:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - links
+                      - extent
+                      properties:
+                        id:
+                          type: string
+                          example: earth_observations_lightning
+                        title:
+                          type: string
+                          example: Earth Observations Lightning Strikes
+                        description:
+                          type: string
+                          example: NWP Earth Observations Lightning data providing
+                            frequency of lightning flashes per unit area. Supports
+                            cube, radius, and items queries. Datetime values use RFC
+                            3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+                        keywords:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - lightning
+                          - NWP
+                          - earth observations
+                          - DGIWG
+                        links:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                            - href
+                            - rel
+                            properties:
+                              href:
+                                type: string
+                              rel:
+                                type: string
+                              type:
+                                type: string
+                              title:
+                                type: string
+                          example:
+                          - href: https://example.com/collections/earth_observations_lightning
+                            rel: self
+                            type: application/json
+                            title: Earth observations lightning strikes
+                        crs:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                          - https://epsg.org/crs_4326/WGS-84.html
+                          - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+                        output_formats:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - GeoJSON
+                          - CoverageJSON
+                        parameter_names:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            frequency_of_lightning_flashes_per_unit_area:
+                              type: object
+                              required:
+                              - type
+                              - observedProperty
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                  - Parameter
+                                  default: Parameter
+                                description:
+                                  type: string
+                                  enum:
+                                  - Number of occurrences of a lightning flash event
+                                    per unit area per unit time.
+                                  default: Number of occurrences of a lightning flash
+                                    event per unit area per unit time.
+                                observedProperty:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Frequency of Lightning Flashes per Unit Area
+                                      default: Frequency of Lightning Flashes per
+                                        Unit Area
+                                    id:
+                                      type: string
+                                      enum:
+                                      - https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+                                      default: https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+                                  required:
+                                  - label
+                                unit:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - 'Number of lightning flash events per unit
+                                        area per unit time: per square metre per second.'
+                                      default: 'Number of lightning flash events per
+                                        unit area per unit time: per square metre
+                                        per second.'
+                                    symbol:
+                                      type: object
+                                      required:
+                                      - value
+                                      - type
+                                      properties:
+                                        value:
+                                          type: string
+                                          enum:
+                                          - m-2 s-1
+                                          default: m-2 s-1
+                                        type:
+                                          type: string
+                                          enum:
+                                          - https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+                                          default: https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+                        extent:
+                          type: object
+                          required:
+                          - spatial
+                          properties:
+                            spatial:
+                              type: object
+                              required:
+                              - bbox
+                              - crs
+                              properties:
+                                bbox:
+                                  type: array
+                                  items:
+                                    type: array
+                                    items:
+                                      type: number
+                                  example:
+                                  - - -180.0
+                                    - -90.0
+                                    - 180.0
+                                    - 90.0
+                                crs:
+                                  type: string
+                                  example: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                            temporal:
+                              type: object
+                              required:
+                              - trs
+                              properties:
+                                trs:
+                                  type: string
+                                  example: http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
+                                interval:
+                                  type: array
+                                  items:
+                                    type: array
+                                    items:
+                                      type: string
+                                      nullable: true
+                                  example:
+                                  - - 2020-01-01 00:00:00+00:00
+                                    - null
+                                values:
+                                  type: array
+                                  items:
+                                    type: string
+                                  example:
+                                  - 2020-01-01T00:00:00Z/..
+                        data_queries:
+                          type: object
+                          properties:
+                            radius:
+                              type: object
+                              properties:
+                                link:
+                                  type: object
+                                  properties:
+                                    href:
+                                      type: string
+                                      example: https://example.com/collections/earth_observations_lightning/radius
+                                    rel:
+                                      type: string
+                                      example: data
+                                    variables:
+                                      type: object
+                                      properties:
+                                        query_type:
+                                          type: string
+                                          example: radius
+                                        output_formats:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - CoverageJSON
+                            cube:
+                              type: object
+                              properties:
+                                link:
+                                  type: object
+                                  properties:
+                                    href:
+                                      type: string
+                                      example: https://example.com/collections/earth_observations_lightning/cube
+                                    rel:
+                                      type: string
+                                      example: data
+                                    variables:
+                                      type: object
+                                      properties:
+                                        query_type:
+                                          type: string
+                                          example: cube
+                                        output_formats:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - CoverageJSON
+                            items:
+                              type: object
+                              properties:
+                                link:
+                                  type: object
+                                  properties:
+                                    href:
+                                      type: string
+                                      example: https://example.com/collections/earth_observations_lightning/items
+                                    rel:
+                                      type: string
+                                      example: data
+                                    variables:
+                                      type: object
+                                      properties:
+                                        query_type:
+                                          type: string
+                                          example: items
+                                        output_formats:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - GeoJSON
+                          additionalProperties: false
         '400':
           description: Invalid or missing parameter
           content:
@@ -350,7 +655,7 @@ paths:
                     format: uri-reference
                     description: A URI reference that identifies the specific occurrence
                       of the problem.
-  /openapi:
+  /api:
     get:
       summary: OpenAPI definition
       description: Retrieve the OpenAPI definition document for this API.
@@ -362,6 +667,40 @@ paths:
       responses:
         '200':
           description: OpenAPI document
+          content:
+            application/vnd.oai.openapi+json;version=3.0.0:
+              schema:
+                type: object
+                description: OpenAPI definition document
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    example:
+                    - href: /api
+                      rel: self
+                      type: application/vnd.oai.openapi+json;version=3.0.0
+                      title: this document
+                    - href: http://www.dgiwg.org/std/edr/1.0/req/nwp_earth_observations_lightning
+                      rel: profile
+                      type: application/yaml
+                      title: OpenAPI Specification Profile for nwp_earth_observations_lightning
+            text/html:
+              schema:
+                type: string
         default:
           $ref: '#/components/responses/default'
   /collections/earth_observations_lightning:
@@ -390,14 +729,25 @@ paths:
                 properties:
                   id:
                     type: string
+                    example: earth_observations_lightning
                   title:
                     type: string
+                    example: Earth Observations Lightning Strikes
                   description:
                     type: string
+                    example: NWP Earth Observations Lightning data providing frequency
+                      of lightning flashes per unit area. Supports cube, radius, and
+                      items queries. Datetime values use RFC 3339 format in Zulu Gregorian
+                      time (e.g. 2026-04-12T21:20:50Z).
                   keywords:
                     type: array
                     items:
                       type: string
+                    example:
+                    - lightning
+                    - NWP
+                    - earth observations
+                    - DGIWG
                   links:
                     type: array
                     items:
@@ -414,87 +764,90 @@ paths:
                           type: string
                         title:
                           type: string
+                    example:
+                    - href: https://example.com/collections/earth_observations_lightning
+                      rel: self
+                      type: application/json
+                      title: Earth observations lightning strikes
                   crs:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
-                      - https://epsg.org/crs_4326/WGS-84.html
-                      - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+                    example:
+                    - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                    - https://epsg.org/crs_4326/WGS-84.html
+                    - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
                   output_formats:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - GeoJSON
-                      - CoverageJSON
+                    example:
+                    - GeoJSON
+                    - CoverageJSON
                   parameter_names:
                     type: object
-                    additionalProperties:
-                      type: object
-                      required:
-                      - type
-                      - observedProperty
-                      properties:
-                        type:
-                          type: string
-                          const: Parameter
-                        id:
-                          type: string
-                        label:
-                          type: string
-                        description:
-                          type: string
-                        data-type:
-                          type: string
-                          enum:
-                          - integer
-                          - float
-                          - string
-                        unit:
-                          type: object
-                          properties:
-                            id:
-                              type: string
-                            label:
-                              type: string
-                            symbol:
-                              oneOf:
-                              - type: string
-                              - type: object
+                    additionalProperties: false
+                    properties:
+                      frequency_of_lightning_flashes_per_unit_area:
+                        type: object
+                        required:
+                        - type
+                        - observedProperty
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                            - Parameter
+                            default: Parameter
+                          description:
+                            type: string
+                            enum:
+                            - Number of occurrences of a lightning flash event per
+                              unit area per unit time.
+                            default: Number of occurrences of a lightning flash event
+                              per unit area per unit time.
+                          observedProperty:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Frequency of Lightning Flashes per Unit Area
+                                default: Frequency of Lightning Flashes per Unit Area
+                              id:
+                                type: string
+                                enum:
+                                - https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+                                default: https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+                            required:
+                            - label
+                          unit:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - 'Number of lightning flash events per unit area
+                                  per unit time: per square metre per second.'
+                                default: 'Number of lightning flash events per unit
+                                  area per unit time: per square metre per second.'
+                              symbol:
+                                type: object
                                 required:
                                 - value
                                 - type
                                 properties:
                                   value:
                                     type: string
+                                    enum:
+                                    - m-2 s-1
+                                    default: m-2 s-1
                                   type:
                                     type: string
-                        observedProperty:
-                          type: object
-                          required:
-                          - label
-                          properties:
-                            id:
-                              type: string
-                            label:
-                              type: string
-                            description:
-                              type: string
-                        measurementType:
-                          type: object
-                          required:
-                          - method
-                          - duration
-                          properties:
-                            method:
-                              type: string
-                            duration:
-                              type: string
-                        extent:
-                          type: object
-                      additionalProperties: true
+                                    enum:
+                                    - https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+                                    default: https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
                   extent:
                     type: object
                     required:
@@ -512,126 +865,114 @@ paths:
                               type: array
                               items:
                                 type: number
-                              minItems: 4
-                              maxItems: 6
+                            example:
+                            - - -180.0
+                              - -90.0
+                              - 180.0
+                              - 90.0
                           crs:
                             type: string
-                            enum:
-                            - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                            example: http://www.opengis.net/def/crs/OGC/1.3/CRS84
                       temporal:
                         type: object
+                        required:
+                        - trs
                         properties:
-                          interval:
-                            type: array
-                            items:
-                              type: array
-                              items:
-                                oneOf:
-                                - type: string
-                                  format: date-time
-                                - type: 'null'
-                              minItems: 2
-                              maxItems: 2
-                          values:
-                            type: array
-                            items:
-                              type: string
                           trs:
                             type: string
-                            enum:
-                            - http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
-                      vertical:
-                        type: object
-                        properties:
+                            example: http://www.opengis.net/def/uom/ISO-8601/0/Gregorian
                           interval:
                             type: array
                             items:
                               type: array
                               items:
                                 type: string
+                                nullable: true
+                            example:
+                            - - 2020-01-01 00:00:00+00:00
+                              - null
                           values:
                             type: array
                             items:
                               type: string
-                          vrs:
-                            type: string
-                          positive:
-                            type: string
-                            enum:
-                            - up
-                            - down
-                            description: Direction in which vertical extent values
-                              increase (CF Conventions 'positive' attribute). Disambiguates
-                              interval ordering for VRS such as pressure levels.
-                      custom:
-                        type: array
-                        items:
-                          type: object
-                          required:
-                          - id
-                          - interval
-                          - reference
-                          properties:
-                            id:
-                              type: string
-                            interval:
-                              type: array
-                              items:
-                                type: string
-                            values:
-                              type: array
-                              items:
-                                type: string
-                            reference:
-                              type: string
+                            example:
+                            - 2020-01-01T00:00:00Z/..
                   data_queries:
                     type: object
-                    description: Available EDR data query types for this collection
-                    additionalProperties:
-                      type: object
-                      properties:
-                        link:
-                          type: object
-                          properties:
-                            href:
-                              type: string
-                            rel:
-                              type: string
-                            variables:
-                              type: object
-                              properties:
-                                query_type:
-                                  type: string
-                                output_formats:
-                                  type: array
-                                  items:
+                    properties:
+                      radius:
+                        type: object
+                        properties:
+                          link:
+                            type: object
+                            properties:
+                              href:
+                                type: string
+                                example: https://example.com/collections/earth_observations_lightning/radius
+                              rel:
+                                type: string
+                                example: data
+                              variables:
+                                type: object
+                                properties:
+                                  query_type:
                                     type: string
-                                default_output_format:
-                                  type: string
-                                  description: Default output format for this data
-                                    query when f is omitted
-                                crs:
-                                  type: array
-                                  description: CRS values supported by this data query
-                                    (shorthand for crs_details)
-                                  items:
+                                    example: radius
+                                  output_formats:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - CoverageJSON
+                      cube:
+                        type: object
+                        properties:
+                          link:
+                            type: object
+                            properties:
+                              href:
+                                type: string
+                                example: https://example.com/collections/earth_observations_lightning/cube
+                              rel:
+                                type: string
+                                example: data
+                              variables:
+                                type: object
+                                properties:
+                                  query_type:
                                     type: string
-                                crs_details:
-                                  type: array
-                                  description: CRS values supported by this data query
-                                  items:
-                                    type: object
-                                    required:
-                                    - crs
-                                    properties:
-                                      crs:
-                                        type: string
-                                        enum:
-                                        - http://www.opengis.net/def/crs/OGC/1.3/CRS84
-                                        - https://epsg.org/crs_4326/WGS-84.html
-                                        - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
-                                      wkt:
-                                        type: string
+                                    example: cube
+                                  output_formats:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - CoverageJSON
+                      items:
+                        type: object
+                        properties:
+                          link:
+                            type: object
+                            properties:
+                              href:
+                                type: string
+                                example: https://example.com/collections/earth_observations_lightning/items
+                              rel:
+                                type: string
+                                example: data
+                              variables:
+                                type: object
+                                properties:
+                                  query_type:
+                                    type: string
+                                    example: items
+                                  output_formats:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - GeoJSON
+                    additionalProperties: false
         '400':
           description: Invalid or missing parameter
           content:
@@ -742,7 +1083,13 @@ paths:
           type: string
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/crs.yaml
+        schema:
+          type: string
+          enum:
+          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+          - https://epsg.org/crs_4326/WGS-84.html
+          - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
       - $ref: '#/components/parameters/f'
       - name: limit
         in: query
@@ -761,9 +1108,6 @@ paths:
               schema:
                 $ref: https://geojson.org/schema/FeatureCollection.json
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
         '204':
@@ -848,17 +1192,21 @@ paths:
               type: object
               properties:
                 bbox:
-                  type: string
-                  description: Bounding box filter
+                  type: array
+                  description: Bounding box filter [minLon, minLat, maxLon, maxLat]
+                  items:
+                    type: number
+                  minItems: 4
+                  maxItems: 6
                 datetime:
                   type: string
                   description: RFC 3339 datetime or interval
                 parameter-name:
                   type: string
                   description: Comma-separated list of parameter names to return
-                z:
+                crs:
                   type: string
-                  description: Vertical level(s)
+                  description: Identifier for the coordinate reference system
                 f:
                   type: string
                   description: Response format
@@ -870,9 +1218,6 @@ paths:
               schema:
                 $ref: https://geojson.org/schema/FeatureCollection.json
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
         '204':
@@ -968,7 +1313,9 @@ paths:
                 properties:
                   type:
                     type: string
-                    const: FeatureCollection
+                    enum:
+                    - FeatureCollection
+                    default: FeatureCollection
                   features:
                     type: array
                     items:
@@ -1066,6 +1413,214 @@ paths:
                     format: uri-reference
                     description: A URI reference that identifies the specific occurrence
                       of the problem.
+  /collections/earth_observations_lightning/cube:
+    get:
+      summary: query earth_observations_lightning by cube
+      description: NWP Earth Observations Lightning data providing frequency of lightning
+        flashes per unit area. Supports cube, radius, and items queries. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryCubeEarthObservationsLightning
+      tags:
+      - earth_observations_lightning
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/bbox.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/crs.yaml
+        schema:
+          type: string
+          enum:
+          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+          - https://epsg.org/crs_4326/WGS-84.html
+          - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
+      - $ref: '#/components/parameters/f'
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+        '204':
+          description: No data available for the requested query (empty result inside
+            the extent)
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+        '500':
+          description: Server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+    post:
+      summary: query (POST) earth_observations_lightning by cube
+      description: NWP Earth Observations Lightning data providing frequency of lightning
+        flashes per unit area. Supports cube, radius, and items queries. Datetime
+        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
+      operationId: QueryPostCubeEarthObservationsLightning
+      tags:
+      - earth_observations_lightning
+      requestBody:
+        required: true
+        description: Query parameters for cube request
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - bbox
+              properties:
+                bbox:
+                  type: array
+                  description: Bounding box [minLon, minLat, maxLon, maxLat]
+                  items:
+                    type: number
+                  minItems: 4
+                  maxItems: 6
+                datetime:
+                  type: string
+                  description: RFC 3339 datetime or interval
+                parameter-name:
+                  type: string
+                  description: Comma-separated list of parameter names to return
+                crs:
+                  type: string
+                  description: Identifier for the coordinate reference system
+                f:
+                  type: string
+                  description: Response format
+      responses:
+        '200':
+          description: Coverage data response
+          content:
+            application/geo+json:
+              schema:
+                $ref: https://geojson.org/schema/FeatureCollection.json
+            application/prs.coverage+json:
+              schema:
+                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+        '204':
+          description: No data available for the requested query (empty result inside
+            the extent)
+        '400':
+          description: Invalid or missing parameter
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
+        '500':
+          description: Server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                - type
+                - title
+                properties:
+                  type:
+                    type: string
+                    format: uri-reference
+                    default: about:blank
+                    description: A URI reference that identifies the problem type
+                      (RFC 9457).
+                  title:
+                    type: string
+                    description: A short, human-readable summary of the problem type.
+                  status:
+                    type: integer
+                    description: The HTTP status code generated by the origin server.
+                  detail:
+                    type: string
+                    description: A human-readable explanation specific to this occurrence
+                      of the problem.
+                  instance:
+                    type: string
+                    format: uri-reference
+                    description: A URI reference that identifies the specific occurrence
+                      of the problem.
   /collections/earth_observations_lightning/radius:
     get:
       summary: query earth_observations_lightning by radius
@@ -1086,7 +1641,13 @@ paths:
           type: string
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/crs.yaml
+        schema:
+          type: string
+          enum:
+          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+          - https://epsg.org/crs_4326/WGS-84.html
+          - https://epsg.org/crs_25832/ETRS89-UTM-zone-32N.html
       - $ref: '#/components/parameters/f'
       responses:
         '200':
@@ -1096,9 +1657,6 @@ paths:
               schema:
                 $ref: https://geojson.org/schema/FeatureCollection.json
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
         '204':
@@ -1201,9 +1759,9 @@ paths:
                 parameter-name:
                   type: string
                   description: Comma-separated list of parameter names to return
-                z:
+                crs:
                   type: string
-                  description: Vertical level(s)
+                  description: Identifier for the coordinate reference system
                 f:
                   type: string
                   description: Response format
@@ -1215,217 +1773,6 @@ paths:
               schema:
                 $ref: https://geojson.org/schema/FeatureCollection.json
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-        '204':
-          description: No data available for the requested query (empty result inside
-            the extent)
-        '400':
-          description: Invalid or missing parameter
-          content:
-            application/problem+json:
-              schema:
-                type: object
-                required:
-                - type
-                - title
-                properties:
-                  type:
-                    type: string
-                    format: uri-reference
-                    default: about:blank
-                    description: A URI reference that identifies the problem type
-                      (RFC 9457).
-                  title:
-                    type: string
-                    description: A short, human-readable summary of the problem type.
-                  status:
-                    type: integer
-                    description: The HTTP status code generated by the origin server.
-                  detail:
-                    type: string
-                    description: A human-readable explanation specific to this occurrence
-                      of the problem.
-                  instance:
-                    type: string
-                    format: uri-reference
-                    description: A URI reference that identifies the specific occurrence
-                      of the problem.
-        '500':
-          description: Server error
-          content:
-            application/problem+json:
-              schema:
-                type: object
-                required:
-                - type
-                - title
-                properties:
-                  type:
-                    type: string
-                    format: uri-reference
-                    default: about:blank
-                    description: A URI reference that identifies the problem type
-                      (RFC 9457).
-                  title:
-                    type: string
-                    description: A short, human-readable summary of the problem type.
-                  status:
-                    type: integer
-                    description: The HTTP status code generated by the origin server.
-                  detail:
-                    type: string
-                    description: A human-readable explanation specific to this occurrence
-                      of the problem.
-                  instance:
-                    type: string
-                    format: uri-reference
-                    description: A URI reference that identifies the specific occurrence
-                      of the problem.
-  /collections/earth_observations_lightning/cube:
-    get:
-      summary: query earth_observations_lightning by cube
-      description: NWP Earth Observations Lightning data providing frequency of lightning
-        flashes per unit area. Supports cube, radius, and items queries. Datetime
-        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
-      operationId: QueryCubeEarthObservationsLightning
-      tags:
-      - earth_observations_lightning
-      parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/bbox.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-        '204':
-          description: No data available for the requested query (empty result inside
-            the extent)
-        '400':
-          description: Invalid or missing parameter
-          content:
-            application/problem+json:
-              schema:
-                type: object
-                required:
-                - type
-                - title
-                properties:
-                  type:
-                    type: string
-                    format: uri-reference
-                    default: about:blank
-                    description: A URI reference that identifies the problem type
-                      (RFC 9457).
-                  title:
-                    type: string
-                    description: A short, human-readable summary of the problem type.
-                  status:
-                    type: integer
-                    description: The HTTP status code generated by the origin server.
-                  detail:
-                    type: string
-                    description: A human-readable explanation specific to this occurrence
-                      of the problem.
-                  instance:
-                    type: string
-                    format: uri-reference
-                    description: A URI reference that identifies the specific occurrence
-                      of the problem.
-        '500':
-          description: Server error
-          content:
-            application/problem+json:
-              schema:
-                type: object
-                required:
-                - type
-                - title
-                properties:
-                  type:
-                    type: string
-                    format: uri-reference
-                    default: about:blank
-                    description: A URI reference that identifies the problem type
-                      (RFC 9457).
-                  title:
-                    type: string
-                    description: A short, human-readable summary of the problem type.
-                  status:
-                    type: integer
-                    description: The HTTP status code generated by the origin server.
-                  detail:
-                    type: string
-                    description: A human-readable explanation specific to this occurrence
-                      of the problem.
-                  instance:
-                    type: string
-                    format: uri-reference
-                    description: A URI reference that identifies the specific occurrence
-                      of the problem.
-    post:
-      summary: query (POST) earth_observations_lightning by cube
-      description: NWP Earth Observations Lightning data providing frequency of lightning
-        flashes per unit area. Supports cube, radius, and items queries. Datetime
-        values use RFC 3339 format in Zulu Gregorian time (e.g. 2026-04-12T21:20:50Z).
-      operationId: QueryPostCubeEarthObservationsLightning
-      tags:
-      - earth_observations_lightning
-      requestBody:
-        required: true
-        description: Query parameters for cube request
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - bbox
-              properties:
-                bbox:
-                  type: array
-                  description: Bounding box [minLon, minLat, maxLon, maxLat]
-                  items:
-                    type: number
-                  minItems: 4
-                  maxItems: 6
-                datetime:
-                  type: string
-                  description: RFC 3339 datetime or interval
-                parameter-name:
-                  type: string
-                  description: Comma-separated list of parameter names to return
-                z:
-                  type: string
-                  description: Vertical level(s)
-                f:
-                  type: string
-                  description: Response format
-      responses:
-        '200':
-          description: Coverage data response
-          content:
-            application/geo+json:
-              schema:
-                $ref: https://geojson.org/schema/FeatureCollection.json
-            application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
         '204':

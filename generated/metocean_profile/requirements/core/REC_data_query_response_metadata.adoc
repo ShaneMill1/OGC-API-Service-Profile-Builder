@@ -1,0 +1,8 @@
+[[rec_core_data_query_response_metadata]]
+[recommendation]
+====
+[%metadata]
+identifier:: /rec/core/data_query_response_metadata
+statement:: The metadata in a data query response SHOULD mirror the terms and vocabularies used in the collection metadata.
+part:: The metadata in the response to a data query (e.g. crs, parameters and units) SHOULD mirror as closely as possible the terms and vocabularies used in the collection metadata.
+====

@@ -2,14 +2,19 @@
   "name": "nwsviz",
   "title": "NWSViz EDR Service Profile",
   "version": "1.0",
+  "openapi_version": "3.0.0",
   "description": null,
+  "attribution": null,
   "keywords": [],
   "server_url": "https://edr-api-desi-c.mdl.nws.noaa.gov",
   "provider": null,
   "classification": null,
   "metadata_date": null,
   "resource_service_publish_date": null,
+  "links": [],
   "resource_default_locale": null,
+  "default_language": null,
+  "supported_languages": [],
   "collections": [
     {
       "id": "aigfs0p25_v1p0_global_latlon",
@@ -134,6 +139,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -263,6 +269,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -392,6 +399,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -521,6 +529,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -650,6 +659,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -779,6 +789,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -908,6 +919,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -1037,6 +1049,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -1166,6 +1179,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -1295,6 +1309,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -1424,6 +1439,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -1553,6 +1569,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -1671,6 +1688,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -1732,6 +1750,7 @@
         "The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/conf-class-core.",
         "The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/core."
       ],
+      "level": "requirement",
       "conformance_class": null
     },
     {
@@ -1741,6 +1760,7 @@
         "The /collections endpoint SHALL return metadata for all 13 NWSViz collections.",
         "Each collection SHALL include extent, data_queries, and output_formats."
       ],
+      "level": "requirement",
       "conformance_class": null
     },
     {
@@ -1752,6 +1772,7 @@
         "The position endpoint SHALL return a valid CoverageJSON Coverage object as its default response.",
         "The response Content-Type SHALL be application/prs.coverage+json."
       ],
+      "level": "requirement",
       "conformance_class": null
     },
     {
@@ -1765,6 +1786,7 @@
         "The zarr item response SHALL include a link with rel=zarr pointing to the root of the virtual Zarr store.",
         "The virtual Zarr store SHALL reflect the full spatio-temporal extent of the collection."
       ],
+      "level": "requirement",
       "conformance_class": null
     },
     {
@@ -1777,6 +1799,7 @@
         "The process SHALL support sync-execute job control.",
         "The process SHALL return a difference_result output containing the result of (A - B) as a virtual Zarr dataset."
       ],
+      "level": "requirement",
       "conformance_class": null
     },
     {
@@ -1789,6 +1812,7 @@
         "The process SHALL support sync-execute job control.",
         "The process SHALL return a zarr_endpoint output containing a URL to stream difference chunks on-demand."
       ],
+      "level": "requirement",
       "conformance_class": null
     },
     {
@@ -1802,6 +1826,7 @@
         "The process SHALL support sync-execute job control.",
         "The process SHALL return a zarr_endpoint output containing a URL to stream wind data chunks on-demand."
       ],
+      "level": "requirement",
       "conformance_class": null
     }
   ],
@@ -1809,37 +1834,50 @@
     {
       "id": "conformance",
       "requirement_id": "conformance",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /conformance.",
         "Verify the conformsTo array includes http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core.",
         "Verify the conformsTo array includes http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.",
         "Verify the conformsTo array includes http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/conf-class-core.",
         "Verify the conformsTo array includes http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/core."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     },
     {
       "id": "collections-endpoint",
       "requirement_id": "collections-endpoint",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /collections.",
         "Verify all 13 NWSViz collection ids are present in the response.",
         "Verify each collection includes extent, data_queries, and output_formats."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     },
     {
       "id": "position-coveragejson",
       "requirement_id": "position-coveragejson",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /collections/{id}/position?coords=POINT(lon lat) for a valid coordinate within the collection extent.",
         "Verify the response status is 200.",
         "Verify the response Content-Type is application/prs.coverage+json.",
         "Verify the response body is a valid CoverageJSON Coverage object with a type field equal to Coverage.",
         "Verify the response domain contains the requested position."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     },
     {
       "id": "items-zarr-endpoint",
       "requirement_id": "items-zarr-endpoint",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /collections/{id}/items.",
         "Verify the response includes an item with id zarr.",
@@ -1848,40 +1886,55 @@
         "Verify the response is valid Zarr metadata JSON.",
         "Open the zarr store using xarray.open_zarr and verify the dataset dimensions and variables are accessible.",
         "Verify the dataset spatio-temporal extent matches the collection extent."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     },
     {
       "id": "process-zarr-difference",
       "requirement_id": "process-zarr-difference",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /processes/edr-zarr-difference.",
         "Verify the process description includes inputs collection_a, instance_a, collection_b, instance_b, parameter_name, zoom_level, crs, and unit.",
         "POST a valid execution request to /processes/edr-zarr-difference/execution with two valid collection/instance pairs.",
         "Verify the response status is 200.",
         "Verify the response contains a difference_result output."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     },
     {
       "id": "process-zarr-difference-streaming",
       "requirement_id": "process-zarr-difference-streaming",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /processes/edr-zarr-difference-streaming.",
         "Verify the process description includes inputs collection_a, instance_a, collection_b, instance_b, parameter_name, and zoom_level.",
         "POST a valid execution request to /processes/edr-zarr-difference-streaming/execution.",
         "Verify the response contains a zarr_endpoint output with a valid URL.",
         "Open the returned zarr_endpoint using xarray.open_zarr and verify the difference data is accessible."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     },
     {
       "id": "process-zarr-wind-streaming",
       "requirement_id": "process-zarr-wind-streaming",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /processes/edr-zarr-wind-streaming.",
         "Verify the process description includes inputs collection, instance, output_parameters, and zoom_level.",
         "POST a valid execution request with output_parameters set to [wind_speed, wind_direction].",
         "Verify the response contains a zarr_endpoint output with a valid URL.",
         "Open the returned zarr_endpoint using xarray.open_zarr and verify wind_speed and wind_direction variables are present."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     }
   ],
   "pubsub": null,
@@ -1979,7 +2032,8 @@
     "plain_section_numbers": false,
     "suppress_title_underlines": false,
     "suppress_design_elements": false,
-    "page_watermark": null
+    "page_watermark": null,
+    "body": null
   },
   "paging": {
     "enabled": true,

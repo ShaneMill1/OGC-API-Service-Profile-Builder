@@ -181,7 +181,9 @@ components:
         properties:
           type:
             type: string
-            const: Feature
+            enum:
+            - Feature
+            default: Feature
           properties:
             type: object
             required:
@@ -202,7 +204,9 @@ components:
         properties:
           type:
             type: string
-            const: Feature
+            enum:
+            - Feature
+            default: Feature
           properties:
             type: object
             required:
@@ -223,7 +227,9 @@ components:
         properties:
           type:
             type: string
-            const: Feature
+            enum:
+            - Feature
+            default: Feature
           properties:
             type: object
             required:

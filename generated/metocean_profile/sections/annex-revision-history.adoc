@@ -1,0 +1,10 @@
+[appendix,obligation=informative]
+== Revision History
+
+[cols="12,18,12,12,46",options="header"]
+|===
+|Date |Release |Editor |Primary clauses modified |Description
+
+|2024-09-16 |Template |Tom Kralidis |all |Initial template
+|2026-01-16 |Draft |Tom Kralidis |all |Add requirements and conformance for NWP
+|===

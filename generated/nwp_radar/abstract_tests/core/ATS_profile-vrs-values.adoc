@@ -1,14 +1,30 @@
 [[ats_nwp_radar_profile_vrs_values]]
-[abstract_test]
 ====
 [%metadata]
-identifier:: /conf/nwp_radar/profile-vrs-values
-target:: /req/nwp_radar/profile-vrs-values
+label:: /conf/nwp_radar/profile-vrs-values
+subject:: /req/nwp_radar/profile-vrs-values
 test-purpose:: Validate that profile vrs values is correctly implemented.
-test-method::
-step:: Send GET request to /collections/nwp_radar_precipitation
-step:: Verify that the vrs is defined in height metres.
-step:: Verify that the vrs is defined as WKT2 EPSG:3855.
-step:: Verify that the vrs has the vertical datum EGM2008 geoid as the zero-height reference.
-step:: Verify that extent.vertical.positive is present and is either "up" or "down".
+[.component,class=test method]
+=====
+[.component,class=step]
+--
+Send GET request to /collections/nwp_radar_precipitation
+--
+[.component,class=step]
+--
+Verify that the vrs is defined in height metres.
+--
+[.component,class=step]
+--
+Verify that the vrs is defined as WKT2 EPSG:3855.
+--
+[.component,class=step]
+--
+Verify that the vrs has the vertical datum EGM2008 geoid as the zero-height reference.
+--
+[.component,class=step]
+--
+Verify that extent.vertical.positive is present and is either "up" or "down".
+--
+=====
 ====

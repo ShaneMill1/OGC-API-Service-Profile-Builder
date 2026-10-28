@@ -1,0 +1,8 @@
+[[req_data_query_response_format_encoding]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/data-query-response-format/encoding
+statement:: All data queries SHALL support CoverageJSON as a response format.
+part:: All data queries SHALL support CoverageJSON as a response format.
+====

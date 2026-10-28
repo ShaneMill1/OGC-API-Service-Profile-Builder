@@ -1,5 +1,12 @@
 == Requirements
 
+[NOTE]
+====
+Conformance with this profile is assessed against its requirements ("shall") only. Recommendations ("should") and permissions ("may") are provided as informative guidance: they are not conformance-tested and an implementation is not made non-conformant by not following them. See the quality-assessment summary emitted by the profile tooling for a count of the recommendations and permissions defined by this profile.
+====
+
 include::../requirements/requirements_class_core.adoc[]
 
 include::../requirements/core/REQ_temperature-geojson.adoc[]
+include::../requirements/core/REQ_temperature-units-label.adoc[]
+include::../requirements/core/REQ_temperature-post-query.adoc[]

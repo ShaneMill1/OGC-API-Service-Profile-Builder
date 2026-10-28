@@ -3,8 +3,10 @@
 ====
 [%metadata]
 identifier:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/nwp
-target-type:: MetOcean Profile for OGC API - EDR Profile Standard
-requirement:: /req/nwp/nwp-collection-parameter-names
-requirement:: /req/nwp/nwp-collection-granularity
-requirement:: /req/nwp/nwp-collection-data-queries
+target-type:: Web API
+dependency:: Core
+dependency:: Data query response format
+requirement:: /req/nwp/collection_parameter_names
+requirement:: /req/nwp/collection_granularity
+requirement:: /req/nwp/collection_data_queries
 ====

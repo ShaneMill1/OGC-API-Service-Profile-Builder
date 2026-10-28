@@ -1,32 +1,110 @@
-== Requirements
+== Core
 
+=== Requirements Class "Core"
 include::../requirements/requirements_class_core.adoc[]
 
-include::../requirements/core/REQ_core-openapi.adoc[]
-include::../requirements/core/REQ_core-collection-identifier.adoc[]
-include::../requirements/core/REQ_core-collection-title.adoc[]
-include::../requirements/core/REQ_core-collection-license.adoc[]
-include::../requirements/core/REQ_core-collection-spatial-extent.adoc[]
-include::../requirements/core/REQ_core-collection-temporal-extent.adoc[]
-include::../requirements/core/REQ_core-collection-parameter-names.adoc[]
-include::../requirements/core/REQ_core-collection-radius-data-query.adoc[]
-include::../requirements/core/REQ_core-locations-query-response-format.adoc[]
-include::../requirements/core/REQ_core-error-handling.adoc[]
+=== OpenAPI
+An OpenAPI specification provides a machine-readable description of the API interface.
+include::../requirements/core/REQ_openapi.adoc[]
 
+=== Collection identifier
+A collection identifier provides a mechanism to uniquely identify a given collection in an OGC API.
+include::../requirements/core/REQ_collection_identifier.adoc[]
+
+=== Collection title
+A collection title provides a human-readable short description of the given collection.
+include::../requirements/core/REQ_collection_title.adoc[]
+
+=== Collection license
+A license describes the usage permissions for the data in a collection.
+include::../requirements/core/REQ_collection_license.adoc[]
+
+=== Collection spatial extent
+Spatial extent of a collection.
+include::../requirements/core/REQ_collection_spatial_extent.adoc[]
+
+=== Collection temporal extent
+Temporal extent of a collection.
+include::../requirements/core/REQ_collection_temporal_extent.adoc[]
+
+=== Collection parameter names
+Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
+include::../requirements/core/REQ_collection_parameter_names.adoc[]
+
+=== Collection radius data query
+Metadata about the radius data query in a collection.
+include::../requirements/core/REQ_collection_radius_data_query.adoc[]
+
+=== Locations query response format
+Structure of the response document for a /locations query.
+include::../requirements/core/REQ_locations_query_response_format.adoc[]
+
+=== Error handling
+HTTP status codes and response documents for responding to errors.
+include::../requirements/core/REQ_error_handling.adoc[]
+
+=== Collection vertical extent
+Vertical extent of a collection.
+include::../requirements/core/REC_collection_vertical_extent.adoc[]
+
+=== Data query response metadata
+Metadata in the response to a data query.
+include::../requirements/core/REC_data_query_response_metadata.adoc[]
+
+
+== Insitu observations
+
+=== Requirements Class "Insitu observations"
 include::../requirements/requirements_class_insitu-observations.adoc[]
 
-include::../requirements/insitu-observations/REQ_insitu-collection-data-queries.adoc[]
-include::../requirements/insitu-observations/REQ_insitu-collection-parameter-names.adoc[]
-include::../requirements/insitu-observations/REQ_insitu-collection-custom-dimensions.adoc[]
-include::../requirements/insitu-observations/REQ_insitu-coveragejson-parameters.adoc[]
+=== Collection data queries
+The types of data queries implemented in a collection.
+include::../requirements/insitu-observations/REQ_collection_data_queries.adoc[]
 
+=== Collection parameter names
+Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
+include::../requirements/insitu-observations/REQ_collection_parameter_names.adoc[]
+
+=== Collection custom dimensions
+The custom dimensions for which you can query the collection.
+include::../requirements/insitu-observations/REQ_collection_custom_dimensions.adoc[]
+
+=== CoverageJSON parameters
+The metadata about parameters in CoverageJSON.
+include::../requirements/insitu-observations/REQ_coveragejson_parameters.adoc[]
+
+=== Collection parameter names
+Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
+include::../requirements/insitu-observations/REC_collection_parameter_names.adoc[]
+
+
+== Numerical Weather Prediction
+
+=== Requirements Class "Numerical Weather Prediction"
 include::../requirements/requirements_class_nwp.adoc[]
 
-include::../requirements/nwp/REQ_nwp-collection-parameter-names.adoc[]
-include::../requirements/nwp/REQ_nwp-collection-granularity.adoc[]
-include::../requirements/nwp/REQ_nwp-collection-data-queries.adoc[]
+=== Collection parameter names
+Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
+include::../requirements/nwp/REQ_collection_parameter_names.adoc[]
 
+=== Collection granularity
+The organization of NWP data advertised as collections and instances.
+include::../requirements/nwp/REQ_collection_granularity.adoc[]
+
+=== Collection data queries
+The types of data queries implemented in a collection.
+include::../requirements/nwp/REQ_collection_data_queries.adoc[]
+
+
+== Data query response format
+
+=== Requirements Class "Data query response format"
 include::../requirements/requirements_class_data-query-response-format.adoc[]
 
-include::../requirements/data-query-response-format/REQ_dqrf-encoding.adoc[]
-include::../requirements/data-query-response-format/REQ_dqrf-referencing.adoc[]
+=== Encoding
+The response format for data queries.
+include::../requirements/data-query-response-format/REQ_encoding.adoc[]
+
+=== CoverageJSON referencing
+Coordinate referencing metadata in CoverageJSON.
+include::../requirements/data-query-response-format/REQ_referencing.adoc[]

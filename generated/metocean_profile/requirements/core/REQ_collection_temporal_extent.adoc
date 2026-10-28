@@ -1,0 +1,8 @@
+[[req_core_collection_temporal_extent]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/core/collection_temporal_extent
+statement:: The value of extent.temporal.trs SHALL be Gregorian.
+part:: The value of extent.temporal.trs SHALL be Gregorian.
+====

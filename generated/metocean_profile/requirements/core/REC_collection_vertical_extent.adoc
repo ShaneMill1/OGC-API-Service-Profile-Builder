@@ -1,0 +1,8 @@
+[[rec_core_collection_vertical_extent]]
+[recommendation]
+====
+[%metadata]
+identifier:: /rec/core/collection_vertical_extent
+statement:: If extent.vertical is defined, extent.vertical.vrs SHOULD use one of the recommended vertical reference system values.
+part:: If extent.vertical is defined, the value of extent.vertical.vrs SHOULD be one of "Pressure level in hPa", "Geopotential height in gpm", "Geometrical altitude above mean sea level in meters", "Height above ground in meters" or "Flight level".
+====

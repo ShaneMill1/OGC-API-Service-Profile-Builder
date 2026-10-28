@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.0.0
 info:
   title: In-situ Observations EDR Profile
   version: '1.0'
@@ -52,23 +52,50 @@ paths:
                           type: string
                         rel:
                           type: string
+                          enum:
+                          - self
+                          - service-desc
+                          - service-doc
+                          - conformance
+                          - data
+                          - profile
                         type:
                           type: string
                         title:
                           type: string
-                    contains:
-                      type: object
-                      required:
-                      - href
-                      - rel
-                      properties:
-                        rel:
-                          const: profile
-                        href:
-                          const: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/insitu_observations_profile
+                        hreflang:
+                          type: string
+                    example:
+                    - href: /
+                      rel: self
+                      type: application/json
+                      title: this document
+                    - href: /api
+                      rel: service-desc
+                      type: application/vnd.oai.openapi+json;version=3.0.0
+                      title: the API definition
+                    - href: /api.html
+                      rel: service-doc
+                      type: text/html
+                      title: the API documentation
+                    - href: /conformance
+                      rel: conformance
+                      type: application/json
+                      title: OGC API conformance classes implemented by this server
+                    - href: /collections
+                      rel: data
+                      type: application/json
+                      title: Information about the collections
+                    - href: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/insitu_observations_profile
+                      rel: profile
+                      type: application/yaml
+                      title: OpenAPI Specification Profile for insitu_observations_profile
                   title:
                     type: string
-                    const: In-situ Observations EDR Profile
+                    example: In-situ Observations EDR Profile
+                  version:
+                    type: string
+                    example: '1.0'
         '400':
           description: Invalid or missing parameter
           content:
@@ -155,11 +182,14 @@ paths:
                     type: array
                     items:
                       type: string
-                    contains:
-                      enum:
-                      - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
+                    enum:
+                    - - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
                       - https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/core
                       - https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/insitu-observations
+                    default:
+                    - http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core
+                    - https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/core
+                    - https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/insitu-observations
         '400':
           description: Invalid or missing parameter
           content:
@@ -234,11 +264,14 @@ paths:
       - $ref: '#/components/parameters/lang'
       responses:
         '200':
-          description: Collections list
+          description: Collections
           content:
             application/json:
               schema:
                 type: object
+                required:
+                - links
+                - collections
                 properties:
                   links:
                     type: array
@@ -256,6 +289,757 @@ paths:
                           type: string
                         title:
                           type: string
+                    example:
+                    - href: /collections
+                      rel: self
+                      type: application/json
+                      title: this document
+                    - href: /collections?f=html
+                      rel: alternate
+                      type: text/html
+                      title: this document as HTML
+                  collections:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - links
+                      - extent
+                      properties:
+                        id:
+                          type: string
+                          example: insitu-observations
+                        title:
+                          type: string
+                          example: In-situ meteorological observations
+                        description:
+                          type: string
+                          example: Real-time in-situ meteorological observations from
+                            surface stations. Provides air temperature, wind, humidity,
+                            pressure, precipitation, and dew point at standard measurement
+                            heights.
+                        keywords:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - meteorology
+                          - observations
+                          - in-situ
+                          - surface
+                        links:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                            - href
+                            - rel
+                            properties:
+                              href:
+                                type: string
+                              rel:
+                                type: string
+                              type:
+                                type: string
+                              title:
+                                type: string
+                          example:
+                          - href: https://example.com/collections/insitu-observations
+                            rel: self
+                            type: application/json
+                          - href: https://creativecommons.org/licenses/by/4.0/
+                            rel: license
+                            type: text/html
+                            title: CC BY 4.0
+                        crs:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                          - http://www.opengis.net/def/crs/EPSG/0/4326
+                          - http://www.opengis.net/def/crs/EPSG/0/3857
+                        output_formats:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - CoverageJSON
+                          - GeoJSON
+                        parameter_names:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            air-temperature-2m-instantaneous:
+                              type: object
+                              required:
+                              - type
+                              - observedProperty
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                  - Parameter
+                                  default: Parameter
+                                label:
+                                  type: string
+                                  enum:
+                                  - Air Temperature at 2m (instantaneous)
+                                  default: Air Temperature at 2m (instantaneous)
+                                description:
+                                  type: string
+                                  enum:
+                                  - Instantaneous air temperature measured at 2 metres
+                                    above ground level
+                                  default: Instantaneous air temperature measured
+                                    at 2 metres above ground level
+                                observedProperty:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Air Temperature
+                                      default: Air Temperature
+                                    id:
+                                      type: string
+                                      enum:
+                                      - https://vocab.nerc.ac.uk/standard_name/air_temperature
+                                      default: https://vocab.nerc.ac.uk/standard_name/air_temperature
+                                  required:
+                                  - label
+                                unit:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Kelvin
+                                      default: Kelvin
+                                    symbol:
+                                      type: object
+                                      required:
+                                      - value
+                                      - type
+                                      properties:
+                                        value:
+                                          type: string
+                                          enum:
+                                          - K
+                                          default: K
+                                        type:
+                                          type: string
+                                          enum:
+                                          - https://qudt.org/vocab/unit/K
+                                          default: https://qudt.org/vocab/unit/K
+                            air-temperature-2m-maximum:
+                              type: object
+                              required:
+                              - type
+                              - observedProperty
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                  - Parameter
+                                  default: Parameter
+                                label:
+                                  type: string
+                                  enum:
+                                  - Air Temperature at 2m (1h maximum)
+                                  default: Air Temperature at 2m (1h maximum)
+                                description:
+                                  type: string
+                                  enum:
+                                  - Maximum air temperature over the last hour at
+                                    2 metres above ground level
+                                  default: Maximum air temperature over the last hour
+                                    at 2 metres above ground level
+                                observedProperty:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Air Temperature
+                                      default: Air Temperature
+                                    id:
+                                      type: string
+                                      enum:
+                                      - https://vocab.nerc.ac.uk/standard_name/air_temperature
+                                      default: https://vocab.nerc.ac.uk/standard_name/air_temperature
+                                  required:
+                                  - label
+                                unit:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Kelvin
+                                      default: Kelvin
+                                    symbol:
+                                      type: object
+                                      required:
+                                      - value
+                                      - type
+                                      properties:
+                                        value:
+                                          type: string
+                                          enum:
+                                          - K
+                                          default: K
+                                        type:
+                                          type: string
+                                          enum:
+                                          - https://qudt.org/vocab/unit/K
+                                          default: https://qudt.org/vocab/unit/K
+                            wind-speed-10m-mean:
+                              type: object
+                              required:
+                              - type
+                              - observedProperty
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                  - Parameter
+                                  default: Parameter
+                                label:
+                                  type: string
+                                  enum:
+                                  - Wind Speed at 10m (10min mean)
+                                  default: Wind Speed at 10m (10min mean)
+                                description:
+                                  type: string
+                                  enum:
+                                  - Mean wind speed over 10 minutes at 10 metres above
+                                    ground level
+                                  default: Mean wind speed over 10 minutes at 10 metres
+                                    above ground level
+                                observedProperty:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Wind Speed
+                                      default: Wind Speed
+                                    id:
+                                      type: string
+                                      enum:
+                                      - https://vocab.nerc.ac.uk/standard_name/wind_speed
+                                      default: https://vocab.nerc.ac.uk/standard_name/wind_speed
+                                  required:
+                                  - label
+                                unit:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Metre per Second
+                                      default: Metre per Second
+                                    symbol:
+                                      type: object
+                                      required:
+                                      - value
+                                      - type
+                                      properties:
+                                        value:
+                                          type: string
+                                          enum:
+                                          - m/s
+                                          default: m/s
+                                        type:
+                                          type: string
+                                          enum:
+                                          - https://qudt.org/vocab/unit/M-PER-SEC
+                                          default: https://qudt.org/vocab/unit/M-PER-SEC
+                            wind-from-direction-10m-mean:
+                              type: object
+                              required:
+                              - type
+                              - observedProperty
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                  - Parameter
+                                  default: Parameter
+                                label:
+                                  type: string
+                                  enum:
+                                  - Wind Direction at 10m (10min mean)
+                                  default: Wind Direction at 10m (10min mean)
+                                description:
+                                  type: string
+                                  enum:
+                                  - Mean wind direction over 10 minutes at 10 metres
+                                    above ground level
+                                  default: Mean wind direction over 10 minutes at
+                                    10 metres above ground level
+                                observedProperty:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Wind From Direction
+                                      default: Wind From Direction
+                                    id:
+                                      type: string
+                                      enum:
+                                      - https://vocab.nerc.ac.uk/standard_name/wind_from_direction
+                                      default: https://vocab.nerc.ac.uk/standard_name/wind_from_direction
+                                  required:
+                                  - label
+                                unit:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Degree
+                                      default: Degree
+                                    symbol:
+                                      type: object
+                                      required:
+                                      - value
+                                      - type
+                                      properties:
+                                        value:
+                                          type: string
+                                          enum:
+                                          - deg
+                                          default: deg
+                                        type:
+                                          type: string
+                                          enum:
+                                          - https://qudt.org/vocab/unit/DEG
+                                          default: https://qudt.org/vocab/unit/DEG
+                            relative-humidity-2m-instantaneous:
+                              type: object
+                              required:
+                              - type
+                              - observedProperty
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                  - Parameter
+                                  default: Parameter
+                                label:
+                                  type: string
+                                  enum:
+                                  - Relative Humidity at 2m (instantaneous)
+                                  default: Relative Humidity at 2m (instantaneous)
+                                description:
+                                  type: string
+                                  enum:
+                                  - Instantaneous relative humidity at 2 metres above
+                                    ground level
+                                  default: Instantaneous relative humidity at 2 metres
+                                    above ground level
+                                observedProperty:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Relative Humidity
+                                      default: Relative Humidity
+                                    id:
+                                      type: string
+                                      enum:
+                                      - https://vocab.nerc.ac.uk/standard_name/relative_humidity
+                                      default: https://vocab.nerc.ac.uk/standard_name/relative_humidity
+                                  required:
+                                  - label
+                                unit:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Percent
+                                      default: Percent
+                                    symbol:
+                                      type: object
+                                      required:
+                                      - value
+                                      - type
+                                      properties:
+                                        value:
+                                          type: string
+                                          enum:
+                                          - '%'
+                                          default: '%'
+                                        type:
+                                          type: string
+                                          enum:
+                                          - https://qudt.org/vocab/unit/PERCENT
+                                          default: https://qudt.org/vocab/unit/PERCENT
+                            air-pressure-at-sea-level-instantaneous:
+                              type: object
+                              required:
+                              - type
+                              - observedProperty
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                  - Parameter
+                                  default: Parameter
+                                label:
+                                  type: string
+                                  enum:
+                                  - Air Pressure at Sea Level (instantaneous)
+                                  default: Air Pressure at Sea Level (instantaneous)
+                                description:
+                                  type: string
+                                  enum:
+                                  - Instantaneous air pressure reduced to mean sea
+                                    level
+                                  default: Instantaneous air pressure reduced to mean
+                                    sea level
+                                observedProperty:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Air Pressure at Mean Sea Level
+                                      default: Air Pressure at Mean Sea Level
+                                    id:
+                                      type: string
+                                      enum:
+                                      - https://vocab.nerc.ac.uk/standard_name/air_pressure_at_mean_sea_level
+                                      default: https://vocab.nerc.ac.uk/standard_name/air_pressure_at_mean_sea_level
+                                  required:
+                                  - label
+                                unit:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Pascal
+                                      default: Pascal
+                                    symbol:
+                                      type: object
+                                      required:
+                                      - value
+                                      - type
+                                      properties:
+                                        value:
+                                          type: string
+                                          enum:
+                                          - Pa
+                                          default: Pa
+                                        type:
+                                          type: string
+                                          enum:
+                                          - https://qudt.org/vocab/unit/PA
+                                          default: https://qudt.org/vocab/unit/PA
+                            precipitation-amount-1h-sum:
+                              type: object
+                              required:
+                              - type
+                              - observedProperty
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                  - Parameter
+                                  default: Parameter
+                                label:
+                                  type: string
+                                  enum:
+                                  - Precipitation Amount (1h sum)
+                                  default: Precipitation Amount (1h sum)
+                                description:
+                                  type: string
+                                  enum:
+                                  - Total precipitation amount accumulated over the
+                                    last hour
+                                  default: Total precipitation amount accumulated
+                                    over the last hour
+                                observedProperty:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Precipitation Amount
+                                      default: Precipitation Amount
+                                    id:
+                                      type: string
+                                      enum:
+                                      - https://vocab.nerc.ac.uk/standard_name/precipitation_amount
+                                      default: https://vocab.nerc.ac.uk/standard_name/precipitation_amount
+                                  required:
+                                  - label
+                                unit:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Kilogram per Square Metre
+                                      default: Kilogram per Square Metre
+                                    symbol:
+                                      type: object
+                                      required:
+                                      - value
+                                      - type
+                                      properties:
+                                        value:
+                                          type: string
+                                          enum:
+                                          - kg/m2
+                                          default: kg/m2
+                                        type:
+                                          type: string
+                                          enum:
+                                          - https://qudt.org/vocab/unit/KiloGM-PER-M2
+                                          default: https://qudt.org/vocab/unit/KiloGM-PER-M2
+                            dew-point-temperature-2m-instantaneous:
+                              type: object
+                              required:
+                              - type
+                              - observedProperty
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                  - Parameter
+                                  default: Parameter
+                                label:
+                                  type: string
+                                  enum:
+                                  - Dew Point Temperature at 2m (instantaneous)
+                                  default: Dew Point Temperature at 2m (instantaneous)
+                                description:
+                                  type: string
+                                  enum:
+                                  - Instantaneous dew point temperature at 2 metres
+                                    above ground level
+                                  default: Instantaneous dew point temperature at
+                                    2 metres above ground level
+                                observedProperty:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Dew Point Temperature
+                                      default: Dew Point Temperature
+                                    id:
+                                      type: string
+                                      enum:
+                                      - https://vocab.nerc.ac.uk/standard_name/dew_point_temperature
+                                      default: https://vocab.nerc.ac.uk/standard_name/dew_point_temperature
+                                  required:
+                                  - label
+                                unit:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                      enum:
+                                      - Kelvin
+                                      default: Kelvin
+                                    symbol:
+                                      type: object
+                                      required:
+                                      - value
+                                      - type
+                                      properties:
+                                        value:
+                                          type: string
+                                          enum:
+                                          - K
+                                          default: K
+                                        type:
+                                          type: string
+                                          enum:
+                                          - https://qudt.org/vocab/unit/K
+                                          default: https://qudt.org/vocab/unit/K
+                        extent:
+                          type: object
+                          required:
+                          - spatial
+                          properties:
+                            spatial:
+                              type: object
+                              required:
+                              - bbox
+                              - crs
+                              properties:
+                                bbox:
+                                  type: array
+                                  items:
+                                    type: array
+                                    items:
+                                      type: number
+                                  example:
+                                  - - -180.0
+                                    - -90.0
+                                    - 180.0
+                                    - 90.0
+                                crs:
+                                  type: string
+                                  example: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                            temporal:
+                              type: object
+                              required:
+                              - trs
+                              properties:
+                                trs:
+                                  type: string
+                                  example: Gregorian
+                                interval:
+                                  type: array
+                                  items:
+                                    type: array
+                                    items:
+                                      type: string
+                                      nullable: true
+                                  example:
+                                  - - 2020-01-01 00:00:00+00:00
+                                    - 2026-12-31 23:59:59+00:00
+                                values:
+                                  type: array
+                                  items:
+                                    type: string
+                                  example:
+                                  - 2020-01-01T00:00:00Z/2026-12-31T23:59:59Z
+                            custom:
+                              type: array
+                              items:
+                                oneOf:
+                                - type: object
+                                  required:
+                                  - id
+                                  - interval
+                                  - reference
+                                  properties:
+                                    id:
+                                      type: string
+                                      example: standard_name
+                                    interval:
+                                      type: array
+                                      items:
+                                        type: string
+                                      example: []
+                                    reference:
+                                      type: string
+                                      example: https://vocab.nerc.ac.uk/standard_name/
+                                - type: object
+                                  required:
+                                  - id
+                                  - interval
+                                  - reference
+                                  properties:
+                                    id:
+                                      type: string
+                                      example: level
+                                    interval:
+                                      type: array
+                                      items:
+                                        type: string
+                                      example: []
+                                    reference:
+                                      type: string
+                                      example: Height of measurement above ground
+                                        level in meters
+                        data_queries:
+                          type: object
+                          properties:
+                            radius:
+                              type: object
+                              properties:
+                                link:
+                                  type: object
+                                  properties:
+                                    href:
+                                      type: string
+                                      example: https://example.com/collections/insitu-observations/radius
+                                    rel:
+                                      type: string
+                                      example: data
+                                    variables:
+                                      type: object
+                                      properties:
+                                        query_type:
+                                          type: string
+                                          example: radius
+                                        output_formats:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - CoverageJSON
+                            area:
+                              type: object
+                              properties:
+                                link:
+                                  type: object
+                                  properties:
+                                    href:
+                                      type: string
+                                      example: https://example.com/collections/insitu-observations/area
+                                    rel:
+                                      type: string
+                                      example: data
+                                    variables:
+                                      type: object
+                                      properties:
+                                        query_type:
+                                          type: string
+                                          example: area
+                                        output_formats:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - CoverageJSON
+                            locations:
+                              type: object
+                              properties:
+                                link:
+                                  type: object
+                                  properties:
+                                    href:
+                                      type: string
+                                      example: https://example.com/collections/insitu-observations/locations
+                                    rel:
+                                      type: string
+                                      example: data
+                                    variables:
+                                      type: object
+                                      properties:
+                                        query_type:
+                                          type: string
+                                          example: locations
+                                        output_formats:
+                                          type: array
+                                          items:
+                                            type: string
+                                          example:
+                                          - CoverageJSON
+                                          - GeoJSON
+                          additionalProperties: false
         '400':
           description: Invalid or missing parameter
           content:
@@ -318,7 +1102,7 @@ paths:
                     format: uri-reference
                     description: A URI reference that identifies the specific occurrence
                       of the problem.
-  /openapi:
+  /api:
     get:
       summary: OpenAPI definition
       description: Retrieve the OpenAPI definition document for this API.
@@ -330,6 +1114,40 @@ paths:
       responses:
         '200':
           description: OpenAPI document
+          content:
+            application/vnd.oai.openapi+json;version=3.0.0:
+              schema:
+                type: object
+                description: OpenAPI definition document
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    example:
+                    - href: /api
+                      rel: self
+                      type: application/vnd.oai.openapi+json;version=3.0.0
+                      title: this document
+                    - href: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/insitu_observations_profile
+                      rel: profile
+                      type: application/yaml
+                      title: OpenAPI Specification Profile for insitu_observations_profile
+            text/html:
+              schema:
+                type: string
         default:
           $ref: '#/components/responses/default'
   /collections/insitu-observations:
@@ -358,14 +1176,24 @@ paths:
                 properties:
                   id:
                     type: string
+                    example: insitu-observations
                   title:
                     type: string
+                    example: In-situ meteorological observations
                   description:
                     type: string
+                    example: Real-time in-situ meteorological observations from surface
+                      stations. Provides air temperature, wind, humidity, pressure,
+                      precipitation, and dew point at standard measurement heights.
                   keywords:
                     type: array
                     items:
                       type: string
+                    example:
+                    - meteorology
+                    - observations
+                    - in-situ
+                    - surface
                   links:
                     type: array
                     items:
@@ -382,99 +1210,536 @@ paths:
                           type: string
                         title:
                           type: string
+                    example:
+                    - href: https://example.com/collections/insitu-observations
+                      rel: self
+                      type: application/json
+                    - href: https://creativecommons.org/licenses/by/4.0/
+                      rel: license
+                      type: text/html
+                      title: CC BY 4.0
                   crs:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - http://www.opengis.net/def/crs/OGC/1.3/CRS84
-                      - http://www.opengis.net/def/crs/EPSG/0/4326
-                      - http://www.opengis.net/def/crs/EPSG/0/3857
+                    example:
+                    - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                    - http://www.opengis.net/def/crs/EPSG/0/4326
+                    - http://www.opengis.net/def/crs/EPSG/0/3857
                   output_formats:
                     type: array
                     items:
                       type: string
-                      enum:
-                      - CoverageJSON
-                      - GeoJSON
+                    example:
+                    - CoverageJSON
+                    - GeoJSON
                   parameter_names:
                     type: object
-                    additionalProperties:
-                      type: object
-                      title: Parameter name
-                      description: Definition of a data parameter in this collection
-                      required:
-                      - type
-                      - observedProperty
-                      - measurementType
-                      - label
-                      - description
-                      - unit
-                      - metocean:standard_name
-                      - metocean:level
-                      properties:
-                        type:
-                          type: string
-                          enum:
-                          - Parameter
-                        label:
-                          type: string
-                          description: Human-readable parameter name (max 50 characters,
-                            English)
-                        description:
-                          type: string
-                          description: Longer description of the parameter
-                        unit:
-                          type: object
-                          required:
-                          - symbol
-                          properties:
-                            label:
-                              type: string
-                            symbol:
-                              type: object
-                              required:
-                              - type
-                              - value
-                              properties:
-                                type:
-                                  type: string
-                                  pattern: ^https://qudt\.org/vocab/unit/.*$
-                                value:
-                                  type: string
-                        observedProperty:
-                          type: object
-                          required:
-                          - id
-                          - label
-                          properties:
-                            id:
-                              type: string
-                              pattern: ^https://vocab\.nerc\.ac\.uk/standard_name/.*$
-                            label:
-                              type: string
-                        measurementType:
-                          type: object
-                          required:
-                          - method
-                          - duration
-                          properties:
-                            method:
-                              type: string
-                            duration:
-                              type: string
-                              pattern: ^P(\d+Y)?(\d+M)?(\d+D)?(T(\d+H)?(\d+M)?(\d+S)?)?$
-                        metocean:standard_name:
-                          type: string
-                          description: CF-convention standard name for the parameter
-                        metocean:level:
-                          type: number
-                          description: Height of measurement above ground level in
-                            meters
-                      additionalProperties: true
-                    propertyNames:
-                      type: string
-                      pattern: ^[a-z][a-z0-9\-]*$
+                    additionalProperties: false
+                    properties:
+                      air-temperature-2m-instantaneous:
+                        type: object
+                        required:
+                        - type
+                        - observedProperty
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                            - Parameter
+                            default: Parameter
+                          label:
+                            type: string
+                            enum:
+                            - Air Temperature at 2m (instantaneous)
+                            default: Air Temperature at 2m (instantaneous)
+                          description:
+                            type: string
+                            enum:
+                            - Instantaneous air temperature measured at 2 metres above
+                              ground level
+                            default: Instantaneous air temperature measured at 2 metres
+                              above ground level
+                          observedProperty:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Air Temperature
+                                default: Air Temperature
+                              id:
+                                type: string
+                                enum:
+                                - https://vocab.nerc.ac.uk/standard_name/air_temperature
+                                default: https://vocab.nerc.ac.uk/standard_name/air_temperature
+                            required:
+                            - label
+                          unit:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Kelvin
+                                default: Kelvin
+                              symbol:
+                                type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                    enum:
+                                    - K
+                                    default: K
+                                  type:
+                                    type: string
+                                    enum:
+                                    - https://qudt.org/vocab/unit/K
+                                    default: https://qudt.org/vocab/unit/K
+                      air-temperature-2m-maximum:
+                        type: object
+                        required:
+                        - type
+                        - observedProperty
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                            - Parameter
+                            default: Parameter
+                          label:
+                            type: string
+                            enum:
+                            - Air Temperature at 2m (1h maximum)
+                            default: Air Temperature at 2m (1h maximum)
+                          description:
+                            type: string
+                            enum:
+                            - Maximum air temperature over the last hour at 2 metres
+                              above ground level
+                            default: Maximum air temperature over the last hour at
+                              2 metres above ground level
+                          observedProperty:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Air Temperature
+                                default: Air Temperature
+                              id:
+                                type: string
+                                enum:
+                                - https://vocab.nerc.ac.uk/standard_name/air_temperature
+                                default: https://vocab.nerc.ac.uk/standard_name/air_temperature
+                            required:
+                            - label
+                          unit:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Kelvin
+                                default: Kelvin
+                              symbol:
+                                type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                    enum:
+                                    - K
+                                    default: K
+                                  type:
+                                    type: string
+                                    enum:
+                                    - https://qudt.org/vocab/unit/K
+                                    default: https://qudt.org/vocab/unit/K
+                      wind-speed-10m-mean:
+                        type: object
+                        required:
+                        - type
+                        - observedProperty
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                            - Parameter
+                            default: Parameter
+                          label:
+                            type: string
+                            enum:
+                            - Wind Speed at 10m (10min mean)
+                            default: Wind Speed at 10m (10min mean)
+                          description:
+                            type: string
+                            enum:
+                            - Mean wind speed over 10 minutes at 10 metres above ground
+                              level
+                            default: Mean wind speed over 10 minutes at 10 metres
+                              above ground level
+                          observedProperty:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Wind Speed
+                                default: Wind Speed
+                              id:
+                                type: string
+                                enum:
+                                - https://vocab.nerc.ac.uk/standard_name/wind_speed
+                                default: https://vocab.nerc.ac.uk/standard_name/wind_speed
+                            required:
+                            - label
+                          unit:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Metre per Second
+                                default: Metre per Second
+                              symbol:
+                                type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                    enum:
+                                    - m/s
+                                    default: m/s
+                                  type:
+                                    type: string
+                                    enum:
+                                    - https://qudt.org/vocab/unit/M-PER-SEC
+                                    default: https://qudt.org/vocab/unit/M-PER-SEC
+                      wind-from-direction-10m-mean:
+                        type: object
+                        required:
+                        - type
+                        - observedProperty
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                            - Parameter
+                            default: Parameter
+                          label:
+                            type: string
+                            enum:
+                            - Wind Direction at 10m (10min mean)
+                            default: Wind Direction at 10m (10min mean)
+                          description:
+                            type: string
+                            enum:
+                            - Mean wind direction over 10 minutes at 10 metres above
+                              ground level
+                            default: Mean wind direction over 10 minutes at 10 metres
+                              above ground level
+                          observedProperty:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Wind From Direction
+                                default: Wind From Direction
+                              id:
+                                type: string
+                                enum:
+                                - https://vocab.nerc.ac.uk/standard_name/wind_from_direction
+                                default: https://vocab.nerc.ac.uk/standard_name/wind_from_direction
+                            required:
+                            - label
+                          unit:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Degree
+                                default: Degree
+                              symbol:
+                                type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                    enum:
+                                    - deg
+                                    default: deg
+                                  type:
+                                    type: string
+                                    enum:
+                                    - https://qudt.org/vocab/unit/DEG
+                                    default: https://qudt.org/vocab/unit/DEG
+                      relative-humidity-2m-instantaneous:
+                        type: object
+                        required:
+                        - type
+                        - observedProperty
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                            - Parameter
+                            default: Parameter
+                          label:
+                            type: string
+                            enum:
+                            - Relative Humidity at 2m (instantaneous)
+                            default: Relative Humidity at 2m (instantaneous)
+                          description:
+                            type: string
+                            enum:
+                            - Instantaneous relative humidity at 2 metres above ground
+                              level
+                            default: Instantaneous relative humidity at 2 metres above
+                              ground level
+                          observedProperty:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Relative Humidity
+                                default: Relative Humidity
+                              id:
+                                type: string
+                                enum:
+                                - https://vocab.nerc.ac.uk/standard_name/relative_humidity
+                                default: https://vocab.nerc.ac.uk/standard_name/relative_humidity
+                            required:
+                            - label
+                          unit:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Percent
+                                default: Percent
+                              symbol:
+                                type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                    enum:
+                                    - '%'
+                                    default: '%'
+                                  type:
+                                    type: string
+                                    enum:
+                                    - https://qudt.org/vocab/unit/PERCENT
+                                    default: https://qudt.org/vocab/unit/PERCENT
+                      air-pressure-at-sea-level-instantaneous:
+                        type: object
+                        required:
+                        - type
+                        - observedProperty
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                            - Parameter
+                            default: Parameter
+                          label:
+                            type: string
+                            enum:
+                            - Air Pressure at Sea Level (instantaneous)
+                            default: Air Pressure at Sea Level (instantaneous)
+                          description:
+                            type: string
+                            enum:
+                            - Instantaneous air pressure reduced to mean sea level
+                            default: Instantaneous air pressure reduced to mean sea
+                              level
+                          observedProperty:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Air Pressure at Mean Sea Level
+                                default: Air Pressure at Mean Sea Level
+                              id:
+                                type: string
+                                enum:
+                                - https://vocab.nerc.ac.uk/standard_name/air_pressure_at_mean_sea_level
+                                default: https://vocab.nerc.ac.uk/standard_name/air_pressure_at_mean_sea_level
+                            required:
+                            - label
+                          unit:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Pascal
+                                default: Pascal
+                              symbol:
+                                type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                    enum:
+                                    - Pa
+                                    default: Pa
+                                  type:
+                                    type: string
+                                    enum:
+                                    - https://qudt.org/vocab/unit/PA
+                                    default: https://qudt.org/vocab/unit/PA
+                      precipitation-amount-1h-sum:
+                        type: object
+                        required:
+                        - type
+                        - observedProperty
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                            - Parameter
+                            default: Parameter
+                          label:
+                            type: string
+                            enum:
+                            - Precipitation Amount (1h sum)
+                            default: Precipitation Amount (1h sum)
+                          description:
+                            type: string
+                            enum:
+                            - Total precipitation amount accumulated over the last
+                              hour
+                            default: Total precipitation amount accumulated over the
+                              last hour
+                          observedProperty:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Precipitation Amount
+                                default: Precipitation Amount
+                              id:
+                                type: string
+                                enum:
+                                - https://vocab.nerc.ac.uk/standard_name/precipitation_amount
+                                default: https://vocab.nerc.ac.uk/standard_name/precipitation_amount
+                            required:
+                            - label
+                          unit:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Kilogram per Square Metre
+                                default: Kilogram per Square Metre
+                              symbol:
+                                type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                    enum:
+                                    - kg/m2
+                                    default: kg/m2
+                                  type:
+                                    type: string
+                                    enum:
+                                    - https://qudt.org/vocab/unit/KiloGM-PER-M2
+                                    default: https://qudt.org/vocab/unit/KiloGM-PER-M2
+                      dew-point-temperature-2m-instantaneous:
+                        type: object
+                        required:
+                        - type
+                        - observedProperty
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                            - Parameter
+                            default: Parameter
+                          label:
+                            type: string
+                            enum:
+                            - Dew Point Temperature at 2m (instantaneous)
+                            default: Dew Point Temperature at 2m (instantaneous)
+                          description:
+                            type: string
+                            enum:
+                            - Instantaneous dew point temperature at 2 metres above
+                              ground level
+                            default: Instantaneous dew point temperature at 2 metres
+                              above ground level
+                          observedProperty:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Dew Point Temperature
+                                default: Dew Point Temperature
+                              id:
+                                type: string
+                                enum:
+                                - https://vocab.nerc.ac.uk/standard_name/dew_point_temperature
+                                default: https://vocab.nerc.ac.uk/standard_name/dew_point_temperature
+                            required:
+                            - label
+                          unit:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                                enum:
+                                - Kelvin
+                                default: Kelvin
+                              symbol:
+                                type: object
+                                required:
+                                - value
+                                - type
+                                properties:
+                                  value:
+                                    type: string
+                                    enum:
+                                    - K
+                                    default: K
+                                  type:
+                                    type: string
+                                    enum:
+                                    - https://qudt.org/vocab/unit/K
+                                    default: https://qudt.org/vocab/unit/K
                   extent:
                     type: object
                     required:
@@ -492,122 +1757,154 @@ paths:
                               type: array
                               items:
                                 type: number
-                              minItems: 4
-                              maxItems: 6
+                            example:
+                            - - -180.0
+                              - -90.0
+                              - 180.0
+                              - 90.0
                           crs:
                             type: string
-                            enum:
-                            - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                            example: http://www.opengis.net/def/crs/OGC/1.3/CRS84
                       temporal:
                         type: object
+                        required:
+                        - trs
                         properties:
-                          interval:
-                            type: array
-                            items:
-                              type: array
-                              items:
-                                oneOf:
-                                - type: string
-                                  format: date-time
-                                - type: 'null'
-                              minItems: 2
-                              maxItems: 2
-                          values:
-                            type: array
-                            items:
-                              type: string
                           trs:
                             type: string
-                            enum:
-                            - Gregorian
-                      vertical:
-                        type: object
-                        properties:
+                            example: Gregorian
                           interval:
                             type: array
                             items:
                               type: array
                               items:
                                 type: string
+                                nullable: true
+                            example:
+                            - - 2020-01-01 00:00:00+00:00
+                              - 2026-12-31 23:59:59+00:00
                           values:
                             type: array
                             items:
                               type: string
-                          vrs:
-                            type: string
-                          positive:
-                            type: string
-                            enum:
-                            - up
-                            - down
-                            description: Direction in which vertical extent values
-                              increase (CF Conventions 'positive' attribute). Disambiguates
-                              interval ordering for VRS such as pressure levels.
+                            example:
+                            - 2020-01-01T00:00:00Z/2026-12-31T23:59:59Z
                       custom:
                         type: array
                         items:
-                          type: object
-                          required:
-                          - id
-                          - interval
-                          - reference
-                          properties:
-                            id:
-                              type: string
-                            interval:
-                              type: array
-                              items:
+                          oneOf:
+                          - type: object
+                            required:
+                            - id
+                            - interval
+                            - reference
+                            properties:
+                              id:
                                 type: string
-                            values:
-                              type: array
-                              items:
+                                example: standard_name
+                              interval:
+                                type: array
+                                items:
+                                  type: string
+                                example: []
+                              reference:
                                 type: string
-                            reference:
-                              type: string
+                                example: https://vocab.nerc.ac.uk/standard_name/
+                          - type: object
+                            required:
+                            - id
+                            - interval
+                            - reference
+                            properties:
+                              id:
+                                type: string
+                                example: level
+                              interval:
+                                type: array
+                                items:
+                                  type: string
+                                example: []
+                              reference:
+                                type: string
+                                example: Height of measurement above ground level
+                                  in meters
                   data_queries:
                     type: object
-                    description: Available EDR data query types for this collection
-                    additionalProperties:
-                      type: object
-                      properties:
-                        link:
-                          type: object
-                          properties:
-                            href:
-                              type: string
-                            rel:
-                              type: string
-                            variables:
-                              type: object
-                              properties:
-                                query_type:
-                                  type: string
-                                output_formats:
-                                  type: array
-                                  items:
+                    properties:
+                      radius:
+                        type: object
+                        properties:
+                          link:
+                            type: object
+                            properties:
+                              href:
+                                type: string
+                                example: https://example.com/collections/insitu-observations/radius
+                              rel:
+                                type: string
+                                example: data
+                              variables:
+                                type: object
+                                properties:
+                                  query_type:
                                     type: string
-                                default_output_format:
-                                  type: string
-                                  description: Default output format for this data
-                                    query when f is omitted
-                                crs:
-                                  type: array
-                                  description: CRS values supported by this data query
-                                    (shorthand for crs_details)
-                                  items:
+                                    example: radius
+                                  output_formats:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - CoverageJSON
+                      area:
+                        type: object
+                        properties:
+                          link:
+                            type: object
+                            properties:
+                              href:
+                                type: string
+                                example: https://example.com/collections/insitu-observations/area
+                              rel:
+                                type: string
+                                example: data
+                              variables:
+                                type: object
+                                properties:
+                                  query_type:
                                     type: string
-                                crs_details:
-                                  type: array
-                                  description: CRS values supported by this data query
-                                  items:
-                                    type: object
-                                    required:
-                                    - crs
-                                    properties:
-                                      crs:
-                                        type: string
-                                      wkt:
-                                        type: string
+                                    example: area
+                                  output_formats:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - CoverageJSON
+                      locations:
+                        type: object
+                        properties:
+                          link:
+                            type: object
+                            properties:
+                              href:
+                                type: string
+                                example: https://example.com/collections/insitu-observations/locations
+                              rel:
+                                type: string
+                                example: data
+                              variables:
+                                type: object
+                                properties:
+                                  query_type:
+                                    type: string
+                                    example: locations
+                                  output_formats:
+                                    type: array
+                                    items:
+                                      type: string
+                                    example:
+                                    - CoverageJSON
+                                    - GeoJSON
+                    additionalProperties: false
         '400':
           description: Invalid or missing parameter
           content:
@@ -732,7 +2029,9 @@ paths:
                 properties:
                   type:
                     type: string
-                    const: FeatureCollection
+                    enum:
+                    - FeatureCollection
+                    default: FeatureCollection
                   features:
                     type: array
                     items:
@@ -858,7 +2157,9 @@ paths:
                 properties:
                   type:
                     type: string
-                    const: FeatureCollection
+                    enum:
+                    - FeatureCollection
+                    default: FeatureCollection
                   features:
                     type: array
                     items:
@@ -956,36 +2257,32 @@ paths:
                     format: uri-reference
                     description: A URI reference that identifies the specific occurrence
                       of the problem.
-  /collections/insitu-observations/radius:
+  /collections/insitu-observations/area:
     get:
-      summary: query insitu-observations by radius
+      summary: query insitu-observations by area
       description: Real-time in-situ meteorological observations from surface stations.
         Provides air temperature, wind, humidity, pressure, precipitation, and dew
         point at standard measurement heights.
-      operationId: QueryRadiusInsituObservations
+      operationId: QueryAreaInsituObservations
       tags:
       - insitu-observations
       parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/within.yaml
-      - name: within-units
-        in: query
-        required: true
-        description: Units for the within parameter e.g. km
-        schema:
-          type: string
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/areaCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/crs.yaml
+        schema:
+          type: string
+          enum:
+          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+          - http://www.opengis.net/def/crs/EPSG/0/4326
+          - http://www.opengis.net/def/crs/EPSG/0/3857
       - $ref: '#/components/parameters/f'
       responses:
         '200':
           description: Coverage data response
           content:
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/geo+json:
@@ -1056,29 +2353,39 @@ paths:
                     format: uri-reference
                     description: A URI reference that identifies the specific occurrence
                       of the problem.
-  /collections/insitu-observations/area:
+  /collections/insitu-observations/radius:
     get:
-      summary: query insitu-observations by area
+      summary: query insitu-observations by radius
       description: Real-time in-situ meteorological observations from surface stations.
         Provides air temperature, wind, humidity, pressure, precipitation, and dew
         point at standard measurement heights.
-      operationId: QueryAreaInsituObservations
+      operationId: QueryRadiusInsituObservations
       tags:
       - insitu-observations
       parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/areaCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/within.yaml
+      - name: within-units
+        in: query
+        required: true
+        description: Units for the within parameter e.g. km
+        schema:
+          type: string
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/z.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/crs.yaml
+        schema:
+          type: string
+          enum:
+          - http://www.opengis.net/def/crs/OGC/1.3/CRS84
+          - http://www.opengis.net/def/crs/EPSG/0/4326
+          - http://www.opengis.net/def/crs/EPSG/0/3857
       - $ref: '#/components/parameters/f'
       responses:
         '200':
           description: Coverage data response
           content:
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/geo+json:
@@ -1175,7 +2482,9 @@ paths:
                 properties:
                   type:
                     type: string
-                    const: FeatureCollection
+                    enum:
+                    - FeatureCollection
+                    default: FeatureCollection
                   features:
                     type: array
                     items:
@@ -1187,7 +2496,9 @@ paths:
                       properties:
                         type:
                           type: string
-                          const: Feature
+                          enum:
+                          - Feature
+                          default: Feature
                         id:
                           type: string
                           description: Location identifier usable at /locations/{locId}
@@ -1283,9 +2594,6 @@ paths:
           description: Coverage data response
           content:
             application/prs.coverage+json:
-              schema:
-                $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
-            application/vnd.cov+json:
               schema:
                 $ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
             application/geo+json:

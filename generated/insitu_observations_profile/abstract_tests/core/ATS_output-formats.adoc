@@ -1,14 +1,30 @@
 [[ats_insitu_observations_profile_output_formats]]
-[abstract_test]
 ====
 [%metadata]
-identifier:: /conf/insitu_observations_profile/output-formats
-target:: /req/insitu_observations_profile/output-formats
+label:: /conf/insitu_observations_profile/output-formats
+subject:: /req/insitu_observations_profile/output-formats
 test-purpose:: Validate that output formats is correctly implemented.
-test-method::
-step:: Send GET request to /collections/insitu-observations/area with a valid polygon.
-step:: Verify HTTP status is 200.
-step:: Verify Content-Type is application/vnd.cov+json.
-step:: Send GET request to /collections/insitu-observations/locations.
-step:: Verify Content-Type is application/geo+json.
+[.component,class=test method]
+=====
+[.component,class=step]
+--
+Send GET request to /collections/insitu-observations/area with a valid polygon.
+--
+[.component,class=step]
+--
+Verify HTTP status is 200.
+--
+[.component,class=step]
+--
+Verify Content-Type is application/vnd.cov+json.
+--
+[.component,class=step]
+--
+Send GET request to /collections/insitu-observations/locations.
+--
+[.component,class=step]
+--
+Verify Content-Type is application/geo+json.
+--
+=====
 ====

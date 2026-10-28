@@ -3,7 +3,9 @@
 ====
 [%metadata]
 identifier:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/data-query-response-format
-target-type:: MetOcean Profile for OGC API - EDR Profile Standard
-requirement:: /req/data-query-response-format/dqrf-encoding
-requirement:: /req/data-query-response-format/dqrf-referencing
+target-type:: Web API
+dependency:: Core
+dependency:: CoverageJSON
+requirement:: /req/data-query-response-format/encoding
+requirement:: /req/data-query-response-format/referencing
 ====

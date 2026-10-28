@@ -1,13 +1,26 @@
 [[ats_nwp_earth_observations_lightning_items_endpoint]]
-[abstract_test]
 ====
 [%metadata]
-identifier:: /conf/nwp_earth_observations_lightning/items-endpoint
-target:: /req/nwp_earth_observations_lightning/items-endpoint
+label:: /conf/nwp_earth_observations_lightning/items-endpoint
+subject:: /req/nwp_earth_observations_lightning/items-endpoint
 test-purpose:: Validate that items endpoint is correctly implemented.
-test-method::
-step:: Send GET request to /collections/earth_observations_lightning/items.
-step:: Verify response Content-Type is application/json.
-step:: Verify each feature contains frequency_of_lightning_flashes_per_unit_area property.
-step:: Verify each feature contains datetime property.
+[.component,class=test method]
+=====
+[.component,class=step]
+--
+Send GET request to /collections/earth_observations_lightning/items.
+--
+[.component,class=step]
+--
+Verify response Content-Type is application/json.
+--
+[.component,class=step]
+--
+Verify each feature contains frequency_of_lightning_flashes_per_unit_area property.
+--
+[.component,class=step]
+--
+Verify each feature contains datetime property.
+--
+=====
 ====

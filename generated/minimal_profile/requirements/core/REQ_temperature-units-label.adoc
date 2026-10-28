@@ -1,0 +1,8 @@
+[[req_minimal_profile_temperature_units_label]]
+[recommendation]
+====
+[%metadata]
+identifier:: /req/minimal_profile/temperature-units-label
+statement:: The temperature collection SHOULD label its unit as Celsius.
+part:: Each temp parameter SHOULD expose a unit.label of "Celsius".
+====

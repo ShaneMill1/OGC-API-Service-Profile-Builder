@@ -1,15 +1,34 @@
 [[ats_nwp_earth_observations_lightning_radius_endpoint]]
-[abstract_test]
 ====
 [%metadata]
-identifier:: /conf/nwp_earth_observations_lightning/radius-endpoint
-target:: /req/nwp_earth_observations_lightning/radius-endpoint
+label:: /conf/nwp_earth_observations_lightning/radius-endpoint
+subject:: /req/nwp_earth_observations_lightning/radius-endpoint
 test-purpose:: Validate that radius endpoint is correctly implemented.
-test-method::
-step:: Send GET request to /collections/earth_observations_lightning/radius with a valid coordinate in crs_4326.
-step:: Verify response Content-Type is application/json.
-step:: Verify each feature contains frequency_of_lightning_flashes_per_unit_area property.
-step:: Verify each feature contains datetime property.
-step:: Verify each feature is in projection crs_4326.
-step:: Verify each feature is returned within the radius area.
+[.component,class=test method]
+=====
+[.component,class=step]
+--
+Send GET request to /collections/earth_observations_lightning/radius with a valid coordinate in crs_4326.
+--
+[.component,class=step]
+--
+Verify response Content-Type is application/json.
+--
+[.component,class=step]
+--
+Verify each feature contains frequency_of_lightning_flashes_per_unit_area property.
+--
+[.component,class=step]
+--
+Verify each feature contains datetime property.
+--
+[.component,class=step]
+--
+Verify each feature is in projection crs_4326.
+--
+[.component,class=step]
+--
+Verify each feature is returned within the radius area.
+--
+=====
 ====

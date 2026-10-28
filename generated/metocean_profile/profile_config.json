@@ -2,7 +2,9 @@
   "name": "metocean_profile",
   "title": "MetOcean Profile for OGC API - EDR",
   "version": "1.0",
-  "description": "An EDR profile in support of providing access to meteorological datasets in the MetOcean community of practice, covering in-situ observations and Numerical Weather Prediction output. Profile of OGC API - EDR Part 1: Core.\n",
+  "openapi_version": "3.0.0",
+  "description": "An EDR profile in support of providing access to meteorological datasets in the MetOcean community of practice, covering in-situ observations and Numerical Weather Prediction output. Profile of OGC API - EDR Part 1: Core.",
+  "attribution": null,
   "keywords": [
     "metocean",
     "ogc",
@@ -17,7 +19,10 @@
   "classification": null,
   "metadata_date": null,
   "resource_service_publish_date": null,
+  "links": [],
   "resource_default_locale": null,
+  "default_language": null,
+  "supported_languages": [],
   "collections": [
     {
       "id": "insitu-observations",
@@ -320,6 +325,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -1009,6 +1015,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -1097,7 +1104,7 @@
   "collection_examples": {},
   "requirements": [
     {
-      "id": "core-openapi",
+      "id": "openapi",
       "statement": "An API definition SHALL be described using an OpenAPI 3.1 document.",
       "parts": [
         "The API definition SHALL be described using an OpenAPI document (version 3.1 or higher).",
@@ -1105,20 +1112,22 @@
         "The landing page SHALL link the OpenAPI document with rel=service-desc.",
         "The landing page SHALL link API documentation with rel=service-doc and type text/html."
       ],
+      "level": "requirement",
       "conformance_class": "core"
     },
     {
-      "id": "core-collection-identifier",
+      "id": "collection_identifier",
       "statement": "A collection identifier SHALL NOT convey structured metadata and SHOULD use the fixed value list.",
       "parts": [
         "A collection identifier SHALL NOT be used to convey structured metadata.",
         "A collection identifier SHOULD use one of insitu-observations, climate_data, radar_observations, weather_warnings, weather_forecast.",
         "The identifier string MAY include a postfix to the listed values if needed."
       ],
+      "level": "requirement",
       "conformance_class": "core"
     },
     {
-      "id": "core-collection-title",
+      "id": "collection_title",
       "statement": "A title SHALL be set for all collections and SHALL NOT exceed 50 characters.",
       "parts": [
         "A title SHALL be set for all collections.",
@@ -1127,10 +1136,11 @@
         "A title SHOULD place the most important information first to guard against truncation.",
         "A title SHOULD describe the collection understandably for non-experts (topic/domain and geographical area)."
       ],
+      "level": "requirement",
       "conformance_class": "core"
     },
     {
-      "id": "core-collection-license",
+      "id": "collection_license",
       "statement": "A collection SHALL link to a license of its data with rel=license and type=text/html.",
       "parts": [
         "The links property in a collection SHALL contain a link to a license of its data.",
@@ -1138,10 +1148,11 @@
         "The type property SHALL be set to text/html.",
         "If the data is open data, the license SHALL be CC BY 4.0 with href https://creativecommons.org/licenses/by/4.0/."
       ],
+      "level": "requirement",
       "conformance_class": "core"
     },
     {
-      "id": "core-collection-spatial-extent",
+      "id": "collection_spatial_extent",
       "statement": "The collection spatial extent and CRS list SHALL use OGC:CRS84.",
       "parts": [
         "The value of extent.spatial.crs SHALL be OGC:CRS84.",
@@ -1149,18 +1160,20 @@
         "If crs_details is specified for a data_queries object, it SHALL include an object whose crs value is OGC:CRS84.",
         "Additional CRSs SHOULD be presented as EPSG:<code> in crs and data_queries.*.crs_details.crs."
       ],
+      "level": "requirement",
       "conformance_class": "core"
     },
     {
-      "id": "core-collection-temporal-extent",
+      "id": "collection_temporal_extent",
       "statement": "The value of extent.temporal.trs SHALL be Gregorian.",
       "parts": [
         "The value of extent.temporal.trs SHALL be Gregorian."
       ],
+      "level": "requirement",
       "conformance_class": "core"
     },
     {
-      "id": "core-collection-parameter-names",
+      "id": "collection_parameter_names",
       "statement": "Parameter objects SHALL specify label, description and unit using the profile conventions.",
       "parts": [
         "The keys in parameter_names and id in the parameter object SHALL NOT convey structured metadata.",
@@ -1170,20 +1183,22 @@
         "unit SHALL use QUDT; unit.symbol.type SHALL be https://qudt.org/vocab/unit/<unit> and unit.symbol.value the qudt symbol.",
         "observedProperty SHALL use the CF-convention (observedProperty.id = https://vocab.nerc.ac.uk/standard_name/<name>) when available; otherwise use observedProperty.description."
       ],
+      "level": "requirement",
       "conformance_class": "core"
     },
     {
-      "id": "core-collection-radius-data-query",
+      "id": "collection_radius_data_query",
       "statement": "A radius data query within_units array SHALL contain m (SI unit of length).",
       "parts": [
         "The within_units array in a variables object for a radius data query SHALL contain m.",
         "within_units MAY contain more values, each defined as a unit at https://qudt.org using the unit symbol.",
         "A radius query with a limit parameter SHOULD return the closest items to the radius centre."
       ],
+      "level": "requirement",
       "conformance_class": "core"
     },
     {
-      "id": "core-locations-query-response-format",
+      "id": "locations_query_response_format",
       "statement": "A /locations response SHALL be a GeoJSON FeatureCollection with id and properties.name per feature.",
       "parts": [
         "The /locations response SHALL be a GeoJSON document with a FeatureCollection object.",
@@ -1193,38 +1208,60 @@
         "A more detailed description MAY be provided via properties.description.",
         "All strings SHALL be in English."
       ],
+      "level": "requirement",
       "conformance_class": "core"
     },
     {
-      "id": "core-error-handling",
+      "id": "error_handling",
       "statement": "Empty results SHALL return HTTP 204 and 4xx responses SHOULD comply with RFC 9457.",
       "parts": [
         "A query for data inside the extent that results in no data SHALL return HTTP 204 with no content.",
         "A query partially within the extent SHALL respond as within the extent, returning only the in-extent portion.",
         "Any 4xx response SHOULD comply with RFC 9457 Problem Details for HTTP APIs."
       ],
+      "level": "requirement",
       "conformance_class": "core"
     },
     {
-      "id": "insitu-collection-data-queries",
+      "id": "collection_vertical_extent",
+      "statement": "If extent.vertical is defined, extent.vertical.vrs SHOULD use one of the recommended vertical reference system values.",
+      "parts": [
+        "If extent.vertical is defined, the value of extent.vertical.vrs SHOULD be one of \"Pressure level in hPa\", \"Geopotential height in gpm\", \"Geometrical altitude above mean sea level in meters\", \"Height above ground in meters\" or \"Flight level\"."
+      ],
+      "level": "recommendation",
+      "conformance_class": "core"
+    },
+    {
+      "id": "data_query_response_metadata",
+      "statement": "The metadata in a data query response SHOULD mirror the terms and vocabularies used in the collection metadata.",
+      "parts": [
+        "The metadata in the response to a data query (e.g. crs, parameters and units) SHOULD mirror as closely as possible the terms and vocabularies used in the collection metadata."
+      ],
+      "level": "recommendation",
+      "conformance_class": "core"
+    },
+    {
+      "id": "collection_data_queries",
       "statement": "An insitu-observations collection SHALL support locations, area and radius.",
       "parts": [
         "A collection SHALL support locations, area and radius."
       ],
+      "level": "requirement",
       "conformance_class": "insitu-observations"
     },
     {
-      "id": "insitu-collection-parameter-names",
+      "id": "collection_parameter_names",
       "statement": "Insitu parameters SHALL specify metocean:standard_name, metocean:level and measurementType.",
       "parts": [
         "Each parameter SHALL specify metocean:standard_name set to a value from the standard_name custom dimension.",
         "Each parameter SHALL specify metocean:level set to a value from the level custom dimension.",
         "Each parameter SHALL specify measurementType."
       ],
+      "level": "requirement",
       "conformance_class": "insitu-observations"
     },
     {
-      "id": "insitu-collection-custom-dimensions",
+      "id": "collection_custom_dimensions",
       "statement": "An insitu-observations collection SHALL define standard_name and level custom dimensions.",
       "parts": [
         "The collection SHALL have an extent.custom object with id standard_name.",
@@ -1233,30 +1270,42 @@
         "The collection SHALL have an extent.custom object with id level.",
         "Custom dimension level SHALL specify reference \"Height of measurement above ground level in meters\"."
       ],
+      "level": "requirement",
       "conformance_class": "insitu-observations"
     },
     {
-      "id": "insitu-coveragejson-parameters",
+      "id": "coveragejson_parameters",
       "statement": "CoverageJSON parameters SHALL carry metocean:measurementType, metocean:standard_name and metocean:level.",
       "parts": [
         "Each object in parameters in a coverage SHALL have metocean:measurementType with the same properties as measurementType.",
         "Each object in parameters SHALL have metocean:standard_name.",
         "Each object in parameters SHALL have metocean:level."
       ],
+      "level": "requirement",
       "conformance_class": "insitu-observations"
     },
     {
-      "id": "nwp-collection-parameter-names",
+      "id": "collection_parameter_names",
+      "statement": "Each measurementType.method in parameter_names SHOULD follow the CF-convention cell methods.",
+      "parts": [
+        "Each measurementType.method object in parameter_names SHOULD follow the CF-convention cell methods and use a value from the CF cell-methods appendix."
+      ],
+      "level": "recommendation",
+      "conformance_class": "insitu-observations"
+    },
+    {
+      "id": "collection_parameter_names",
       "statement": "NWP parameters SHALL use ECMWF short names per Annex D for id and description.",
       "parts": [
         "WIPPS Manual Global Deterministic NWP parameters SHALL be provided using ECMWF short names per Annex D.",
         "The parameter name SHALL be provided in the description property.",
         "The ECMWF short name SHALL be provided in the id property."
       ],
+      "level": "requirement",
       "conformance_class": "nwp"
     },
     {
-      "id": "nwp-collection-granularity",
+      "id": "collection_granularity",
       "statement": "An NWP collection represents a model; instances represent model runs identified by RFC3339 datestamps.",
       "parts": [
         "A collection SHALL represent and describe a model.",
@@ -1264,191 +1313,317 @@
         "A collection instance identifier SHALL be represented by an RFC3339 datestamp.",
         "A collection temporal instance or interval SHALL represent a timestep or timesteps of a model run."
       ],
+      "level": "requirement",
       "conformance_class": "nwp"
     },
     {
-      "id": "nwp-collection-data-queries",
+      "id": "collection_data_queries",
       "statement": "An NWP collection SHALL support position and cube; no instance means latest.",
       "parts": [
         "A collection SHALL support position and cube queries.",
         "Data queries without an instance SHALL be interpreted as the latest instance of a collection.",
         "A datetime parameter between two timestamps SHALL trigger an HTTP 400 Bad Request."
       ],
+      "level": "requirement",
       "conformance_class": "nwp"
     },
     {
-      "id": "dqrf-encoding",
+      "id": "encoding",
       "statement": "All data queries SHALL support CoverageJSON as a response format.",
       "parts": [
         "All data queries SHALL support CoverageJSON as a response format."
       ],
+      "level": "requirement",
       "conformance_class": "data-query-response-format"
     },
     {
-      "id": "dqrf-referencing",
+      "id": "referencing",
       "statement": "CoverageJSON domain.referencing system id SHALL reflect the crs query parameter (default OGC:CRS84).",
       "parts": [
         "With no crs query param, domain.referencing.* system SHALL have type GeographicCRS and id OGC:CRS84.",
         "With a crs query param, the system object with type GeographicCRS SHALL set id to the crs query param value."
       ],
+      "level": "requirement",
       "conformance_class": "data-query-response-format"
     }
   ],
   "abstract_tests": [
     {
-      "id": "core-openapi",
-      "requirement_id": "core-openapi",
+      "id": "openapi",
+      "requirement_id": "openapi",
+      "conformance_class": "core",
       "steps": [
-        "Retrieve the API landing page.",
-        "Verify a link with rel=service-desc references an OpenAPI 3.1 document.",
-        "Verify a link with rel=service-doc has type text/html."
-      ]
+        "Construct a path for a landing page.",
+        "Issue an HTTP GET request on that path.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the `links` array in the landing page response, find the object with `rel` set to `service-desc` and `type` matching one of the following strings:\n\n* `application/openapi+json`\n* `application/openapi+yaml`\n* `application/vnd.oai.openapi+json`\n* `application/vnd.oai.openapi+yaml`\n\nOptionally, the string may be suffixed with a version number like `;version=3.1`. In that case, check that the version is >= 3.1.",
+        "Issue an HTTP GET request using the value of `href` for that object.",
+        "Check that the value of the returned HTTP status header is 200 and check that the response body is a valid OpenAPI document of version 3.1 or higher.",
+        "In the ``links`` array in the landing page response, find the object with `rel` set to `service-doc`.",
+        "Issue an HTTP GET request using the value of `href` for that object.",
+        "Check that the value of the returned HTTP status header is 200 and that the HTTP response header `Content-Type` contains `text/html`."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile provides an API definition using an OpenAPI document",
+      "test_method_text": null
     },
     {
-      "id": "core-collection-identifier",
-      "requirement_id": "core-collection-identifier",
+      "id": "collection_identifier",
+      "requirement_id": "collection_identifier",
+      "conformance_class": "core",
       "steps": [
-        "Retrieve /collections.",
-        "Verify each collection id matches the fixed value list (optionally with a postfix)."
-      ]
+        "This requirement is not applicable to ATS testing."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile API provides a valid collection identifier",
+      "test_method_text": "This requirement is not applicable to ATS testing."
     },
     {
-      "id": "core-collection-title",
-      "requirement_id": "core-collection-title",
+      "id": "collection_title",
+      "requirement_id": "collection_title",
+      "conformance_class": "core",
       "steps": [
-        "Retrieve /collections.",
-        "Verify each collection has a title of at most 50 characters."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the `collections` array, check that the `title` property is present for all array elements.",
+        "For each `title` value, check that the value is less than or equal to 50 characters."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile provides a valid collection title",
+      "test_method_text": null
     },
     {
-      "id": "core-collection-license",
-      "requirement_id": "core-collection-license",
+      "id": "collection_license",
+      "requirement_id": "collection_license",
+      "conformance_class": "core",
       "steps": [
-        "Retrieve a collection.",
-        "Verify links contains a rel=license link with type text/html."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the `links` array, check that there exists one `link` object with `rel` set to `license`.",
+        "Issue a HTTP GET request to the url in `href` for `link` with rel `license`.",
+        "Check that the value of the returned HTTP status header is 200 and the HTTP response header `Content-Type` is `text/html`."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile API provides a collection links array with a license link.",
+      "test_method_text": null
     },
     {
-      "id": "core-collection-spatial-extent",
-      "requirement_id": "core-collection-spatial-extent",
+      "id": "collection_spatial_extent",
+      "requirement_id": "collection_spatial_extent",
+      "conformance_class": "core",
       "steps": [
-        "Retrieve a collection.",
-        "Verify extent.spatial.crs is OGC:CRS84 and crs includes OGC:CRS84."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the response document, for each object in the `collections` array, check that the `extent.spatial.crs` property is set to `OGC:CRS84`.",
+        "In the `collections` array, check that the `crs` property is set to `OGC:CRS84` for each object.",
+        "For each object in `collections` array, for each object in the `data_queries` array, if `crs_details` is specified, check that one of the objects in the `crs_details` array has a `crs` property set to `OGC:CRS84`."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile API provides spatial extent in the correct crs.",
+      "test_method_text": null
     },
     {
-      "id": "core-collection-temporal-extent",
-      "requirement_id": "core-collection-temporal-extent",
+      "id": "collection_temporal_extent",
+      "requirement_id": "collection_temporal_extent",
+      "conformance_class": "core",
       "steps": [
-        "Retrieve a collection.",
-        "Verify extent.temporal.trs equals Gregorian."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the response document, for each object in the `collections` array, check that the `extent.temporal.trs` property is set to `Gregorian`."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile API provides temporal extent in the correct trs.",
+      "test_method_text": null
     },
     {
-      "id": "core-collection-parameter-names",
-      "requirement_id": "core-collection-parameter-names",
+      "id": "collection_parameter_names",
+      "requirement_id": "collection_parameter_names",
+      "conformance_class": "core",
       "steps": [
-        "Retrieve a collection.",
-        "For each parameter verify label, description and unit are present.",
-        "Verify unit.symbol.type is a QUDT unit URI and observedProperty.id is a CF standard name URI when present."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the response document, for each object in the `collections` array, check that each object in the `parameter_names` array has the properties `label`, `unit` and `description`.",
+        "The value of a `label` property in a `parameter` object is less than or equal to 50 characters.",
+        "The value of `unit.symbol.type` in a `parameter` object is a url on the form `https://qudt.org/vocab/unit/{unit}`.",
+        "The value of `unit.symbol.value` in a `parameter` object is specified."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile API provides a valid collection parameter_names",
+      "test_method_text": null
     },
     {
-      "id": "core-collection-radius-data-query",
-      "requirement_id": "core-collection-radius-data-query",
+      "id": "collection_radius_data_query",
+      "requirement_id": "collection_radius_data_query",
+      "conformance_class": "core",
       "steps": [
-        "Retrieve a collection that supports radius.",
-        "Verify the radius variables within_units array contains m."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the response document, for each object in the `collections` array, if the `data_queries` property contains `radius`, check that the `link.variables` object for `radius` has a `within_units` array that contains `m`."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile API with a radius data query in a collection has correct metadata.",
+      "test_method_text": null
     },
     {
-      "id": "core-locations-query-response-format",
-      "requirement_id": "core-locations-query-response-format",
+      "id": "locations_query_response_format",
+      "requirement_id": "locations_query_response_format",
+      "conformance_class": "core",
       "steps": [
-        "Send a GET /locations query.",
-        "Verify the response is a GeoJSON FeatureCollection.",
-        "Verify each Feature has a string id and a string properties.name."
-      ]
+        "For every collection and instance of a collection, check if `locations` exists as a key in the `data_queries` object. If so, get the `href` value from the link object with `\"rel\":\"self\"` and append `/locations` to the value and issue an HTTP GET request.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "Check that the response http header `Content-Type` has value `application/geo+json`.",
+        "In the response document, check that it has the property `\"type\": \"FeatureCollection\"`. For each object in the `features` array, check that the properties `id` and `properties.name` are present."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile API has a correctly formated response to a locations query.",
+      "test_method_text": null
     },
     {
-      "id": "core-error-handling",
-      "requirement_id": "core-error-handling",
+      "id": "error_handling",
+      "requirement_id": "error_handling",
+      "conformance_class": "core",
       "steps": [
-        "Send a query inside the extent that returns no data; verify HTTP 204 with no content.",
-        "Send a request that yields a 4xx; verify the body complies with RFC 9457 (application/problem+json)."
-      ]
+        "Issue an HTTP GET request to an non-existent path `/collections/nonexistentcollection`.",
+        "Check that the value of the returned HTTP status code is `404` and the HTTP response header `Content-Type` is `application/problem+json`.",
+        "Check that the returned JSON document includes the properties `type` and `title`. Check that `title` is a string and that `type` is either an URI or the value `about:blank`."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile API handles errors correctly.",
+      "test_method_text": null
     },
     {
-      "id": "insitu-collection-data-queries",
-      "requirement_id": "insitu-collection-data-queries",
+      "id": "collection_data_queries",
+      "requirement_id": "collection_data_queries",
+      "conformance_class": "insitu-observations",
       "steps": [
-        "Retrieve the insitu-observations collection.",
-        "Verify data_queries contains locations, area and radius."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the `collections` array in the returned document, check that each collection has a `data_queries` array containing `area`, `locations` and `radius`."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Insitu observations Profile API has implemented the mandatory data queries.",
+      "test_method_text": null
     },
     {
-      "id": "insitu-collection-parameter-names",
-      "requirement_id": "insitu-collection-parameter-names",
+      "id": "collection_parameter_names",
+      "requirement_id": "collection_parameter_names",
+      "conformance_class": "insitu-observations",
       "steps": [
-        "Retrieve the insitu-observations collection.",
-        "Verify each parameter has metocean:standard_name, metocean:level and measurementType."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "For each object in the `collections` array and for each object in `parameter_names` check that it has the properties `metocean:standard_name` with the value of type string.",
+        "For each object in the `collections` array and for each object in `parameter_names` check that it has the property `metocean:level` with a value of type number.",
+        "For each object in the `collections` array and for each object in `parameter_names` check that is has the property `measurementType`."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Insitu observations Profile API has the required properties for parameter_names",
+      "test_method_text": null
     },
     {
-      "id": "insitu-collection-custom-dimensions",
-      "requirement_id": "insitu-collection-custom-dimensions",
+      "id": "collection_custom_dimensions",
+      "requirement_id": "collection_custom_dimensions",
+      "conformance_class": "insitu-observations",
       "steps": [
-        "Retrieve the insitu-observations collection.",
-        "Verify extent.custom includes standard_name (with the nerc reference) and level."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "Check that the `extent.custom` array has an object with property `id` set to `standard_name` and property `reference` set to `https://vocab.nerc.ac.uk/standard_name/`.",
+        "Check that the `extent.custom` array has an object with property `id` set to `level` and property `reference` set to `Height of measurement above ground level in meters`."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Insitu observations Profile API has required custom dimensions.",
+      "test_method_text": null
     },
     {
-      "id": "insitu-coveragejson-parameters",
-      "requirement_id": "insitu-coveragejson-parameters",
+      "id": "coveragejson_parameters",
+      "requirement_id": "coveragejson_parameters",
+      "conformance_class": "insitu-observations",
       "steps": [
-        "Request insitu data as CoverageJSON.",
-        "Verify each parameters object has metocean:measurementType, metocean:standard_name and metocean:level."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "For each object in the `collections` array and for each object in `data_queries`, issue a GET request with no crs query parameter specified.",
+        "Check that each object in `parameters` array of the response CoverageJSON document contains a property `metocean:standard_name` with a string type.",
+        "Check that each `parameter` object in `parameters` in the response CoverageJSON document contains a property `metocean:level` with a number type.",
+        "Check that each `parameter` object in `parameters` in the response CoverageJSON document contains a property `metocean:measurementType` which has an object type. Check that this object has the property `method` of type string and property `duration` of type string."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Insitu observations Profile API has required metadata in CoverageJSON parameters.",
+      "test_method_text": null
     },
     {
-      "id": "nwp-collection-parameter-names",
-      "requirement_id": "nwp-collection-parameter-names",
+      "id": "collection_parameter_names",
+      "requirement_id": "collection_parameter_names",
+      "conformance_class": "nwp",
       "steps": [
-        "Retrieve the NWP collection.",
-        "Verify parameter ids use ECMWF short names from Annex D and descriptions carry the parameter name."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the `collections` array in the returned document, check that each collection has a `data_queries` array containing `position` and `cube`.",
+        "For each matching collection ``parameter_names`` object, check that all of the <<appendix-d>> ECMWF short names are present via each parameter name key, `id` and `description` properties."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR API has implemented the mandatory parameter names for NWP.",
+      "test_method_text": null
     },
     {
-      "id": "nwp-collection-granularity",
-      "requirement_id": "nwp-collection-granularity",
+      "id": "collection_granularity",
+      "requirement_id": "collection_granularity",
+      "conformance_class": "nwp",
       "steps": [
-        "Retrieve /collections/weather_forecast/instances.",
-        "Verify each instance id is an RFC3339 datestamp representing a model run."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the `collections` array in the returned document, check that each collection has a `data_queries` array containing `position` and `cube`.",
+        "For matching collections, issue an HTTP GET request to path `/collections/{collectionId}/instances`.",
+        "For matching instances, ensure that the instance identifier (`id`) is an RFC3339 datestamp."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR API has implemented the mandatory granularity for NWP.",
+      "test_method_text": null
     },
     {
-      "id": "nwp-collection-data-queries",
-      "requirement_id": "nwp-collection-data-queries",
+      "id": "collection_data_queries",
+      "requirement_id": "collection_data_queries",
+      "conformance_class": "nwp",
       "steps": [
-        "Retrieve the NWP collection.",
-        "Verify data_queries contains position and cube.",
-        "Verify a datetime range request triggers HTTP 400."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the `collections` array in the returned document, check that each collection has a `data_queries` array containing `position` and `cube`.",
+        "For a matching collection, issue an HTTP GET request to path `/collections/{collectionId}/position?coords=POINT(0 0)`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "For the same matching collection, issue an HTTP GET request to path `/collections/{collectionId}/instances`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the CoverageJSON response, ensure that the first value of ``domain.axes.t.values`` is equal to the last instance (``id``) from the `/collections/{collectionId}/instances` response captured earlier in this test."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR API has implemented the mandatory data query behaviour for NWP.",
+      "test_method_text": null
     },
     {
-      "id": "dqrf-encoding",
-      "requirement_id": "dqrf-encoding",
+      "id": "encoding",
+      "requirement_id": "encoding",
+      "conformance_class": "data-query-response-format",
       "steps": [
-        "For each data query, verify CoverageJSON is an offered response format."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "In the returned document, for each object in `data_queries` for each collection in `collections` make a corresponding data query request and check that the returned response has status 200 and has an HTTP response header `Content-Type` with value `application/vnd.cov+json`."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR API has the correct response format for data queries.",
+      "test_method_text": null
     },
     {
-      "id": "dqrf-referencing",
-      "requirement_id": "dqrf-referencing",
+      "id": "referencing",
+      "requirement_id": "referencing",
+      "conformance_class": "data-query-response-format",
       "steps": [
-        "Request data without a crs param; verify domain.referencing system id is OGC:CRS84.",
-        "Request data with a crs param; verify the system id matches the crs param."
-      ]
+        "Issue an HTTP GET request to path `/collections`.",
+        "Check that the value of the returned HTTP status header is 200.",
+        "For each object in the `collections` array, for each object in `data_queries`, issue a GET request with no crs query parameter specified.",
+        "Check that the response is a CoverageJSON document where each object of `type` `Coverage` contains a `domain.referencing` array which includes an object where `system.type` is set to `GeographicCRS` and `system.id` set to `OGC:CRS84`.",
+        "For each object in the `collections` array, for each object in `data_queries`, issue a GET request for each `crs_details` object where `crs` query parameter set to the value in the `crs_details` object.",
+        "Check that the response is a CoverageJSON object where `domain.referencing` includes an object where `system.type` is set to `GeographicCRS` and `system.id` is equal to the crs query parameter."
+      ],
+      "method": null,
+      "test_purpose": "Validate that a MetOcean EDR Profile API CoverageJSON response document provides correct domain referencing values.",
+      "test_method_text": null
     }
   ],
   "pubsub": null,
@@ -1512,7 +1687,291 @@
     "plain_section_numbers": false,
     "suppress_title_underlines": false,
     "suppress_design_elements": false,
-    "page_watermark": null
+    "page_watermark": null,
+    "body": {
+      "scope": "This document defines the conventions, constraints and extensions of EDR in the context of the MetOcean community of practice.\n\nThe MetOcean EDR Profile defined herein is an extension of the International Standard _OGC API - Environmental Data Retrieval - Part 1: Core_.\n\nThis specification defines the conformance requirements for the MetOcean EDR Profile.  Annex A defines the abstract test suite. Annex B provides normative information on schemas.  Annex C provides informative examples.\n",
+      "abstract": "The Open Geospatial Consortium (OGC) Environmental Data Retrieval (EDR) API provides a family of lightweight interfaces to access Environmental Data resources. Each resource addressed by an EDR API maps to a defined query pattern. OGC API - EDR identifies resources, captures compliance classes, and specifies requirements which are applicable to OGC Environmental Data Retrieval API’s. The specification addresses two fundamental operations; discovery and query. Discovery operations allow the API to be interrogated to determine its capabilities and retrieve information (metadata) about this distribution of a resource. This includes the API definition of the server as well as metadata about the Environmental Data resources provided by the server. Query operations allow Environmental Data resources to be retrieved from the underlying data store based upon simple selection criteria, defined by this standard and selected by the client.\n\nThe flexibility of EDR allows for implementation in various environmental domains and communities of practice.\n\nThis document defines an EDR profile in support of providing access to meteorological datasets in the MetOcean community of practice.  This includes, but is not limited to, conventions and constraints on identifiers, metadata parameters and encodings/formats and their related definitions and extensions.\n",
+      "terms_text": "This document uses the terms defined in https://portal.ogc.org/public_ogc/directives/directives.php[OGC Policy Directive 49], which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of International Standards. In particular, the word “SHALL” (not “must”) is the verb form used to indicate a requirement to be strictly followed to conform to this Standard and OGC documents do not use the equivalent phrases in the ISO/IEC Directives, Part 2.\n\nThis document also uses terms defined in the OGC Standard for Modular specifications (https://portal.opengeospatial.org/files/?artifact_id=34762[OGC 08-131r3]), also known as the 'ModSpec'. The definitions of terms such as standard, specification, requirement, and conformance test are provided in the ModSpec.\n\nThe following additional terms and definitions also apply.\n",
+      "abbreviated_terms": [
+        {
+          "abbreviation": "API",
+          "term": "Application Programming Interface"
+        },
+        {
+          "abbreviation": "EU",
+          "term": "European Union"
+        },
+        {
+          "abbreviation": "EUMETNET",
+          "term": "European National Meteorological and Hydrological Services"
+        },
+        {
+          "abbreviation": "FAIR",
+          "term": "Findable, Accessible, Interoperable, Reusable"
+        },
+        {
+          "abbreviation": "FEMDI",
+          "term": "Federated European Meteo-hydrological Data Infrastructure"
+        },
+        {
+          "abbreviation": "GIS",
+          "term": "Geographic Information System"
+        },
+        {
+          "abbreviation": "HVD",
+          "term": "High Value Datasets"
+        },
+        {
+          "abbreviation": "HTML",
+          "term": "Hypertext Markup Language"
+        },
+        {
+          "abbreviation": "HTTP",
+          "term": "Hypertext Transfer Protocol"
+        },
+        {
+          "abbreviation": "HTTPS",
+          "term": "Hypertext Transfer Protocol Secure"
+        },
+        {
+          "abbreviation": "IANA",
+          "term": "Internet Assigned Numbers Authority"
+        },
+        {
+          "abbreviation": "IETF",
+          "term": "Internet Engineering Task Force"
+        },
+        {
+          "abbreviation": "ISO",
+          "term": "International Organization for Standardization"
+        },
+        {
+          "abbreviation": "JSON",
+          "term": "JavaScript Object Notation"
+        },
+        {
+          "abbreviation": "MIME",
+          "term": "Multipurpose Internet Mail Extensions"
+        },
+        {
+          "abbreviation": "NMHS",
+          "term": "National Meteorological and Hydrological Service"
+        },
+        {
+          "abbreviation": "NWP",
+          "term": "Numerical Weather Prediction"
+        },
+        {
+          "abbreviation": "OGC",
+          "term": "Open Geospatial Consortium"
+        },
+        {
+          "abbreviation": "REST",
+          "term": "Representational State Transfer"
+        },
+        {
+          "abbreviation": "ROA",
+          "term": "Resource-oriented architecture"
+        },
+        {
+          "abbreviation": "RODEO",
+          "term": "The provision of open access to public meteorological data and development of shared federated data infrastructure for the development of information products and services"
+        },
+        {
+          "abbreviation": "S3",
+          "term": "Simple Storage Service"
+        },
+        {
+          "abbreviation": "SEO",
+          "term": "Search engine optimization"
+        },
+        {
+          "abbreviation": "SOA",
+          "term": "Service-oriented architecture"
+        },
+        {
+          "abbreviation": "URI",
+          "term": "Uniform Resource Identifier"
+        },
+        {
+          "abbreviation": "URL",
+          "term": "Uniform Resource Locator"
+        },
+        {
+          "abbreviation": "W3C",
+          "term": "World Wide Web Consortium"
+        },
+        {
+          "abbreviation": "XML",
+          "term": "eXtensible Markup Language"
+        }
+      ],
+      "clauses": [
+        {
+          "id": "conventions",
+          "title": "Conventions",
+          "body": "This section provides details and examples for any conventions used in the document. Examples of conventions are symbols, abbreviations, use of JSON and / or JSON schema, or special notes regarding how to read the document.\n\n=== Identifiers\n\nThe normative provisions in this Standard are denoted by the URI:\n\n`http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0`\n\nAll requirements and conformance tests that appear in this document are denoted by partial URIs which are relative to this base.\n\n=== Examples\n\nExamples provided in this specification are encoded as JSON, GeoJSON or CoverageJSON.\n\n=== Schema representation\n\nJSON Schema footnote:[https://json-schema.org] objects are used throughout this standard to define the structure\nof metadata records. These schema objects are also typically represented using YAML footnote:[https://en.wikipedia.org/wiki/YAML].\nYAML is a superset of JSON, and in this standard are regarded as equivalent.\n\n=== Use of HTTPS\n\nFor simplicity, this document only refers to the HTTP protocol. This is not meant to exclude the use of HTTPS and simply is a shorthand notation for \"HTTP or HTTPS.\" In fact, most servers are expected to use HTTPS, not HTTP.\n",
+          "position": "after-terms",
+          "obligation": "normative"
+        },
+        {
+          "id": "introduction",
+          "title": "Introduction",
+          "body": "RODEO, the Provision of Open Access to Public Meteorological Data and Development of Shared Federated Data Infrastructure for the Development of Information Products and Services, is a joint effort by eleven European National Meteorological and Hydrological Services (NMHS), the European Centre for Medium-Range Weather Forecasts (ECMWF) and the network of 31 European National Meteorological and Hydrological Services (EUMETNET). The Project Partners are listed in the page Partners footnote:[https://rodeo-project.eu/partners].\n\nThe RODEO project develops a user interface and Application Programming Interfaces (API) for accessing meteorological datasets declared as High Value Datasets (HVD) by the EU Implementing Regulation (EU) 2023/138 under the EU Open Data Directive (EU) 2019/1024. The project also fosters the engagement between data providers and data users for enhancing the understanding of technical solutions being available for sharing and accessing the HVD datasets.\n\nSurface weather observations, climate data, weather warnings, radar data and numerical weather prediction (NWP) data are defined as meteorological high value datasets. The distribution of these datasets is going to be made available under an open licence, in machine-readable formats using APIs and bulk downloads following the FAIR principles (usability, accessibility, interoperability and reusability).\n\nThe project is funded by the EU Digital Europe Program (DIGITAL) and EUMETNET.\n\n=== Project Aims & Goals\n\nThe project makes meteorological High Value Datasets easily available with an aim to bring new data to businesses, public administrations and citizens. It reinforces the European public meteorological data infrastructure and enhances the providers’ digital capacity to share data. Furthermore, the project also fosters the engagement between data providers and data users for enhancing the understanding of technical solutions to be available for sharing and accessing the datasets.\n\nThe project strengthens the capacity of the European meteorological data providers to comply with the HVD Implementing Regulation by:\n\n* Developing a user interface\n* Developing APIs for accessing weather observation data, climate data, weather radar data, warnings, and Artificial Intelligence (AI) datasets\n* Developing a data catalogue for making data discoverable\n* Engaging with the data owners and user communities\n* Supporting the deployment of national data portals and APIs\n* Making HVDs available from the project partners\n\n=== Impact on users\n\nThe increased availability of data boosts entrepreneurship and potentially results in the creation of new companies. New open datasets are an important resource for small and medium-sized enterprises to develop new digital products and services. Reuse of data opens business opportunities for several sectors ultimately leads attracting more investors. By making data much easier to use, reseach, academia, AI applications and many other application areas can utilize the data more efficiently.\n\nOverall, better data availability leads to better warnings, forecasts, and services to the public and weather-critical industries, and contributes to the safe and efficient functioning of society with multiple benefits across the European economy, industry, and society.\n",
+          "position": "before-requirements",
+          "obligation": "informative"
+        }
+      ],
+      "class_intros": {},
+      "class_metadata": {
+        "core": {
+          "target_type": "Web API",
+          "dependencies": [
+            "OGC API - Environmental Data Retrieval Standard - Part 1: Core (2023) footnote:[https://docs.ogc.org/is/19-086r6/19-086r6.html]"
+          ],
+          "preconditions": [
+            "The API conforms to OGC API - Environmental Data Retrieval - Part 1: Core, Requirements Class: Core and Requirements Class: Collections"
+          ]
+        },
+        "data-query-response-format": {
+          "target_type": "Web API",
+          "dependencies": [
+            "Core",
+            "CoverageJSON"
+          ],
+          "preconditions": []
+        },
+        "insitu-observations": {
+          "target_type": "Web API",
+          "dependencies": [
+            "Core",
+            "Data query response format"
+          ],
+          "preconditions": []
+        },
+        "nwp": {
+          "target_type": "Web API",
+          "dependencies": [
+            "Core",
+            "Data query response format"
+          ],
+          "preconditions": []
+        }
+      },
+      "requirement_intros": {
+        "core/req/openapi": "An OpenAPI specification provides a machine-readable description of the API interface.",
+        "core/req/collection_identifier": "A collection identifier provides a mechanism to uniquely identify a given collection in an OGC API.",
+        "core/req/collection_title": "A collection title provides a human-readable short description of the given collection.",
+        "core/req/collection_license": "A license describes the usage permissions for the data in a collection.",
+        "core/req/collection_spatial_extent": "Spatial extent of a collection.",
+        "core/req/collection_temporal_extent": "Temporal extent of a collection.",
+        "core/rec/collection_vertical_extent": "Vertical extent of a collection.",
+        "core/req/collection_parameter_names": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
+        "core/req/collection_radius_data_query": "Metadata about the radius data query in a collection.",
+        "core/req/locations_query_response_format": "Structure of the response document for a /locations query.",
+        "core/req/error_handling": "HTTP status codes and response documents for responding to errors.",
+        "core/rec/data_query_response_metadata": "Metadata in the response to a data query.",
+        "insitu-observations/req/collection_data_queries": "The types of data queries implemented in a collection.",
+        "insitu-observations/req/collection_parameter_names": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
+        "insitu-observations/rec/collection_parameter_names": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
+        "insitu-observations/req/collection_custom_dimensions": "The custom dimensions for which you can query the collection.",
+        "insitu-observations/req/coveragejson_parameters": "The metadata about parameters in CoverageJSON.",
+        "nwp/req/collection_parameter_names": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
+        "nwp/req/collection_granularity": "The organization of NWP data advertised as collections and instances.",
+        "nwp/req/collection_data_queries": "The types of data queries implemented in a collection.",
+        "data-query-response-format/req/encoding": "The response format for data queries.",
+        "data-query-response-format/req/referencing": "Coordinate referencing metadata in CoverageJSON."
+      },
+      "requirement_headings": {
+        "core/req/openapi": "OpenAPI",
+        "core/req/collection_identifier": "Collection identifier",
+        "core/req/collection_title": "Collection title",
+        "core/req/collection_license": "Collection license",
+        "core/req/collection_spatial_extent": "Collection spatial extent",
+        "core/req/collection_temporal_extent": "Collection temporal extent",
+        "core/rec/collection_vertical_extent": "Collection vertical extent",
+        "core/req/collection_parameter_names": "Collection parameter names",
+        "core/req/collection_radius_data_query": "Collection radius data query",
+        "core/req/locations_query_response_format": "Locations query response format",
+        "core/req/error_handling": "Error handling",
+        "core/rec/data_query_response_metadata": "Data query response metadata",
+        "insitu-observations/req/collection_data_queries": "Collection data queries",
+        "insitu-observations/req/collection_parameter_names": "Collection parameter names",
+        "insitu-observations/rec/collection_parameter_names": "Collection parameter names",
+        "insitu-observations/req/collection_custom_dimensions": "Collection custom dimensions",
+        "insitu-observations/req/coveragejson_parameters": "CoverageJSON parameters",
+        "nwp/req/collection_parameter_names": "Collection parameter names",
+        "nwp/req/collection_granularity": "Collection granularity",
+        "nwp/req/collection_data_queries": "Collection data queries",
+        "data-query-response-format/req/encoding": "Encoding",
+        "data-query-response-format/req/referencing": "CoverageJSON referencing"
+      },
+      "annexes": [
+        {
+          "id": "schemas",
+          "title": "Schemas (Normative)",
+          "body": "// Schemas to be provided.\n",
+          "obligation": "normative"
+        },
+        {
+          "id": "examples",
+          "title": "Examples (Informative)",
+          "body": "=== Examples\n",
+          "obligation": "informative"
+        },
+        {
+          "id": "appendix-d",
+          "title": "NWP Global Deterministic parameter name matrix",
+          "body": "[cols=\"10,10\",options=\"header\"]\n|===\n|Parameter |ECMWF short name\n|Geopotential Height |gh\n|Temperature |t\n|Wind zonal velocity (u) |u\n|Wind meridional velocity (v) |v\n|Relative Humidity |r\n|Mean Sea Level Pressure (MSLP) |msl\n|2-m Temperature |2t\n|2-m minimum temperature in the last 3 hours |mn2t3\n|2-m maximum temperature in the last 3 hours |mx2t3\n|2-m minimum temperature in the last 6 hours |mn2t6\n|2-m maximum temperature in the last 6 hours |mx2t6\n|2m dewpoint temperature |2d\n|10m u |10u\n|10m v |10v\n|10m wind gust |10fg\n|Total Precipitation |tp\n|Total solid precipitation |TODO fix\n|CAPE |cape\n|Total precipitable water |tcw\n|Total cloud cover |tcc\n|===\n",
+          "obligation": "normative"
+        }
+      ],
+      "figures": [],
+      "bibliography": [
+        {
+          "anchor": "SDWBP",
+          "citation": "SDWBP",
+          "title": "W3C/OGC: Spatial Data on the Web Best Practices, W3C Working Group Note, 28 September 2017, https://www.w3.org/TR/sdw-bp"
+        },
+        {
+          "anchor": "DWBP",
+          "citation": "DWBP",
+          "title": "W3C: Data on the Web Best Practices, W3C Recommendation, 31 January 2017, https://www.w3.org/TR/dwbp"
+        },
+        {
+          "anchor": "DCAT",
+          "citation": "DCAT",
+          "title": "W3C: Data Catalog Vocabulary, W3C Recommendation, 16 January 2014, https://www.w3.org/TR/vocab-dcat"
+        },
+        {
+          "anchor": "link-relations",
+          "citation": "link-relations",
+          "title": "IANA: Link Relation Types, https://www.iana.org/assignments/link-relations/link-relations.xml"
+        },
+        {
+          "anchor": "SPDX",
+          "citation": "SPDX",
+          "title": "Linux Foundation: SPDX License List, https://spdx.org/licenses"
+        }
+      ],
+      "revision_history": [
+        {
+          "date": "2024-09-16",
+          "release": "Template",
+          "editor": "Tom Kralidis",
+          "clauses": "all",
+          "description": "Initial template"
+        },
+        {
+          "date": "2026-01-16",
+          "release": "Draft",
+          "editor": "Tom Kralidis",
+          "clauses": "all",
+          "description": "Add requirements and conformance for NWP"
+        }
+      ],
+      "render_requirement_clauses": true
+    }
   },
   "paging": {
     "enabled": true,

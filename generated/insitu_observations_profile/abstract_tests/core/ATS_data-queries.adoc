@@ -1,12 +1,22 @@
 [[ats_insitu_observations_profile_data_queries]]
-[abstract_test]
 ====
 [%metadata]
-identifier:: /conf/insitu_observations_profile/data-queries
-target:: /req/insitu_observations_profile/data-queries
+label:: /conf/insitu_observations_profile/data-queries
+subject:: /req/insitu_observations_profile/data-queries
 test-purpose:: Validate that data queries is correctly implemented.
-test-method::
-step:: Send GET request to /collections/insitu-observations.
-step:: Verify data_queries contains locations, area, and radius.
-step:: Verify the radius variables.within_units array contains m.
+[.component,class=test method]
+=====
+[.component,class=step]
+--
+Send GET request to /collections/insitu-observations.
+--
+[.component,class=step]
+--
+Verify data_queries contains locations, area, and radius.
+--
+[.component,class=step]
+--
+Verify the radius variables.within_units array contains m.
+--
+=====
 ====

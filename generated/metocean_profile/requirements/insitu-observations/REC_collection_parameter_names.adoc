@@ -1,0 +1,8 @@
+[[rec_insitu_observations_collection_parameter_names]]
+[recommendation]
+====
+[%metadata]
+identifier:: /rec/insitu-observations/collection_parameter_names
+statement:: Each measurementType.method in parameter_names SHOULD follow the CF-convention cell methods.
+part:: Each measurementType.method object in parameter_names SHOULD follow the CF-convention cell methods and use a value from the CF cell-methods appendix.
+====

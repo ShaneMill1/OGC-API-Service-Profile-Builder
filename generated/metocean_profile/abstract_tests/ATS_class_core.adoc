@@ -4,14 +4,14 @@
 [%metadata]
 identifier:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/conf/core
 target:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/core
-abstract-test:: /conf/core/core-openapi
-abstract-test:: /conf/core/core-collection-identifier
-abstract-test:: /conf/core/core-collection-title
-abstract-test:: /conf/core/core-collection-license
-abstract-test:: /conf/core/core-collection-spatial-extent
-abstract-test:: /conf/core/core-collection-temporal-extent
-abstract-test:: /conf/core/core-collection-parameter-names
-abstract-test:: /conf/core/core-collection-radius-data-query
-abstract-test:: /conf/core/core-locations-query-response-format
-abstract-test:: /conf/core/core-error-handling
+abstract-test:: /conf/core/openapi
+abstract-test:: /conf/core/collection_identifier
+abstract-test:: /conf/core/collection_title
+abstract-test:: /conf/core/collection_license
+abstract-test:: /conf/core/collection_spatial_extent
+abstract-test:: /conf/core/collection_temporal_extent
+abstract-test:: /conf/core/collection_parameter_names
+abstract-test:: /conf/core/collection_radius_data_query
+abstract-test:: /conf/core/locations_query_response_format
+abstract-test:: /conf/core/error_handling
 ====

@@ -2,14 +2,19 @@
   "name": "minimal_profile",
   "title": "Minimal EDR Profile Example",
   "version": "1.0",
+  "openapi_version": "3.0.0",
   "description": null,
+  "attribution": null,
   "keywords": [],
   "server_url": null,
   "provider": null,
   "classification": null,
   "metadata_date": null,
   "resource_service_publish_date": null,
+  "links": [],
   "resource_default_locale": null,
+  "default_language": null,
+  "supported_languages": [],
   "collections": [
     {
       "id": "temperature",
@@ -76,6 +81,7 @@
       "post_queries": null,
       "classification": null,
       "provider": null,
+      "attribution": null,
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
@@ -92,6 +98,25 @@
         "The service SHALL provide a /collections/temperature/items endpoint.",
         "The response Content-Type SHALL be application/geo+json."
       ],
+      "level": "requirement",
+      "conformance_class": null
+    },
+    {
+      "id": "temperature-units-label",
+      "statement": "The temperature collection SHOULD label its unit as Celsius.",
+      "parts": [
+        "Each temp parameter SHOULD expose a unit.label of \"Celsius\"."
+      ],
+      "level": "recommendation",
+      "conformance_class": null
+    },
+    {
+      "id": "temperature-post-query",
+      "statement": "The service MAY support POST queries for the temperature collection.",
+      "parts": [
+        "Implementations MAY offer POST alongside GET on data query endpoints."
+      ],
+      "level": "permission",
       "conformance_class": null
     }
   ],
@@ -99,11 +124,15 @@
     {
       "id": "temperature-geojson",
       "requirement_id": "temperature-geojson",
+      "conformance_class": null,
       "steps": [
         "Send GET request to /collections/temperature/items.",
         "Verify the response Content-Type is application/geo+json.",
         "Verify each feature contains temp property."
-      ]
+      ],
+      "method": null,
+      "test_purpose": null,
+      "test_method_text": null
     }
   ],
   "pubsub": null,

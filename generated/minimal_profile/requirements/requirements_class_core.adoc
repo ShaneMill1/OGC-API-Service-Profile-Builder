@@ -5,4 +5,6 @@
 identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/minimal_profile
 target-type:: Minimal EDR Profile Example Profile Standard
 requirement:: /req/minimal_profile/temperature-geojson
+recommendation:: /req/minimal_profile/temperature-units-label
+permission:: /req/minimal_profile/temperature-post-query
 ====

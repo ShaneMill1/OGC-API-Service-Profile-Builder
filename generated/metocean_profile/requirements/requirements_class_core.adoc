@@ -3,15 +3,19 @@
 ====
 [%metadata]
 identifier:: http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0/req/core
-target-type:: MetOcean Profile for OGC API - EDR Profile Standard
-requirement:: /req/core/core-openapi
-requirement:: /req/core/core-collection-identifier
-requirement:: /req/core/core-collection-title
-requirement:: /req/core/core-collection-license
-requirement:: /req/core/core-collection-spatial-extent
-requirement:: /req/core/core-collection-temporal-extent
-requirement:: /req/core/core-collection-parameter-names
-requirement:: /req/core/core-collection-radius-data-query
-requirement:: /req/core/core-locations-query-response-format
-requirement:: /req/core/core-error-handling
+target-type:: Web API
+dependency:: OGC API - Environmental Data Retrieval Standard - Part 1: Core (2023) footnote:[https://docs.ogc.org/is/19-086r6/19-086r6.html]
+pre-condition:: The API conforms to OGC API - Environmental Data Retrieval - Part 1: Core, Requirements Class: Core and Requirements Class: Collections
+requirement:: /req/core/openapi
+requirement:: /req/core/collection_identifier
+requirement:: /req/core/collection_title
+requirement:: /req/core/collection_license
+requirement:: /req/core/collection_spatial_extent
+requirement:: /req/core/collection_temporal_extent
+requirement:: /req/core/collection_parameter_names
+requirement:: /req/core/collection_radius_data_query
+requirement:: /req/core/locations_query_response_format
+requirement:: /req/core/error_handling
+recommendation:: /rec/core/collection_vertical_extent
+recommendation:: /rec/core/data_query_response_metadata
 ====

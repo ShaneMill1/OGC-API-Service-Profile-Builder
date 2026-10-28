@@ -1,13 +1,26 @@
 [[ats_nws_connect_collections_endpoint]]
-[abstract_test]
 ====
 [%metadata]
-identifier:: /conf/nws_connect/collections-endpoint
-target:: /req/nws_connect/collections-endpoint
+label:: /conf/nws_connect/collections-endpoint
+subject:: /req/nws_connect/collections-endpoint
 test-purpose:: Validate that collections endpoint is correctly implemented.
-test-method::
-step:: Send GET request to /collections.
-step:: Verify response contains collections array.
-step:: Verify water_gauge, wwa, space_weather, cwa, and states are present in the collections array.
-step:: Verify each collection has id, title, description, extent, and links.
+[.component,class=test method]
+=====
+[.component,class=step]
+--
+Send GET request to /collections.
+--
+[.component,class=step]
+--
+Verify response contains collections array.
+--
+[.component,class=step]
+--
+Verify water_gauge, wwa, space_weather, cwa, and states are present in the collections array.
+--
+[.component,class=step]
+--
+Verify each collection has id, title, description, extent, and links.
+--
+=====
 ====
