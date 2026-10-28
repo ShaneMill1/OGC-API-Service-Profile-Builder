@@ -1,0 +1,22 @@
+[[ats_levels_explained_output_geojson]]
+====
+[%metadata]
+label:: /conf/levels_explained/output-geojson
+subject:: /req/levels_explained/output-geojson
+test-purpose:: Validate that the service returns GeoJSON for the example collection.
+[.component,class=test method]
+=====
+[.component,class=step]
+--
+Send a GET request to /collections/example/items.
+--
+[.component,class=step]
+--
+Verify the response HTTP status is 200.
+--
+[.component,class=step]
+--
+Verify the response Content-Type is application/geo+json.
+--
+=====
+====

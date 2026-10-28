@@ -1730,7 +1730,8 @@ def _req_adoc(profile: ServiceProfile) -> str:
     ]
     for req in profile.requirements:
         keyword = _LEVEL_BLOCK[_level_of(req)]
-        lines.append(f"{keyword}:: /req/{profile.name}/{req.id}")
+        # Obligation-aware identifier namespace: /req/ | /rec/ | /per/.
+        lines.append(f"{keyword}:: /{_req_uri_seg(req)}/{profile.name}/{req.id}")
     lines.append("====")
     return "\n".join(lines) + "\n"
 
@@ -1756,14 +1757,16 @@ def _conf_adoc(profile: ServiceProfile) -> str:
 
 def _individual_req_adoc(profile: ServiceProfile, req_id: str) -> str:
     req = next(r for r in profile.requirements if r.id == req_id)
-    anchor = f"req_{profile.name}_{req.id}".replace("/", "_").replace("-", "_")
+    seg = _req_uri_seg(req)
+    anchor = f"{seg}_{profile.name}_{req.id}".replace("/", "_").replace("-", "_")
     block = _LEVEL_BLOCK[_level_of(req)]
     lines = [
         f"[[{anchor}]]",
         f"[{block}]",
         "====",
         "[%metadata]",
-        f"identifier:: /req/{profile.name}/{req.id}",
+        # Obligation-aware identifier namespace: /req/ | /rec/ | /per/.
+        f"identifier:: /{seg}/{profile.name}/{req.id}",
         f"statement:: {req.statement}",
     ]
     for part in req.parts:
@@ -2744,7 +2747,8 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
     )
     if groups is None:
         req_includes = "\n".join(
-            f"include::../requirements/core/REQ_{r.id}.adoc[]" for r in profile.requirements
+            f"include::../requirements/core/{_req_file_prefix(r)}_{r.id}.adoc[]"
+            for r in profile.requirements
         )
         ats_includes = "\n".join(
             f"include::../abstract_tests/core/ATS_{t.id}.adoc[]" for t in profile.abstract_tests
@@ -3091,7 +3095,11 @@ def generate(profile: ServiceProfile, output_dir: Path, base_dir: Path | None = 
         # Single-class (legacy) layout — one 'core' requirements/conformance class.
         safe_write("requirements/requirements_class_core.adoc", _req_adoc(profile))
         for req in profile.requirements:
-            safe_write(f"requirements/core/REQ_{req.id}.adoc", _individual_req_adoc(profile, req.id))
+            # Obligation-aware file prefix: REQ_ | REC_ | PER_.
+            safe_write(
+                f"requirements/core/{_req_file_prefix(req)}_{req.id}.adoc",
+                _individual_req_adoc(profile, req.id),
+            )
         safe_write("abstract_tests/ATS_class_core.adoc", _conf_adoc(profile))
         for test in profile.abstract_tests:
             safe_write(f"abstract_tests/core/ATS_{test.id}.adoc", _individual_test_adoc(profile, test.id))

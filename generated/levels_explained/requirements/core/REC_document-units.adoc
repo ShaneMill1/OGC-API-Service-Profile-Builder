@@ -1,0 +1,8 @@
+[[rec_levels_explained_document_units]]
+[recommendation]
+====
+[%metadata]
+identifier:: /rec/levels_explained/document-units
+statement:: A conforming service SHOULD document the unit of each parameter. (This is a recommendation — it is informative guidance and is NOT conformance-tested.)
+part:: Each parameter SHOULD expose a human-readable unit.label.
+====

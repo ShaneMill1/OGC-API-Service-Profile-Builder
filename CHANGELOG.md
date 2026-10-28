@@ -1,5 +1,18 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.14.1] - 2026-10-28
+
+Fixes obligation-aware identifiers/filenames in the single-class (legacy) layout and adds self-explanatory demo material for the three RFC 2119 statement levels.
+
+### Fixed
+- **Single-class recommendations/permissions were mislabeled.** In the legacy single-class layout (profiles where no requirement declares a `conformance_class`), recommendations and permissions were emitted with `/req/` identifiers and `REQ_` filenames regardless of their `level`. They now use the correct obligation-aware namespace and filename — `/rec/` + `REC_` for recommendations and `/per/` + `PER_` for permissions — matching the multi-class layout (which was already correct). The rendered Metanorma block type (`[recommendation]`/`[permission]`) was already correct; only the identifier and filename were wrong.
+
+### Added
+- **Demo profiles (`examples/demo_level/`)** for teaching requirement vs. recommendation vs. permission:
+  - `levels_explained.yaml` — a single self-explanatory profile whose generated PDF explains all three levels on its own (concept clause + one Requirement/Recommendation/Permission box each + an Annex A that tests only the requirement). Intended for screenshotting into slides.
+  - `minimal_baseline.yaml` / `minimal_recommendation.yaml` / `minimal_requirement.yaml` — three near-identical profiles that differ by one line (`level:`), for a controlled before/after comparison.
+- **`docs/demo-requirements-recommendations.md`** — a step-by-step live demo script.
+
 ## [3.14.0] - 2026-10-28
 
 Aligns the generated MetOcean document's structure with the upstream OGC 26-027 source so a config-only build reproduces the hand-authored document's layout. Verified by building both PDFs from source and diffing the rendered table of contents: front matter, all ten clauses with every sub-clause, and all five annex obligation captions now match. See `docs/metocean-profile-fidelity.md` and issue #10.

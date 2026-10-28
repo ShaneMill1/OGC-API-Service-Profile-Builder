@@ -1,0 +1,21 @@
+[[how-to-read]]
+[obligation=informative]
+== How to read this document
+
+The three statements that follow are identical in every respect except their *level*. Read them together to see what the level controls.
+
+=== Requirement (SHALL)
+
+A requirement is normative. It is the only statement level that is conformance-tested: every requirement has a matching abstract test in Annex A, and an implementation that does not meet it is non-conformant. Requirements are rendered as a *Requirement* box and carry a `/req/` identifier.
+
+=== Recommendation (SHOULD)
+
+A recommendation is informative best practice. It is published as guidance but is *not* conformance-tested — an implementation that does not follow it is still conformant. Recommendations are rendered as a *Recommendation* box and carry a `/rec/` identifier. They never appear in the Abstract Test Suite.
+
+=== Permission (MAY)
+
+A permission is an explicitly allowed option. Like a recommendation it is informative and not conformance-tested. Permissions are rendered as a *Permission* box and carry a `/per/` identifier.
+
+=== What this means for conformance
+
+Of the three statements below, only the requirement is listed in the Annex A Abstract Test Suite. The recommendation and permission are reported in the profile's quality summary as informative, but they can never make an implementation non-conformant. The author expresses all of this with one field — `level` — and the tooling does the rest.

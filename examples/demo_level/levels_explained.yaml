@@ -1,0 +1,141 @@
+# ============================================================================
+# SELF-EXPLANATORY DEMO PROFILE — requirement vs. recommendation vs. permission
+# ----------------------------------------------------------------------------
+# This profile is written so the GENERATED PDF speaks for itself: drop any page
+# into a slide and it explains, on its own, how the profile builder treats the
+# three RFC 2119 statement levels. The prose below is deliberately about the
+# tooling concept rather than a real weather service.
+#
+# Build it:
+#   oapi-profile-builder generate \
+#     --config examples/demo_level/levels_explained.yaml \
+#     --output /tmp/levels_explained --pdf
+#
+# Then screenshot: the Introduction clause (the concept), and clauses 7.1/7.2/7.3
+# (the Requirement / Recommendation / Permission boxes side by side).
+# ============================================================================
+name: levels_explained
+title: "Statement Levels Explained: Requirement, Recommendation, Permission"
+version: "1.0"
+openapi_version: "3.0.0"
+
+required_conformance_classes:
+  - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
+
+output_formats:
+  - name: GeoJSON
+    media_type: application/geo+json
+    schema_ref: https://geojson.org/schema/FeatureCollection.json
+
+document_metadata:
+  doc_number: "demo-levels"
+  doc_subtype: implementation
+  copyright_year: 2026
+  editors:
+    - Shane Mill
+  submitting_orgs:
+    - NOAA/NWS/MDL
+  keywords:
+    - RFC 2119
+    - requirement
+    - recommendation
+    - permission
+    - conformance
+    - OGC API - EDR
+    - service profile
+
+  body:
+    render_requirement_clauses: false
+
+    abstract: |
+      This profile is a teaching example. It shows how a single YAML configuration drives three distinct kinds of statement — a *requirement* (SHALL), a *recommendation* (SHOULD) and a *permission* (MAY) — and how the profile builder renders each one differently and treats only requirements as conformance-tested.
+
+      Each statement below is labelled by the builder according to one field, `level`. That single field determines the Metanorma block type, the identifier namespace (`/req/`, `/rec/` or `/per/`), the generated filename (`REQ_`, `REC_` or `PER_`) and — most importantly — whether the statement is checked by the Abstract Test Suite in Annex A.
+
+    clauses:
+      - id: how-to-read
+        title: How to read this document
+        position: before-requirements
+        obligation: informative
+        body: |
+          The three statements that follow are identical in every respect except their *level*. Read them together to see what the level controls.
+
+          === Requirement (SHALL)
+
+          A requirement is normative. It is the only statement level that is conformance-tested: every requirement has a matching abstract test in Annex A, and an implementation that does not meet it is non-conformant. Requirements are rendered as a *Requirement* box and carry a `/req/` identifier.
+
+          === Recommendation (SHOULD)
+
+          A recommendation is informative best practice. It is published as guidance but is *not* conformance-tested — an implementation that does not follow it is still conformant. Recommendations are rendered as a *Recommendation* box and carry a `/rec/` identifier. They never appear in the Abstract Test Suite.
+
+          === Permission (MAY)
+
+          A permission is an explicitly allowed option. Like a recommendation it is informative and not conformance-tested. Permissions are rendered as a *Permission* box and carry a `/per/` identifier.
+
+          === What this means for conformance
+
+          Of the three statements below, only the requirement is listed in the Annex A Abstract Test Suite. The recommendation and permission are reported in the profile's quality summary as informative, but they can never make an implementation non-conformant. The author expresses all of this with one field — `level` — and the tooling does the rest.
+
+    requirement_headings:
+      req/output-geojson: "A requirement (SHALL) — conformance-tested"
+      rec/document-units: "A recommendation (SHOULD) — informative guidance"
+      per/support-post: "A permission (MAY) — an allowed option"
+    requirement_intros:
+      req/output-geojson: "This statement uses SHALL, so the builder renders it as a Requirement box with a /req/ identifier and generates a matching abstract test in Annex A. It is conformance-tested."
+      rec/document-units: "This statement uses SHOULD, so the builder renders it as a Recommendation box with a /rec/ identifier. It is published as guidance and is NOT conformance-tested — note that it has no entry in Annex A."
+      per/support-post: "This statement uses MAY, so the builder renders it as a Permission box with a /per/ identifier. It describes an allowed option and is NOT conformance-tested."
+
+collections:
+  - id: example
+    title: Example Collection
+    description: A placeholder collection so the document is a complete profile.
+    links:
+      - href: https://example.com/collections/example
+        rel: self
+        type: application/json
+    extent:
+      spatial:
+        bbox:
+          - [-180, -90, 180, 90]
+        crs: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+    parameter_names:
+      value:
+        type: Parameter
+        description: Example parameter
+        observedProperty:
+          label: Example value
+        unit:
+          label: unitless
+
+requirements:
+  # ---- REQUIREMENT (SHALL) — conformance-tested ----
+  - id: output-geojson
+    statement: A conforming service SHALL return GeoJSON for the example collection. (This is a requirement — it is conformance-tested via Annex A.)
+    parts:
+      - The service SHALL expose /collections/example/items.
+      - The response Content-Type SHALL be application/geo+json.
+
+  # ---- RECOMMENDATION (SHOULD) — informative, NOT conformance-tested ----
+  - id: document-units
+    level: recommendation
+    statement: A conforming service SHOULD document the unit of each parameter. (This is a recommendation — it is informative guidance and is NOT conformance-tested.)
+    parts:
+      - Each parameter SHOULD expose a human-readable unit.label.
+
+  # ---- PERMISSION (MAY) — informative, an allowed option ----
+  - id: support-post
+    level: permission
+    statement: A conforming service MAY support POST queries in addition to GET. (This is a permission — it describes an allowed option and is NOT conformance-tested.)
+    parts:
+      - Implementations MAY offer POST alongside GET on data query endpoints.
+
+# Only the requirement has an abstract test. Deliberately, there is NO abstract
+# test for the recommendation or the permission — that is the whole point.
+abstract_tests:
+  - id: output-geojson
+    requirement_id: output-geojson
+    test_purpose: Validate that the service returns GeoJSON for the example collection.
+    steps:
+      - Send a GET request to /collections/example/items.
+      - Verify the response HTTP status is 200.
+      - Verify the response Content-Type is application/geo+json.

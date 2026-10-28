@@ -1,0 +1,8 @@
+[[ats_class_levels_explained]]
+[conformance_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/levels_explained
+target:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/levels_explained
+abstract-test:: /conf/levels_explained/output-geojson
+====

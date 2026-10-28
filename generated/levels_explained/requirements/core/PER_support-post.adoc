@@ -1,0 +1,8 @@
+[[per_levels_explained_support_post]]
+[permission]
+====
+[%metadata]
+identifier:: /per/levels_explained/support-post
+statement:: A conforming service MAY support POST queries in addition to GET. (This is a permission — it describes an allowed option and is NOT conformance-tested.)
+part:: Implementations MAY offer POST alongside GET on data query endpoints.
+====

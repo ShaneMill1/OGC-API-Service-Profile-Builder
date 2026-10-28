@@ -1,0 +1,92 @@
+# ============================================================================
+# DEMO VARIANT 3 of 3 — THE SAME STATEMENT AS A REQUIREMENT (SHALL)
+# ----------------------------------------------------------------------------
+# Identical to minimal_recommendation.yaml EXCEPT the `temperature-units-label`
+# statement is now a REQUIREMENT. The statement text still reads "SHOULD" so the
+# diff against the recommendation variant is EXACTLY ONE LINE: `level:` changes
+# from `recommendation` to `requirement`. That single line is what flips the
+# statement from informative to conformance-tested.
+#
+# Diff against minimal_recommendation.yaml  ->  one line (`level:`).
+# Effect in the generated output:
+#   - the block renders as [requirement] (not [recommendation])
+#   - its identifier becomes /req/... (was /rec/...) and the file is REQ_ (was REC_)
+#   - the quality summary moves it from "recommendations" to "requirements"
+#   - it now belongs with the conformance-tested statements
+#
+# FOLLOW-ON (realistic authoring): once a statement is a requirement it should
+# also carry an abstract test so it is actually conformance-checked. Uncomment
+# the second abstract_tests entry below to show that final step. (Also reword
+# the statement's SHOULD -> SHALL for correct RFC 2119 prose in a real profile.)
+#
+# See docs/demo-requirements-recommendations.md.
+# ============================================================================
+name: minimal_requirement
+title: Minimal EDR Profile — Demo (requirement)
+version: "1.0"
+openapi_version: "3.0.0"
+
+required_conformance_classes:
+  - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
+
+output_formats:
+  - name: GeoJSON
+    media_type: application/geo+json
+    schema_ref: https://geojson.org/schema/FeatureCollection.json
+
+collections:
+  - id: temperature
+    title: Temperature Observations
+    description: Real-time temperature observations
+    links:
+      - href: https://example.com/collections/temperature
+        rel: self
+        type: application/json
+    extent:
+      spatial:
+        bbox:
+          - [-180, -90, 180, 90]
+        crs: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+    parameter_names:
+      temp:
+        type: Parameter
+        description: Air temperature
+        observedProperty:
+          label: Air Temperature
+        unit:
+          label: Celsius
+          symbol:
+            value: "°C"
+            type: "http://www.opengis.net/def/uom/UCUM/degC"
+
+requirements:
+  # One requirement (SHALL) — conformance-tested.
+  - id: temperature-geojson
+    statement: The temperature collection SHALL return GeoJSON features.
+    parts:
+      - The service SHALL provide a /collections/temperature/items endpoint.
+      - The response Content-Type SHALL be application/geo+json.
+
+  # The demo statement, now a REQUIREMENT. The ONLY line that differs from
+  # minimal_recommendation.yaml is `level: requirement` below.
+  - id: temperature-units-label
+    level: requirement
+    statement: The temperature collection SHOULD label its unit as Celsius.
+    parts:
+      - Each temp parameter SHOULD expose a unit.label of "Celsius".
+
+abstract_tests:
+  - id: temperature-geojson
+    requirement_id: temperature-geojson
+    steps:
+      - Send GET request to /collections/temperature/items.
+      - Verify the response Content-Type is application/geo+json.
+      - Verify each feature contains temp property.
+
+  # FOLLOW-ON: uncomment to give the graduated requirement its own abstract test
+  # so it becomes genuinely conformance-tested (the realistic end state).
+  # - id: temperature-units-label
+  #   requirement_id: temperature-units-label
+  #   steps:
+  #     - Send GET request to /collections/temperature.
+  #     - Verify each temp parameter exposes unit.label equal to "Celsius".

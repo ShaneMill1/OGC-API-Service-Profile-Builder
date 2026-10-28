@@ -1,0 +1,72 @@
+# ============================================================================
+# DEMO VARIANT 1 of 3 — BASELINE (control)
+# ----------------------------------------------------------------------------
+# Part of the requirements-vs-recommendations demo. These three profiles are
+# IDENTICAL except for how the `temperature-units-label` statement is handled:
+#
+#   minimal_baseline.yaml       — the statement is ABSENT (this file)
+#   minimal_recommendation.yaml — the statement is a recommendation (SHOULD)
+#   minimal_requirement.yaml    — the SAME statement is a requirement (SHALL)
+#
+# Generate all three and diff the output to show exactly what the `level`
+# field controls. See docs/demo-requirements-recommendations.md.
+#
+# This baseline defines ONE requirement and nothing else, so the quality
+# summary reads: 1 requirement / 0 recommendations / 0 permissions.
+# ============================================================================
+name: minimal_baseline
+title: Minimal EDR Profile — Demo (baseline)
+version: "1.0"
+openapi_version: "3.0.0"
+
+required_conformance_classes:
+  - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
+
+output_formats:
+  - name: GeoJSON
+    media_type: application/geo+json
+    schema_ref: https://geojson.org/schema/FeatureCollection.json
+
+collections:
+  - id: temperature
+    title: Temperature Observations
+    description: Real-time temperature observations
+    links:
+      - href: https://example.com/collections/temperature
+        rel: self
+        type: application/json
+    extent:
+      spatial:
+        bbox:
+          - [-180, -90, 180, 90]
+        crs: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+    parameter_names:
+      temp:
+        type: Parameter
+        description: Air temperature
+        observedProperty:
+          label: Air Temperature
+        unit:
+          label: Celsius
+          symbol:
+            value: "°C"
+            type: "http://www.opengis.net/def/uom/UCUM/degC"
+
+requirements:
+  # One requirement (SHALL) — conformance-tested.
+  - id: temperature-geojson
+    statement: The temperature collection SHALL return GeoJSON features.
+    parts:
+      - The service SHALL provide a /collections/temperature/items endpoint.
+      - The response Content-Type SHALL be application/geo+json.
+
+  # NOTE: the `temperature-units-label` statement is intentionally ABSENT here.
+  # Compare against minimal_recommendation.yaml to see a recommendation added.
+
+abstract_tests:
+  - id: temperature-geojson
+    requirement_id: temperature-geojson
+    steps:
+      - Send GET request to /collections/temperature/items.
+      - Verify the response Content-Type is application/geo+json.
+      - Verify each feature contains temp property.

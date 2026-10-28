@@ -1,0 +1,10 @@
+[[req_class_levels_explained]]
+[requirements_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/levels_explained
+target-type:: Statement Levels Explained: Requirement, Recommendation, Permission Profile Standard
+requirement:: /req/levels_explained/output-geojson
+recommendation:: /rec/levels_explained/document-units
+permission:: /per/levels_explained/support-post
+====

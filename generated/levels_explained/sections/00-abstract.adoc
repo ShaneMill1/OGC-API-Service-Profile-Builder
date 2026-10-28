@@ -1,0 +1,19 @@
+[abstract]
+== Abstract
+
+This profile is a teaching example. It shows how a single YAML configuration drives three distinct kinds of statement — a *requirement* (SHALL), a *recommendation* (SHOULD) and a *permission* (MAY) — and how the profile builder renders each one differently and treats only requirements as conformance-tested.
+
+Each statement below is labelled by the builder according to one field, `level`. That single field determines the Metanorma block type, the identifier namespace (`/req/`, `/rec/` or `/per/`), the generated filename (`REQ_`, `REC_` or `PER_`) and — most importantly — whether the statement is checked by the Abstract Test Suite in Annex A.
+
+[.preface]
+== Submitters
+
+All questions regarding this document should be directed to the editor or the submitters:
+
+[%unnumbered]
+.Submitters
+|===
+h|Name h|Affiliation
+
+| Shane Mill _(editor)_ |NOAA/NWS/MDL
+|===

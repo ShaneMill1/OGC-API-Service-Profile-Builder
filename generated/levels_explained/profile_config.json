@@ -1,0 +1,251 @@
+{
+  "name": "levels_explained",
+  "title": "Statement Levels Explained: Requirement, Recommendation, Permission",
+  "version": "1.0",
+  "openapi_version": "3.0.0",
+  "description": null,
+  "attribution": null,
+  "keywords": [],
+  "server_url": null,
+  "provider": null,
+  "classification": null,
+  "metadata_date": null,
+  "resource_service_publish_date": null,
+  "links": [],
+  "resource_default_locale": null,
+  "default_language": null,
+  "supported_languages": [],
+  "collections": [
+    {
+      "id": "example",
+      "title": "Example Collection",
+      "description": "A placeholder collection so the document is a complete profile.",
+      "keywords": null,
+      "links": [
+        {
+          "href": "https://example.com/collections/example",
+          "hreflang": null,
+          "rel": "self",
+          "type": "application/json",
+          "title": null,
+          "length": null,
+          "templated": null,
+          "variables": null
+        }
+      ],
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180.0,
+              -90.0,
+              180.0,
+              90.0
+            ]
+          ],
+          "crs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+        },
+        "temporal": null,
+        "vertical": null,
+        "custom": null
+      },
+      "data_queries": null,
+      "crs": null,
+      "output_formats": null,
+      "parameter_names": {
+        "value": {
+          "type": "Parameter",
+          "id": null,
+          "label": null,
+          "description": "Example parameter",
+          "dataType": null,
+          "unit": {
+            "id": null,
+            "label": "unitless",
+            "symbol": null
+          },
+          "observedProperty": {
+            "id": null,
+            "label": "Example value",
+            "description": null,
+            "categories": null
+          },
+          "extent": null,
+          "measurementType": null
+        }
+      },
+      "distanceunits": null,
+      "post_queries": null,
+      "classification": null,
+      "provider": null,
+      "attribution": null,
+      "metadata_date": null,
+      "resource_service_publish_date": null,
+      "resource_default_locale": null,
+      "conformance_classes": [],
+      "parameter_schema": null
+    }
+  ],
+  "collection_examples": {},
+  "requirements": [
+    {
+      "id": "output-geojson",
+      "statement": "A conforming service SHALL return GeoJSON for the example collection. (This is a requirement — it is conformance-tested via Annex A.)",
+      "parts": [
+        "The service SHALL expose /collections/example/items.",
+        "The response Content-Type SHALL be application/geo+json."
+      ],
+      "level": "requirement",
+      "conformance_class": null
+    },
+    {
+      "id": "document-units",
+      "statement": "A conforming service SHOULD document the unit of each parameter. (This is a recommendation — it is informative guidance and is NOT conformance-tested.)",
+      "parts": [
+        "Each parameter SHOULD expose a human-readable unit.label."
+      ],
+      "level": "recommendation",
+      "conformance_class": null
+    },
+    {
+      "id": "support-post",
+      "statement": "A conforming service MAY support POST queries in addition to GET. (This is a permission — it describes an allowed option and is NOT conformance-tested.)",
+      "parts": [
+        "Implementations MAY offer POST alongside GET on data query endpoints."
+      ],
+      "level": "permission",
+      "conformance_class": null
+    }
+  ],
+  "abstract_tests": [
+    {
+      "id": "output-geojson",
+      "requirement_id": "output-geojson",
+      "conformance_class": null,
+      "steps": [
+        "Send a GET request to /collections/example/items.",
+        "Verify the response HTTP status is 200.",
+        "Verify the response Content-Type is application/geo+json."
+      ],
+      "method": null,
+      "test_purpose": "Validate that the service returns GeoJSON for the example collection.",
+      "test_method_text": null
+    }
+  ],
+  "pubsub": null,
+  "processes": [],
+  "document_metadata": {
+    "doc_number": "demo-levels",
+    "doc_type": "draft-standard",
+    "doc_subtype": "implementation",
+    "status": null,
+    "editors": [
+      "Shane Mill"
+    ],
+    "submitting_orgs": [
+      "NOAA/NWS/MDL"
+    ],
+    "submitters": [],
+    "keywords": [
+      "RFC 2119",
+      "requirement",
+      "recommendation",
+      "permission",
+      "conformance",
+      "OGC API - EDR",
+      "service profile"
+    ],
+    "copyright_year": 2026,
+    "submission_date": null,
+    "approval_date": null,
+    "publication_date": null,
+    "notice": null,
+    "normative_references": [],
+    "terms": [],
+    "external_id": null,
+    "colors": null,
+    "fonts": null,
+    "cover": null,
+    "copyright_holder": null,
+    "boilerplate": null,
+    "doc_pub_date": null,
+    "suppress_section_divider_pages": false,
+    "inline_section_headers": false,
+    "suppress_bibliography_indent": false,
+    "suppress_flavor_logo": false,
+    "body_font": null,
+    "header_font": null,
+    "monospace_font": null,
+    "suppress_crossing_lines": false,
+    "plain_section_numbers": false,
+    "suppress_title_underlines": false,
+    "suppress_design_elements": false,
+    "page_watermark": null,
+    "body": {
+      "scope": null,
+      "abstract": "This profile is a teaching example. It shows how a single YAML configuration drives three distinct kinds of statement — a *requirement* (SHALL), a *recommendation* (SHOULD) and a *permission* (MAY) — and how the profile builder renders each one differently and treats only requirements as conformance-tested.\n\nEach statement below is labelled by the builder according to one field, `level`. That single field determines the Metanorma block type, the identifier namespace (`/req/`, `/rec/` or `/per/`), the generated filename (`REQ_`, `REC_` or `PER_`) and — most importantly — whether the statement is checked by the Abstract Test Suite in Annex A.\n",
+      "terms_text": null,
+      "abbreviated_terms": [],
+      "clauses": [
+        {
+          "id": "how-to-read",
+          "title": "How to read this document",
+          "body": "The three statements that follow are identical in every respect except their *level*. Read them together to see what the level controls.\n\n=== Requirement (SHALL)\n\nA requirement is normative. It is the only statement level that is conformance-tested: every requirement has a matching abstract test in Annex A, and an implementation that does not meet it is non-conformant. Requirements are rendered as a *Requirement* box and carry a `/req/` identifier.\n\n=== Recommendation (SHOULD)\n\nA recommendation is informative best practice. It is published as guidance but is *not* conformance-tested — an implementation that does not follow it is still conformant. Recommendations are rendered as a *Recommendation* box and carry a `/rec/` identifier. They never appear in the Abstract Test Suite.\n\n=== Permission (MAY)\n\nA permission is an explicitly allowed option. Like a recommendation it is informative and not conformance-tested. Permissions are rendered as a *Permission* box and carry a `/per/` identifier.\n\n=== What this means for conformance\n\nOf the three statements below, only the requirement is listed in the Annex A Abstract Test Suite. The recommendation and permission are reported in the profile's quality summary as informative, but they can never make an implementation non-conformant. The author expresses all of this with one field — `level` — and the tooling does the rest.\n",
+          "position": "before-requirements",
+          "obligation": "informative"
+        }
+      ],
+      "class_intros": {},
+      "class_metadata": {},
+      "requirement_intros": {
+        "req/output-geojson": "This statement uses SHALL, so the builder renders it as a Requirement box with a /req/ identifier and generates a matching abstract test in Annex A. It is conformance-tested.",
+        "rec/document-units": "This statement uses SHOULD, so the builder renders it as a Recommendation box with a /rec/ identifier. It is published as guidance and is NOT conformance-tested — note that it has no entry in Annex A.",
+        "per/support-post": "This statement uses MAY, so the builder renders it as a Permission box with a /per/ identifier. It describes an allowed option and is NOT conformance-tested."
+      },
+      "requirement_headings": {
+        "req/output-geojson": "A requirement (SHALL) — conformance-tested",
+        "rec/document-units": "A recommendation (SHOULD) — informative guidance",
+        "per/support-post": "A permission (MAY) — an allowed option"
+      },
+      "annexes": [],
+      "figures": [],
+      "bibliography": [],
+      "revision_history": [],
+      "render_requirement_clauses": false,
+      "preface_front_matter": false,
+      "security_considerations": null,
+      "no_normative_references": false,
+      "no_terms": false,
+      "abstract_test_suite_title": null,
+      "conformance_text": null
+    }
+  },
+  "paging": {
+    "enabled": true,
+    "default_limit": 10,
+    "max_limit": 10000
+  },
+  "required_conformance_classes": [
+    "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
+  ],
+  "extent_requirements": null,
+  "output_formats": [
+    {
+      "name": "GeoJSON",
+      "media_type": "application/geo+json",
+      "schema_ref": "https://geojson.org/schema/FeatureCollection.json"
+    }
+  ],
+  "allow_post_queries": false,
+  "collection_id_pattern": null,
+  "spec_uri_base": "http://www.opengis.net/spec/ogcapi-edr-3/1.0",
+  "parameter_name_pattern": null,
+  "parameter_schema": null,
+  "collection_title_max_length": null,
+  "require_license_link": false,
+  "license_link_type": "text/html",
+  "required_data_queries": [],
+  "radius_within_units_required": [],
+  "locations_feature_required_properties": [],
+  "conformance_class_requirements": {}
+}

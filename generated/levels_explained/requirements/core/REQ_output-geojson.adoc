@@ -1,0 +1,9 @@
+[[req_levels_explained_output_geojson]]
+[requirement]
+====
+[%metadata]
+identifier:: /req/levels_explained/output-geojson
+statement:: A conforming service SHALL return GeoJSON for the example collection. (This is a requirement — it is conformance-tested via Annex A.)
+part:: The service SHALL expose /collections/example/items.
+part:: The response Content-Type SHALL be application/geo+json.
+====
