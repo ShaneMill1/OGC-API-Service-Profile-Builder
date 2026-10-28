@@ -1,4 +1,4 @@
-[appendix,obligation=normative]
+[appendix,obligation=informative]
 [[appendix-d]]
 == NWP Global Deterministic parameter name matrix
 

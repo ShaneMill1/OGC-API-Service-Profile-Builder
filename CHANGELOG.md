@@ -1,5 +1,25 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.14.0] - 2026-10-28
+
+Aligns the generated MetOcean document's structure with the upstream OGC 26-027 source so a config-only build reproduces the hand-authored document's layout. Verified by building both PDFs from source and diffing the rendered table of contents: front matter, all ten clauses with every sub-clause, and all five annex obligation captions now match. See `docs/metocean-profile-fidelity.md` and issue #10.
+
+### Added
+- **`DocumentBody.preface_front_matter`**: renders Abstract, Keywords, Security Considerations and Submitters as a single Preface block (with inline `i. Abstract` … `iv. Submitters` sub-headings), matching the hand-authored OGC front matter where these sit inside the Preface rather than as separate top-level sections. The top-level front-matter entries then read I. Keywords, II. Preface, III. Security Considerations, IV. Submitting Organizations.
+- **`DocumentBody.security_considerations`**: verbatim Security Considerations text for the Preface block.
+- **`DocumentBody.no_normative_references`**: renders the References clause as the standard OGC statement "There are no normative references in this document." and suppresses the default EDR references.
+- **`DocumentBody.no_terms`**: leads the Terms clause with "No terms and definitions are listed in this document." before the Directive-49/ModSpec prose and the abbreviated-terms table.
+- **`DocumentBody.abstract_test_suite_title`**: titles the Abstract Test Suite annex (e.g. "Conformance Class Abstract Test Suite (Normative)"); the annex then uses a plain informative `[appendix]` caption, as in the source.
+- **`DocumentBody.conformance_text`**: verbatim authored Conformance-clause prose with human-readable requirements-class bullets ("Core", "Observations", "Numerical Weather Prediction"), replacing the generic templated text that listed raw conformance-class URIs.
+
+### Changed
+- **Clause sub-clauses sharing a heading are merged**: in the OGC-style per-class clause layout, consecutive requirements/recommendations that resolve to the same sub-heading now render under a single `===` sub-clause (e.g. a requirement and its related recommendation both titled "Collection parameter names"), instead of two identically-titled sub-clauses. This removes the duplicate insitu "Collection parameter names" sub-clause.
+- The MetOcean example reproduces the source clause ordering (vertical-extent recommendation at 7.8, between temporal extent and parameter names) and spells the title out as "Environmental Data Retrieval".
+- All new fields are optional and additive; the other bundled example profiles are byte-for-byte unchanged.
+
+### Notes
+- Our requirement/recommendation blocks and the structured Abstract Test Suite rendering are deliberately retained (they carry requirement identifiers, conformance-test linkage and machine-readable XML), so Annex A is organised by our conformance-class blocks rather than the source's per-test `A.n` sub-headings. This is the one intentional structural divergence from the source.
+
 ## [3.13.0] - 2026-10-28
 
 Completes the final MetOcean gap-analysis item (full abstract-test detail): the example's abstract tests now carry the draft's verbatim step-by-step methods instead of one-line summaries. See `docs/metocean-profile-fidelity.md` and issue #10.

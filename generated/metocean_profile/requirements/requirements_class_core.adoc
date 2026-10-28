@@ -12,10 +12,10 @@ requirement:: /req/core/collection_title
 requirement:: /req/core/collection_license
 requirement:: /req/core/collection_spatial_extent
 requirement:: /req/core/collection_temporal_extent
+recommendation:: /rec/core/collection_vertical_extent
 requirement:: /req/core/collection_parameter_names
 requirement:: /req/core/collection_radius_data_query
 requirement:: /req/core/locations_query_response_format
 requirement:: /req/core/error_handling
-recommendation:: /rec/core/collection_vertical_extent
 recommendation:: /rec/core/data_query_response_metadata
 ====

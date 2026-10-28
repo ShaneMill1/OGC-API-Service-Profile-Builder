@@ -48,6 +48,26 @@ source's bare names — see §2).
   References, Terms, Conventions, Introduction, then the four requirements
   classes as clauses 7–10 (each requirement/recommendation introduced by its
   source lead-in sentence), the Abstract Test Suite, and the annexes.
+- **Rendered structure matches the source.** Building both PDFs from source and
+  diffing the rendered table of contents confirms the front matter (I. Keywords,
+  II. Preface — carrying Abstract, Keywords, Security Considerations and
+  Submitters inline — III. Security Considerations, IV. Submitting
+  Organizations), every numbered clause and sub-clause (including the
+  vertical-extent recommendation at 7.8 and the single insitu "Collection
+  parameter names" sub-clause 8.3 holding both its requirement and
+  recommendation), and all five annex obligation captions are identical to the
+  source. Driven by `document_metadata.body` fields `preface_front_matter`,
+  `no_normative_references`, `no_terms`, `conformance_text`,
+  `security_considerations` and `abstract_test_suite_title`.
+- **Conformance clause** reproduces the source's authored prose verbatim,
+  including the requirements-class bullets "Core", "Observations" and "Numerical
+  Weather Prediction".
+- **References clause** matches the source: it states "There are no normative
+  references in this document." (the source's referenced documents live in the
+  informative bibliography, Annex E).
+- **Terms clause** leads with "No terms and definitions are listed in this
+  document." before the ModSpec/Policy Directive 49 prose and §4.1 table, as the
+  source does.
 - All 19 normative requirements + matching abstract tests, and all 3
   recommendations (`/rec/core/collection_vertical_extent`,
   `/rec/core/data_query_response_metadata`,
@@ -150,25 +170,36 @@ expressible as generated-OpenAPI constraints:
   ECMWF short-name `id`. The per-collection `parameter_schema` override marks the
   right fields required in each collection's generated OpenAPI.
 
-## 5. PDF output — same document text, not a byte-identical file
+## 5. PDF output — same document structure and text, not a byte-identical file
 
-The generated PDF reproduces the source document's content and structure, with
-all authored prose verbatim, compiled with the same engine the source uses
+The generated PDF reproduces the source document's content **and structure**,
+with all authored prose verbatim, compiled with the same engine the source uses
 (Metanorma `-t ogc`:
 `oapi-profile-builder generate --config examples/metocean_profile.yaml --output ./out --pdf`).
-The document **text** is byte-faithful; the PDF **binary** is not identical to
-one built from the upstream `.adoc`, for reasons intrinsic to the toolchain:
+Building both PDFs from source and diffing the rendered table of contents shows
+the front matter, every clause and sub-clause, and all annex captions match (see
+§2). The remaining differences are deliberate or intrinsic to the toolchain:
 
+- **Annex A layout (intentional).** The source renders each abstract test as an
+  `A.n` sub-heading with a plain metadata/step list. We deliberately keep our
+  **structured** Abstract Test Suite — Metanorma `[conformance_class]` blocks
+  with machine-readable `[%metadata]` and `[.component,class=step]` components,
+  carrying real conformance-test linkage and XML output. The test *content* is
+  verbatim (see §2); only the Annex A organisation differs. This is the one
+  intentional structural divergence, retained because it makes the tool's output
+  standards-native rather than hand-typed.
 - **No canonical reference PDF exists.** The upstream repo ships source only (no
   release/PDF asset); its PDF is re-built on demand and varies with the
-  Metanorma/mn2pdf version and font cache.
+  Metanorma/mn2pdf version and font cache. Our page count is a couple of pages
+  longer because our requirement and abstract-test blocks render slightly taller
+  than the source's plain two-column tables.
 - **Minor Metanorma lint deltas**: non-fatal warnings ("table should have title"
   on the Annex D / revision tables; "recommendation has no conformance test" —
   expected, since recommendations are informative). These do not affect content.
 
 The document identifiers (requirement/recommendation/conformance) match the
-source exactly (see §2), so there is no longer a text-level difference in the
-requirement boxes.
+source exactly (see §2), so there is no text-level difference in the requirement
+boxes.
 
 ## 6. Follow-ups worth considering
 

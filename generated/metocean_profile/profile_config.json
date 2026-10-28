@@ -1,6 +1,6 @@
 {
   "name": "metocean_profile",
-  "title": "MetOcean Profile for OGC API - EDR",
+  "title": "MetOcean Profile for OGC API - Environmental Data Retrieval",
   "version": "1.0",
   "openapi_version": "3.0.0",
   "description": "An EDR profile in support of providing access to meteorological datasets in the MetOcean community of practice, covering in-situ observations and Numerical Weather Prediction output. Profile of OGC API - EDR Part 1: Core.",
@@ -1173,6 +1173,15 @@
       "conformance_class": "core"
     },
     {
+      "id": "collection_vertical_extent",
+      "statement": "If extent.vertical is defined, extent.vertical.vrs SHOULD use one of the recommended vertical reference system values.",
+      "parts": [
+        "If extent.vertical is defined, the value of extent.vertical.vrs SHOULD be one of \"Pressure level in hPa\", \"Geopotential height in gpm\", \"Geometrical altitude above mean sea level in meters\", \"Height above ground in meters\" or \"Flight level\"."
+      ],
+      "level": "recommendation",
+      "conformance_class": "core"
+    },
+    {
       "id": "collection_parameter_names",
       "statement": "Parameter objects SHALL specify label, description and unit using the profile conventions.",
       "parts": [
@@ -1223,15 +1232,6 @@
       "conformance_class": "core"
     },
     {
-      "id": "collection_vertical_extent",
-      "statement": "If extent.vertical is defined, extent.vertical.vrs SHOULD use one of the recommended vertical reference system values.",
-      "parts": [
-        "If extent.vertical is defined, the value of extent.vertical.vrs SHOULD be one of \"Pressure level in hPa\", \"Geopotential height in gpm\", \"Geometrical altitude above mean sea level in meters\", \"Height above ground in meters\" or \"Flight level\"."
-      ],
-      "level": "recommendation",
-      "conformance_class": "core"
-    },
-    {
       "id": "data_query_response_metadata",
       "statement": "The metadata in a data query response SHOULD mirror the terms and vocabularies used in the collection metadata.",
       "parts": [
@@ -1261,6 +1261,15 @@
       "conformance_class": "insitu-observations"
     },
     {
+      "id": "collection_parameter_names",
+      "statement": "Each measurementType.method in parameter_names SHOULD follow the CF-convention cell methods.",
+      "parts": [
+        "Each measurementType.method object in parameter_names SHOULD follow the CF-convention cell methods and use a value from the CF cell-methods appendix."
+      ],
+      "level": "recommendation",
+      "conformance_class": "insitu-observations"
+    },
+    {
       "id": "collection_custom_dimensions",
       "statement": "An insitu-observations collection SHALL define standard_name and level custom dimensions.",
       "parts": [
@@ -1282,15 +1291,6 @@
         "Each object in parameters SHALL have metocean:level."
       ],
       "level": "requirement",
-      "conformance_class": "insitu-observations"
-    },
-    {
-      "id": "collection_parameter_names",
-      "statement": "Each measurementType.method in parameter_names SHOULD follow the CF-convention cell methods.",
-      "parts": [
-        "Each measurementType.method object in parameter_names SHOULD follow the CF-convention cell methods and use a value from the CF cell-methods appendix."
-      ],
-      "level": "recommendation",
       "conformance_class": "insitu-observations"
     },
     {
@@ -1911,7 +1911,7 @@
           "id": "schemas",
           "title": "Schemas (Normative)",
           "body": "// Schemas to be provided.\n",
-          "obligation": "normative"
+          "obligation": "informative"
         },
         {
           "id": "examples",
@@ -1923,7 +1923,7 @@
           "id": "appendix-d",
           "title": "NWP Global Deterministic parameter name matrix",
           "body": "[cols=\"10,10\",options=\"header\"]\n|===\n|Parameter |ECMWF short name\n|Geopotential Height |gh\n|Temperature |t\n|Wind zonal velocity (u) |u\n|Wind meridional velocity (v) |v\n|Relative Humidity |r\n|Mean Sea Level Pressure (MSLP) |msl\n|2-m Temperature |2t\n|2-m minimum temperature in the last 3 hours |mn2t3\n|2-m maximum temperature in the last 3 hours |mx2t3\n|2-m minimum temperature in the last 6 hours |mn2t6\n|2-m maximum temperature in the last 6 hours |mx2t6\n|2m dewpoint temperature |2d\n|10m u |10u\n|10m v |10v\n|10m wind gust |10fg\n|Total Precipitation |tp\n|Total solid precipitation |TODO fix\n|CAPE |cape\n|Total precipitable water |tcw\n|Total cloud cover |tcc\n|===\n",
-          "obligation": "normative"
+          "obligation": "informative"
         }
       ],
       "figures": [],
@@ -1970,7 +1970,13 @@
           "description": "Add requirements and conformance for NWP"
         }
       ],
-      "render_requirement_clauses": true
+      "render_requirement_clauses": true,
+      "preface_front_matter": true,
+      "security_considerations": "No security considerations have been made for this document.\n",
+      "no_normative_references": true,
+      "no_terms": true,
+      "abstract_test_suite_title": "Conformance Class Abstract Test Suite (Normative)",
+      "conformance_text": "Conformance with this standard shall be checked using the tests specified in Annex A (normative) of this document.\n\n_OGC API - Environmental Data Retrieval_ (EDR) provides a family of lightweight interfaces to access Environmental Data resources. Each resource addressed by an EDR API maps to a defined query pattern.  This standard is a profile/extension of EDR.  Conformance to this standard requires demonstrated conformance to the applicable Conformance Classes of _OGC API - Environmental Data Retrieval - Part 1: Core_.\n\nImplementors of EDR API are required to comply with the MetOcean EDR Profile.  A MetOcean EDR Profile shall therefore be compliant with OGC API - Environmental Data Retrieval - Part 1: Core.\n\nThis standard identifies the following Requirements Classes which define the functional requirements.\n\n* \"Core\"\n* \"Observations\"\n* \"Numerical Weather Prediction\"\n\nCompliant implementation of this profile requires conformance to at least the \"Core\" Requirements Class.\n"
     }
   },
   "paging": {

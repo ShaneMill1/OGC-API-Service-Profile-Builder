@@ -2500,11 +2500,19 @@ def _requirement_clause_sections(profile: ServiceProfile, groups) -> str:
         if class_intros.get(cls):
             lines.append(class_intros[cls].rstrip())
             lines.append("")
+
+        # Resolve each member's heading/intro, then group CONSECUTIVE members
+        # that share the same heading into a single `===` sub-clause. This
+        # mirrors hand-authored OGC profiles, where a requirement and a closely
+        # related recommendation (e.g. a requirement and recommendation both
+        # named "Collection parameter names") appear together under one topic
+        # heading rather than as two identically-titled sub-clauses. Headings/
+        # intros are keyed by bare id, with optional class-scoped ("<cls>/<id>")
+        # and obligation-scoped ("<cls>/<seg>/<id>") overrides to disambiguate
+        # names reused across classes or between a requirement and a
+        # recommendation in the same class.
+        prev_heading: str | None = None
         for r in members["reqs"]:
-            # Headings/intros are keyed by bare id, with an optional
-            # class-scoped override "<cls>/<id>" (and obligation-scoped
-            # "<cls>/<seg>/<id>") to disambiguate names reused across classes or
-            # between a requirement and a recommendation in the same class.
             seg = _req_uri_seg(r)
             heading = (
                 req_headings.get(f"{cls}/{seg}/{r.id}")
@@ -2517,9 +2525,13 @@ def _requirement_clause_sections(profile: ServiceProfile, groups) -> str:
                 or req_intros.get(f"{cls}/{r.id}")
                 or req_intros.get(r.id)
             )
-            lines.append(f"=== {heading}")
-            if intro:
-                lines.append(intro.rstrip())
+            if heading != prev_heading:
+                # New topic sub-clause: emit the heading (and its lead-in prose).
+                lines.append(f"=== {heading}")
+                if intro:
+                    lines.append(intro.rstrip())
+                prev_heading = heading
+            # Append this member's REQ/REC include under the current heading.
             lines.append(f"include::../requirements/{cls}/{_req_file_prefix(r)}_{r.id}.adoc[]")
             lines.append("")
         blocks.append("\n".join(lines).rstrip() + "\n")
@@ -2788,14 +2800,23 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
             "====\n"
         )
 
-    # --- References: base OGC refs + any profile-supplied normative references ---
-    reference_lines = [
-        "* [[[OGC-EDR-1,OGC 19-086r6]]], OGC API - Environmental Data Retrieval Standard",
-        "* [[[OGC-EDR-3,nofetch(OGC ogcapi-edr-3)]]], OGC API - EDR Part 3: Service Profiles (draft)",
-    ]
-    if m and m.normative_references:
-        for ref in m.normative_references:
-            reference_lines.append(f"* [[[{ref.anchor},{ref.citation}]]], {ref.title}")
+    # --- References ---------------------------------------------------------
+    # When the profile declares no_normative_references, the References section
+    # renders the standard OGC 'There are no normative references' statement and
+    # no default EDR references are injected. Otherwise the base OGC EDR refs are
+    # emitted, plus any profile-supplied normative references.
+    _body_refs = _doc_body(profile)
+    no_norm_refs = bool(_body_refs and _body_refs.no_normative_references)
+    if no_norm_refs:
+        reference_lines = []
+    else:
+        reference_lines = [
+            "* [[[OGC-EDR-1,OGC 19-086r6]]], OGC API - Environmental Data Retrieval Standard",
+            "* [[[OGC-EDR-3,nofetch(OGC ogcapi-edr-3)]]], OGC API - EDR Part 3: Service Profiles (draft)",
+        ]
+        if m and m.normative_references:
+            for ref in m.normative_references:
+                reference_lines.append(f"* [[[{ref.anchor},{ref.citation}]]], {ref.title}")
 
     # --- Classification banner (e.g. NATO RESTRICTED) ---
     classification_banner = ""
@@ -2867,8 +2888,56 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
             + req_includes + "\n"
         )
 
-    sections = {
-        "sections/00-abstract.adoc": (
+    # --- Front matter: two layouts -----------------------------------------
+    # preface_front_matter=True  -> OGC hand-authored layout: Abstract, Keywords,
+    #   Security Considerations and Submitters all live INSIDE the Preface, using
+    #   the flavor's `[abstract]` collection. The top-level front-matter entries
+    #   then read (I. Keywords, II. Preface, III. Security Considerations,
+    #   IV. Submitting Organizations), matching an OGC profile document.
+    # preface_front_matter=False -> legacy layout: a standalone `== Abstract`
+    #   section and a separate `== Submitters` section.
+    body_sec = _doc_body(profile)
+    security_text = (
+        (body_sec.security_considerations.rstrip() + "\n")
+        if body_sec and body_sec.security_considerations
+        else "No security considerations have been made for this document.\n"
+    )
+    if body_sec and body_sec.preface_front_matter:
+        # Hand-authored OGC layout: a single Preface block carrying Abstract,
+        # Keywords, Security Considerations and Submitters as inline-bold
+        # sub-headings (matching the source's clause_0_front_material.adoc).
+        # No `[abstract]` macro is emitted: the source has none, and using one
+        # would both duplicate the abstract and add a separate cover abstract.
+        # 00-abstract.adoc is left empty; everything lives under the Preface.
+        keywords_line = (
+            ", ".join(m.keywords) if m and m.keywords else ""
+        )
+        abstract_section = ""
+        preface_section = (
+            "[.preface]\n== Preface\n\n"
+            "[big]*i. Abstract*\n\n"
+            + classification_banner
+            + authored_abstract
+            + "\n"
+            "[big]*ii. Keywords*\n\n"
+            "The following are keywords to be used by search engines and document catalogues.\n\n"
+            + (keywords_line + "\n\n" if keywords_line else "")
+            + "[big]*iii. Security Considerations*\n\n"
+            + security_text
+            + "\n"
+            "[big]*iv. Submitters*\n\n"
+            "All questions regarding this document should be directed to the editor or the submitters:\n\n"
+            "[%unnumbered]\n"
+            ".Submitters\n"
+            "|===\n"
+            "h|Name h|Affiliation\n\n"
+            + submitter_rows
+            + "\n|===\n"
+            + notice_block
+            + contact_block
+        )
+    else:
+        abstract_section = (
             "[abstract]\n== Abstract\n\n"
             + classification_banner
             + authored_abstract
@@ -2881,29 +2950,59 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
             "h|Name h|Affiliation\n\n"
             + submitter_rows
             + "\n|===\n"
-        ),
-        "sections/01-preface.adoc": (
+        )
+        preface_section = (
             "[.preface]\n== Preface\n\n"
             f"This document was prepared by {', '.join(m.submitting_orgs) if m and m.submitting_orgs else 'the submitting organizations'}.\n"
             + notice_block
             + contact_block
-        ),
+        )
+
+    sections = {
+        "sections/00-abstract.adoc": abstract_section,
+        "sections/01-preface.adoc": preface_section,
         "sections/02-scope.adoc": (
             "== Scope\n\n"
             + authored_scope
         ),
         "sections/03-conformance.adoc": (
-            "== Conformance\n\n"
-            "Conformance with this standard shall be checked using the Abstract Test Suite in Annex A.\n\n"
-            "The following conformance classes are defined:\n\n"
-            + "\n".join(f"* {u}" for u in conf_uris) + "\n"
+            # Authored Conformance prose when supplied; otherwise the generic
+            # templated text listing the raw conformance-class URIs.
+            (
+                "== Conformance\n\n"
+                + body_sec.conformance_text.rstrip() + "\n"
+            )
+            if (body_sec and body_sec.conformance_text)
+            else (
+                "== Conformance\n\n"
+                "Conformance with this standard shall be checked using the Abstract Test Suite in Annex A.\n\n"
+                "The following conformance classes are defined:\n\n"
+                + "\n".join(f"* {u}" for u in conf_uris) + "\n"
+            )
         ),
         "sections/04-references.adoc": (
-            "[bibliography]\n== References\n\n"
-            + "\n".join(reference_lines) + "\n"
+            # OGC flavor renders this clause as "Normative references". When the
+            # profile has none, emit the standard statement; the `[bibliography]`
+            # macro is required so Metanorma recognises the clause as the
+            # references section even when empty of entries.
+            (
+                "[bibliography]\n== References\n\n"
+                "There are no normative references in this document.\n"
+            )
+            if no_norm_refs
+            else (
+                "[bibliography]\n== References\n\n"
+                + "\n".join(reference_lines) + "\n"
+            )
         ),
         "sections/05-terms.adoc": (
             "== Terms and definitions\n\n"
+            # Optional OGC lead statement for profiles that define no terms.
+            + (
+                "No terms and definitions are listed in this document.\n\n"
+                if (body and body.no_terms)
+                else ""
+            )
             + (
                 (body.terms_text.rstrip() + "\n")
                 if body and body.terms_text
@@ -2918,7 +3017,16 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
         ),
         "sections/06-requirements.adoc": requirements_section,
         "sections/07-abstract-tests.adoc": (
-            "[appendix,obligation=normative]\n== Abstract Test Suite\n\n"
+            # When a custom ATS title is supplied it carries the normativeness in
+            # its text (e.g. 'Abstract Test Suite (Normative)'), so the annex uses
+            # a plain [appendix] (informative obligation caption), matching the
+            # hand-authored OGC source. Otherwise the annex is marked normative.
+            (
+                "[appendix,obligation=informative]\n"
+                if (body and body.abstract_test_suite_title)
+                else "[appendix,obligation=normative]\n"
+            )
+            + f"== {(body.abstract_test_suite_title if body and body.abstract_test_suite_title else 'Abstract Test Suite')}\n\n"
             + (ats_class_includes + "\n\n" if ats_class_includes else "")
             + ats_includes + "\n"
         ),

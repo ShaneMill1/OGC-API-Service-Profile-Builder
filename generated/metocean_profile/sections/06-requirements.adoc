@@ -27,6 +27,10 @@ include::../requirements/core/REQ_collection_spatial_extent.adoc[]
 Temporal extent of a collection.
 include::../requirements/core/REQ_collection_temporal_extent.adoc[]
 
+=== Collection vertical extent
+Vertical extent of a collection.
+include::../requirements/core/REC_collection_vertical_extent.adoc[]
+
 === Collection parameter names
 Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
 include::../requirements/core/REQ_collection_parameter_names.adoc[]
@@ -42,10 +46,6 @@ include::../requirements/core/REQ_locations_query_response_format.adoc[]
 === Error handling
 HTTP status codes and response documents for responding to errors.
 include::../requirements/core/REQ_error_handling.adoc[]
-
-=== Collection vertical extent
-Vertical extent of a collection.
-include::../requirements/core/REC_collection_vertical_extent.adoc[]
 
 === Data query response metadata
 Metadata in the response to a data query.
@@ -65,6 +65,8 @@ include::../requirements/insitu-observations/REQ_collection_data_queries.adoc[]
 Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
 include::../requirements/insitu-observations/REQ_collection_parameter_names.adoc[]
 
+include::../requirements/insitu-observations/REC_collection_parameter_names.adoc[]
+
 === Collection custom dimensions
 The custom dimensions for which you can query the collection.
 include::../requirements/insitu-observations/REQ_collection_custom_dimensions.adoc[]
@@ -72,10 +74,6 @@ include::../requirements/insitu-observations/REQ_collection_custom_dimensions.ad
 === CoverageJSON parameters
 The metadata about parameters in CoverageJSON.
 include::../requirements/insitu-observations/REQ_coveragejson_parameters.adoc[]
-
-=== Collection parameter names
-Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
-include::../requirements/insitu-observations/REC_collection_parameter_names.adoc[]
 
 
 == Numerical Weather Prediction

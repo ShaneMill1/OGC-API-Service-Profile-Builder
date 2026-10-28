@@ -1,4 +1,4 @@
-= MetOcean Profile for OGC API - EDR
+= MetOcean Profile for OGC API - Environmental Data Retrieval
 :doctype: standard
 :docsubtype: profile
 :edition: 1.0

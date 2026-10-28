@@ -15,7 +15,7 @@
 # =============================================================================
 
 name: metocean_profile
-title: MetOcean Profile for OGC API - EDR
+title: MetOcean Profile for OGC API - Environmental Data Retrieval
 version: "1.0"
 description: >
   An EDR profile in support of providing access to meteorological datasets in
@@ -208,6 +208,40 @@ document_metadata:
     # with a lead-in sentence per requirement, instead of the flat Requirements
     # list.
     render_requirement_clauses: true
+
+    # ── Front matter / section layout (match the hand-authored OGC 26-027) ───
+    # Abstract, Keywords, Security Considerations and Submitters render INSIDE
+    # the Preface (I. Keywords, II. Preface, III. Security Considerations,
+    # IV. Submitting Organizations), as in the source document.
+    preface_front_matter: true
+    # Security Considerations front-matter text (verbatim from the source).
+    security_considerations: |
+      No security considerations have been made for this document.
+    # The source has no normative references; its referenced documents live in
+    # the informative bibliography. Clause 3 renders the standard statement.
+    no_normative_references: true
+    # The source lists no terms/definitions; clause 4 leads with the standard
+    # statement before the Directive-49 / ModSpec prose + abbreviated terms.
+    no_terms: true
+    # Annex A heading, matching the source (obligation caption 'Normative').
+    abstract_test_suite_title: Conformance Class Abstract Test Suite (Normative)
+
+    # Clause 2 — Conformance (verbatim from clause_2_conformance.adoc). The
+    # requirements-class bullets use the source's human-readable names.
+    conformance_text: |
+      Conformance with this standard shall be checked using the tests specified in Annex A (normative) of this document.
+
+      _OGC API - Environmental Data Retrieval_ (EDR) provides a family of lightweight interfaces to access Environmental Data resources. Each resource addressed by an EDR API maps to a defined query pattern.  This standard is a profile/extension of EDR.  Conformance to this standard requires demonstrated conformance to the applicable Conformance Classes of _OGC API - Environmental Data Retrieval - Part 1: Core_.
+
+      Implementors of EDR API are required to comply with the MetOcean EDR Profile.  A MetOcean EDR Profile shall therefore be compliant with OGC API - Environmental Data Retrieval - Part 1: Core.
+
+      This standard identifies the following Requirements Classes which define the functional requirements.
+
+      * "Core"
+      * "Observations"
+      * "Numerical Weather Prediction"
+
+      Compliant implementation of this profile requires conformance to at least the "Core" Requirements Class.
 
     # Abstract — verbatim from the source document front matter
     # (clause_0_front_material.adoc).
@@ -437,10 +471,12 @@ document_metadata:
     # Annexes (rendered after the Abstract Test Suite in Annex A).
     annexes:
       - id: schemas
-        # Annex B (Normative) — the source document leaves this annex as a
-        # heading-only placeholder (no author prose). Kept as such for fidelity.
+        # Annex B — the source document leaves this annex as a heading-only
+        # placeholder (no author prose). The source uses a plain [appendix], so
+        # the obligation caption renders '(Informative)'; the normative nature is
+        # conveyed in the title text 'Schemas (Normative)', matching upstream.
         title: Schemas (Normative)
-        obligation: normative
+        obligation: informative
         body: |
           // Schemas to be provided.
       - id: examples
@@ -452,8 +488,10 @@ document_metadata:
           === Examples
       - id: appendix-d
         # Annex D — source is the heading plus the matrix table (no intro prose).
+        # The source uses a plain [appendix] (informative caption), matching
+        # upstream's rendering.
         title: NWP Global Deterministic parameter name matrix
-        obligation: normative
+        obligation: informative
         body: |
           [cols="10,10",options="header"]
           |===
@@ -1193,6 +1231,14 @@ requirements:
     statement: The value of extent.temporal.trs SHALL be Gregorian.
     parts:
       - The value of extent.temporal.trs SHALL be Gregorian.
+  # /rec/core/collection_vertical_extent (recommendation) — upstream renders this
+  # as clause 7.8, between temporal extent (7.7) and parameter names (7.9).
+  - id: collection_vertical_extent
+    conformance_class: core
+    level: recommendation
+    statement: If extent.vertical is defined, extent.vertical.vrs SHOULD use one of the recommended vertical reference system values.
+    parts:
+      - If extent.vertical is defined, the value of extent.vertical.vrs SHOULD be one of "Pressure level in hPa", "Geopotential height in gpm", "Geometrical altitude above mean sea level in meters", "Height above ground in meters" or "Flight level".
   - id: collection_parameter_names
     conformance_class: core
     statement: Parameter objects SHALL specify label, description and unit using the profile conventions.
@@ -1227,13 +1273,6 @@ requirements:
       - A query for data inside the extent that results in no data SHALL return HTTP 204 with no content.
       - A query partially within the extent SHALL respond as within the extent, returning only the in-extent portion.
       - Any 4xx response SHOULD comply with RFC 9457 Problem Details for HTTP APIs.
-  # /rec/core/collection_vertical_extent (recommendation)
-  - id: collection_vertical_extent
-    conformance_class: core
-    level: recommendation
-    statement: If extent.vertical is defined, extent.vertical.vrs SHOULD use one of the recommended vertical reference system values.
-    parts:
-      - If extent.vertical is defined, the value of extent.vertical.vrs SHOULD be one of "Pressure level in hPa", "Geopotential height in gpm", "Geometrical altitude above mean sea level in meters", "Height above ground in meters" or "Flight level".
   # /rec/core/data_query_response_metadata (recommendation)
   - id: data_query_response_metadata
     conformance_class: core
@@ -1255,6 +1294,15 @@ requirements:
       - Each parameter SHALL specify metocean:standard_name set to a value from the standard_name custom dimension.
       - Each parameter SHALL specify metocean:level set to a value from the level custom dimension.
       - Each parameter SHALL specify measurementType.
+  # /rec/insitu-observations/collection_parameter_names (recommendation) — upstream
+  # renders this within the same 8.3 "Collection parameter names" subclause as the
+  # requirement above, so it is placed immediately after it.
+  - id: collection_parameter_names
+    conformance_class: insitu-observations
+    level: recommendation
+    statement: Each measurementType.method in parameter_names SHOULD follow the CF-convention cell methods.
+    parts:
+      - Each measurementType.method object in parameter_names SHOULD follow the CF-convention cell methods and use a value from the CF cell-methods appendix.
   - id: collection_custom_dimensions
     conformance_class: insitu-observations
     statement: An insitu-observations collection SHALL define standard_name and level custom dimensions.
@@ -1271,13 +1319,6 @@ requirements:
       - Each object in parameters in a coverage SHALL have metocean:measurementType with the same properties as measurementType.
       - Each object in parameters SHALL have metocean:standard_name.
       - Each object in parameters SHALL have metocean:level.
-  # /rec/insitu-observations/collection_parameter_names (recommendation)
-  - id: collection_parameter_names
-    conformance_class: insitu-observations
-    level: recommendation
-    statement: Each measurementType.method in parameter_names SHOULD follow the CF-convention cell methods.
-    parts:
-      - Each measurementType.method object in parameter_names SHOULD follow the CF-convention cell methods and use a value from the CF cell-methods appendix.
 
   # ---------- Numerical Weather Prediction ----------
   - id: collection_parameter_names

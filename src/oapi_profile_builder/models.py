@@ -976,6 +976,63 @@ class DocumentBody(BaseModel):
             "Requirements section. Enables a faithful clause-7..n layout."
         ),
     )
+    preface_front_matter: bool = Field(
+        default=False,
+        description=(
+            "When true, emit the Abstract, Keywords, Security Considerations and "
+            "Submitters as a single Preface block using the OGC flavor's native "
+            "front-matter conventions (an `[abstract]` block collected under the "
+            "Preface, with keywords/submitting-organizations driven by document "
+            "metadata), matching the hand-authored OGC profile layout where these "
+            "appear inside the Preface rather than as separate top-level sections. "
+            "When false (default) the generator emits a standalone `== Abstract` "
+            "section and a separate `== Submitters` section."
+        ),
+    )
+    security_considerations: str | None = Field(
+        default=None,
+        description=(
+            "AsciiDoc body for the Security Considerations front-matter section. "
+            "Rendered inside the Preface when preface_front_matter is true."
+        ),
+    )
+    no_normative_references: bool = Field(
+        default=False,
+        description=(
+            "When true, the Normative References section renders the standard OGC "
+            "statement 'There are no normative references in this document.' and "
+            "the generator does NOT inject any default EDR references. Mirrors "
+            "profiles that carry no normative references (e.g. the MetOcean "
+            "profile, whose referenced documents live in the informative "
+            "bibliography instead)."
+        ),
+    )
+    no_terms: bool = Field(
+        default=False,
+        description=(
+            "When true, the Terms and Definitions clause leads with the standard "
+            "OGC statement 'No terms and definitions are listed in this document.' "
+            "before the directive/ModSpec prose and the abbreviated-terms table."
+        ),
+    )
+    abstract_test_suite_title: str | None = Field(
+        default=None,
+        description=(
+            "Title for the Abstract Test Suite annex (Annex A). Defaults to "
+            "'Abstract Test Suite'. Set e.g. 'Conformance Class Abstract Test "
+            "Suite (Normative)' to match a hand-authored OGC profile."
+        ),
+    )
+    conformance_text: str | None = Field(
+        default=None,
+        description=(
+            "AsciiDoc body for the Conformance clause, replacing the generic "
+            "templated text (which lists the raw conformance-class URIs). Use "
+            "this to reproduce a hand-authored Conformance clause with narrative "
+            "prose and human-readable requirements-class bullets. Rendered under "
+            "the '== Conformance' heading."
+        ),
+    )
 
 
 class DocumentMetadata(BaseModel):
