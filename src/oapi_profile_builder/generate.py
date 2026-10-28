@@ -279,20 +279,66 @@ _R200_CONFORMANCE = {
     }
 }
 _R200_COLLECTION = {"description": "Collection metadata", "content": {"application/json": {"schema": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}, "title": {"type": "string"}, "description": {"type": "string"}, "links": _LINKS_ARRAY}}}}}
-def _features_schema(version: str) -> dict:
+def _features_schema(version: str, profile: "ServiceProfile | None" = None) -> dict:
+    """Build the /items FeatureCollection 200 response.
+
+    When the profile enables paging response metadata, the FeatureCollection
+    documents the OGC paging contract: a `links` array carrying `self`/`next`/
+    `prev` navigation links, plus `numberMatched`, `numberReturned` and
+    `timeStamp`. These are what let a client walk a paged result set. When
+    disabled (or no profile), a bare FeatureCollection (type + features) is
+    emitted, preserving the previous output.
+    """
+    properties: dict = {
+        "type": {"type": "string", **_const("FeatureCollection", version)},
+        "features": {
+            "type": "array",
+            "items": {"type": "object"},
+        },
+    }
+
+    want_metadata = bool(
+        profile and profile.paging and profile.paging.enabled and profile.paging.response_metadata
+    )
+    if want_metadata:
+        # Example navigation links so Swagger's "Example Value" shows real
+        # paging rels; the schema itself stays an unconstrained link array.
+        links_example = [
+            {"href": "/collections/{collectionId}/items?limit=10&offset=0",
+             "rel": "self", "type": "application/geo+json", "title": "this page"},
+            {"href": "/collections/{collectionId}/items?limit=10&offset=10",
+             "rel": "next", "type": "application/geo+json", "title": "next page"},
+        ]
+        properties["links"] = {
+            "type": "array",
+            "items": _LINK_SCHEMA,
+            "description": "Navigation links for paging (self, next, prev).",
+            "example": links_example,
+        }
+        properties["numberMatched"] = {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total number of features matching the query across all pages.",
+        }
+        properties["numberReturned"] = {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of features returned in this page.",
+        }
+        properties["timeStamp"] = {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time when the response was generated.",
+        }
+
     return {
         "description": "Feature collection",
         "content": {
             "application/json": {
                 "schema": {
                     "type": "object",
-                    "properties": {
-                        "type": {"type": "string", **_const("FeatureCollection", version)},
-                        "features": {
-                            "type": "array",
-                            "items": {"type": "object"},
-                        },
-                    },
+                    "required": ["type", "features"],
+                    "properties": properties,
                 },
             }
         },
@@ -1017,14 +1063,44 @@ def _paging_limit_param(profile: "ServiceProfile | None") -> dict | None:
     }
 
 
+def _paging_offset_param(profile: "ServiceProfile | None") -> dict | None:
+    """Return the `offset` query parameter for feature paging, or None when disabled.
+
+    Offset requires paging to be enabled (it has no meaning without `limit`)
+    and the `offset_enabled` flag to be set.
+    """
+    if not (profile and profile.paging and profile.paging.enabled and profile.paging.offset_enabled):
+        return None
+    return {
+        "name": "offset",
+        "in": "query",
+        "required": False,
+        "description": "Index of the first feature to return (0-based); used with limit to page through results.",
+        "schema": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+        },
+    }
+
+
 def _with_paging_limit(params: list[dict], profile: "ServiceProfile | None") -> list[dict]:
-    """Append the paging `limit` param to a copy of *params* if enabled and absent."""
-    limit_param = _paging_limit_param(profile)
-    if limit_param is None:
-        return params
+    """Append the paging `limit` (and `offset`, when enabled) params to a copy of *params*.
+
+    Both are appended only when enabled and not already present, so the helper
+    stays idempotent across the multiple call sites that build /items params.
+    """
     out = list(params)
-    if not any(isinstance(p, dict) and p.get("name") == "limit" for p in out):
+    limit_param = _paging_limit_param(profile)
+    if limit_param is not None and not any(
+        isinstance(p, dict) and p.get("name") == "limit" for p in out
+    ):
         out.append(limit_param)
+    offset_param = _paging_offset_param(profile)
+    if offset_param is not None and not any(
+        isinstance(p, dict) and p.get("name") == "offset" for p in out
+    ):
+        out.append(offset_param)
     return out
 
 
@@ -1074,7 +1150,9 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
         "tags": [tag],
         "parameters": items_params,
         "responses": {
-            "200": _features_schema(profile.openapi_version if profile else "3.0.0"),
+            # Feature-collection response carries paging metadata (links,
+            # numberMatched/numberReturned/timeStamp) when the profile enables it.
+            "200": _features_schema(profile.openapi_version if profile else "3.0.0", profile),
             "400": _ERR_400, "404": _ERR_404, "500": _ERR_500,
         },
     }}

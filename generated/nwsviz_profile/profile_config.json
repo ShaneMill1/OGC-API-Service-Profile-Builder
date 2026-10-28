@@ -2038,7 +2038,9 @@
   "paging": {
     "enabled": true,
     "default_limit": 10,
-    "max_limit": 10000
+    "max_limit": 10000,
+    "offset_enabled": true,
+    "response_metadata": true
   },
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core",

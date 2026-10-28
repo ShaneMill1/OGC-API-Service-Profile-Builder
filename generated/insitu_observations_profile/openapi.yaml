@@ -2019,6 +2019,15 @@ paths:
           minimum: 1
           maximum: 10000
           default: 10
+      - name: offset
+        in: query
+        required: false
+        description: Index of the first feature to return (0-based); used with limit
+          to page through results.
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
       responses:
         '200':
           description: Feature collection
@@ -2026,6 +2035,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -2036,6 +2048,45 @@ paths:
                     type: array
                     items:
                       type: object
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    description: Navigation links for paging (self, next, prev).
+                    example:
+                    - href: /collections/{collectionId}/items?limit=10&offset=0
+                      rel: self
+                      type: application/geo+json
+                      title: this page
+                    - href: /collections/{collectionId}/items?limit=10&offset=10
+                      rel: next
+                      type: application/geo+json
+                      title: next page
+                  numberMatched:
+                    type: integer
+                    minimum: 0
+                    description: Total number of features matching the query across
+                      all pages.
+                  numberReturned:
+                    type: integer
+                    minimum: 0
+                    description: Number of features returned in this page.
+                  timeStamp:
+                    type: string
+                    format: date-time
+                    description: Time when the response was generated.
         '400':
           description: Invalid or missing parameter
           content:
@@ -2154,6 +2205,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -2465,17 +2519,24 @@ paths:
                     format: uri-reference
                     description: A URI reference that identifies the specific occurrence
                       of the problem.
-  /collections/insitu-observations/area:
+  /collections/insitu-observations/radius:
     get:
-      summary: query insitu-observations by area
+      summary: query insitu-observations by radius
       description: Real-time in-situ meteorological observations from surface stations.
         Provides air temperature, wind, humidity, pressure, precipitation, and dew
         point at standard measurement heights.
-      operationId: QueryAreaInsituObservations
+      operationId: QueryRadiusInsituObservations
       tags:
       - insitu-observations
       parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/areaCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/within.yaml
+      - name: within-units
+        in: query
+        required: true
+        description: Units for the within parameter e.g. km
+        schema:
+          type: string
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/crs.yaml
@@ -2561,24 +2622,17 @@ paths:
                     format: uri-reference
                     description: A URI reference that identifies the specific occurrence
                       of the problem.
-  /collections/insitu-observations/radius:
+  /collections/insitu-observations/area:
     get:
-      summary: query insitu-observations by radius
+      summary: query insitu-observations by area
       description: Real-time in-situ meteorological observations from surface stations.
         Provides air temperature, wind, humidity, pressure, precipitation, and dew
         point at standard measurement heights.
-      operationId: QueryRadiusInsituObservations
+      operationId: QueryAreaInsituObservations
       tags:
       - insitu-observations
       parameters:
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/positionCoords.yaml
-      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/within.yaml
-      - name: within-units
-        in: query
-        required: true
-        description: Units for the within parameter e.g. km
-        schema:
-          type: string
+      - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/areaCoords.yaml
       - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/datetime
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/parameter-name.yaml
       - $ref: https://schemas.opengis.net/ogcapi/edr/1.0/openapi/parameters/crs.yaml
