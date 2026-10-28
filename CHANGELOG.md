@@ -1,5 +1,18 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.15.0] - 2026-10-28
+
+Adds full OGC-style paging support to the generated OpenAPI (issue #49). Previously only a `limit` parameter was emitted, which truncates rather than paginates.
+
+### Added
+- **`offset` query parameter** on the `/items` endpoints (0-based), so clients can page through a result set rather than only capping the first page. Gated by `paging.offset_enabled` (default true).
+- **Paging response metadata** on the `/items` FeatureCollection response: a `links` array documenting `self`/`next`/`prev` navigation links, plus `numberMatched`, `numberReturned` and `timeStamp`. Gated by `paging.response_metadata` (default true). The FeatureCollection schema now also marks `type` and `features` required.
+- New `PagingConfig` fields: `offset_enabled` and `response_metadata`.
+
+### Changed
+- `paging` behaviour is unchanged by default aside from the additive `offset` param and the richer `/items` response; set `paging.offset_enabled: false` and/or `paging.response_metadata: false` for a minimal `limit`-only / bare-FeatureCollection profile. Paging metadata is applied only to the feature-collection `/items` response — single-feature (`/items/{featureId}`), instance listings, and coverage data-query responses are unaffected.
+- Regenerated all bundled example profiles' OpenAPI to include the paging parameters and response metadata.
+
 ## [3.14.1] - 2026-10-28
 
 Fixes obligation-aware identifiers/filenames in the single-class (legacy) layout and adds self-explanatory demo material for the three RFC 2119 statement levels.

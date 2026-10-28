@@ -2680,6 +2680,15 @@ paths:
           minimum: 1
           maximum: 10000
           default: 10
+      - name: offset
+        in: query
+        required: false
+        description: Index of the first feature to return (0-based); used with limit
+          to page through results.
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
       responses:
         '200':
           description: Feature collection
@@ -2687,6 +2696,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -2697,6 +2709,45 @@ paths:
                     type: array
                     items:
                       type: object
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    description: Navigation links for paging (self, next, prev).
+                    example:
+                    - href: /collections/{collectionId}/items?limit=10&offset=0
+                      rel: self
+                      type: application/geo+json
+                      title: this page
+                    - href: /collections/{collectionId}/items?limit=10&offset=10
+                      rel: next
+                      type: application/geo+json
+                      title: next page
+                  numberMatched:
+                    type: integer
+                    minimum: 0
+                    description: Total number of features matching the query across
+                      all pages.
+                  numberReturned:
+                    type: integer
+                    minimum: 0
+                    description: Number of features returned in this page.
+                  timeStamp:
+                    type: string
+                    format: date-time
+                    description: Time when the response was generated.
         '400':
           description: Invalid or missing parameter
           content:
@@ -2814,6 +2865,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -3895,6 +3949,15 @@ paths:
           minimum: 1
           maximum: 10000
           default: 10
+      - name: offset
+        in: query
+        required: false
+        description: Index of the first feature to return (0-based); used with limit
+          to page through results.
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
       responses:
         '200':
           description: Feature collection
@@ -3902,6 +3965,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -3912,6 +3978,45 @@ paths:
                     type: array
                     items:
                       type: object
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    description: Navigation links for paging (self, next, prev).
+                    example:
+                    - href: /collections/{collectionId}/items?limit=10&offset=0
+                      rel: self
+                      type: application/geo+json
+                      title: this page
+                    - href: /collections/{collectionId}/items?limit=10&offset=10
+                      rel: next
+                      type: application/geo+json
+                      title: next page
+                  numberMatched:
+                    type: integer
+                    minimum: 0
+                    description: Total number of features matching the query across
+                      all pages.
+                  numberReturned:
+                    type: integer
+                    minimum: 0
+                    description: Number of features returned in this page.
+                  timeStamp:
+                    type: string
+                    format: date-time
+                    description: Time when the response was generated.
         '400':
           description: Invalid or missing parameter
           content:
@@ -4029,6 +4134,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -4609,6 +4717,15 @@ paths:
           minimum: 1
           maximum: 10000
           default: 10
+      - name: offset
+        in: query
+        required: false
+        description: Index of the first feature to return (0-based); used with limit
+          to page through results.
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
       responses:
         '200':
           description: Feature collection
@@ -4616,6 +4733,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -4626,6 +4746,45 @@ paths:
                     type: array
                     items:
                       type: object
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    description: Navigation links for paging (self, next, prev).
+                    example:
+                    - href: /collections/{collectionId}/items?limit=10&offset=0
+                      rel: self
+                      type: application/geo+json
+                      title: this page
+                    - href: /collections/{collectionId}/items?limit=10&offset=10
+                      rel: next
+                      type: application/geo+json
+                      title: next page
+                  numberMatched:
+                    type: integer
+                    minimum: 0
+                    description: Total number of features matching the query across
+                      all pages.
+                  numberReturned:
+                    type: integer
+                    minimum: 0
+                    description: Number of features returned in this page.
+                  timeStamp:
+                    type: string
+                    format: date-time
+                    description: Time when the response was generated.
         '400':
           description: Invalid or missing parameter
           content:
@@ -4744,6 +4903,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -5107,6 +5269,15 @@ paths:
           minimum: 1
           maximum: 10000
           default: 10
+      - name: offset
+        in: query
+        required: false
+        description: Index of the first feature to return (0-based); used with limit
+          to page through results.
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
       responses:
         '200':
           description: Feature collection
@@ -5114,6 +5285,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -5124,6 +5298,45 @@ paths:
                     type: array
                     items:
                       type: object
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    description: Navigation links for paging (self, next, prev).
+                    example:
+                    - href: /collections/{collectionId}/items?limit=10&offset=0
+                      rel: self
+                      type: application/geo+json
+                      title: this page
+                    - href: /collections/{collectionId}/items?limit=10&offset=10
+                      rel: next
+                      type: application/geo+json
+                      title: next page
+                  numberMatched:
+                    type: integer
+                    minimum: 0
+                    description: Total number of features matching the query across
+                      all pages.
+                  numberReturned:
+                    type: integer
+                    minimum: 0
+                    description: Number of features returned in this page.
+                  timeStamp:
+                    type: string
+                    format: date-time
+                    description: Time when the response was generated.
         '400':
           description: Invalid or missing parameter
           content:
@@ -5241,6 +5454,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -5606,6 +5822,15 @@ paths:
           minimum: 1
           maximum: 10000
           default: 10
+      - name: offset
+        in: query
+        required: false
+        description: Index of the first feature to return (0-based); used with limit
+          to page through results.
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
       responses:
         '200':
           description: Feature collection
@@ -5613,6 +5838,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string
@@ -5623,6 +5851,45 @@ paths:
                     type: array
                     items:
                       type: object
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - href
+                      - rel
+                      properties:
+                        href:
+                          type: string
+                        rel:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                    description: Navigation links for paging (self, next, prev).
+                    example:
+                    - href: /collections/{collectionId}/items?limit=10&offset=0
+                      rel: self
+                      type: application/geo+json
+                      title: this page
+                    - href: /collections/{collectionId}/items?limit=10&offset=10
+                      rel: next
+                      type: application/geo+json
+                      title: next page
+                  numberMatched:
+                    type: integer
+                    minimum: 0
+                    description: Total number of features matching the query across
+                      all pages.
+                  numberReturned:
+                    type: integer
+                    minimum: 0
+                    description: Number of features returned in this page.
+                  timeStamp:
+                    type: string
+                    format: date-time
+                    description: Time when the response was generated.
         '400':
           description: Invalid or missing parameter
           content:
@@ -5739,6 +6006,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string

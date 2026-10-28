@@ -1100,6 +1100,15 @@ paths:
           minimum: 1
           maximum: 100
           default: 10
+      - name: offset
+        in: query
+        required: false
+        description: Index of the first feature to return (0-based); used with limit
+          to page through results.
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
       responses:
         '200':
           description: Coverage data response
@@ -1310,6 +1319,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - type
+                - features
                 properties:
                   type:
                     type: string

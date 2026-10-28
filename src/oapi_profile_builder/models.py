@@ -1263,10 +1263,37 @@ class PubSubConfig(BaseModel):
 
 
 class PagingConfig(BaseModel):
-    """Optional pagination parameters config."""
+    """Optional pagination parameters config.
+
+    Paging is central to OGC APIs: a client requests a bounded page (`limit`),
+    walks through the result set (`offset`), and follows `next`/`prev` links,
+    while the server reports how many features matched and were returned. This
+    config gates each of those pieces so a profile can describe the full paging
+    contract in its generated OpenAPI. Every field keeps the prior behaviour by
+    default (a `limit` param is emitted; the extras are additive opt-ins that
+    default on but can be switched off for minimal profiles).
+    """
     enabled: bool = Field(default=True, description="When true, include standard limit parameter in /items endpoint")
     default_limit: int = Field(default=10, description="Default number of features to return", ge=1)
     max_limit: int = Field(default=10000, description="Maximum allowed limit for features returned", ge=1)
+    offset_enabled: bool = Field(
+        default=True,
+        description=(
+            "When true, include a standard `offset` query parameter on the "
+            "/items endpoints so clients can page through a result set. Without "
+            "it, `limit` only truncates the first page."
+        ),
+    )
+    response_metadata: bool = Field(
+        default=True,
+        description=(
+            "When true, the /items FeatureCollection response documents the OGC "
+            "paging metadata — a `links` array (carrying `self`/`next`/`prev` "
+            "navigation links) plus `numberMatched`, `numberReturned` and "
+            "`timeStamp`. Set false for a bare FeatureCollection (type + "
+            "features only)."
+        ),
+    )
 
 
 class ConformanceClassConstraints(BaseModel):
