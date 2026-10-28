@@ -61,7 +61,34 @@ jobs:
             echo "pip_version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
           fi
 
+      # Poll the PyPI JSON API (not pip, which caches negative lookups) until the
+      # just-published version is listed, so index propagation lag can't cause the
+      # downstream `uses: ./` install steps to fail. Generous window (~10 min).
+      - name: Wait for PyPI to list the version
+        id: pypi_wait
+        run: |
+          VERSION="${{ steps.version.outputs.pip_version }}"
+          echo "Waiting for oapi-profile-builder==${VERSION} to appear on PyPI..."
+          found=""
+          for attempt in $(seq 1 60); do
+            if curl -fsSL "https://pypi.org/pypi/oapi-profile-builder/${VERSION}/json" -o /dev/null 2>/dev/null; then
+              echo "Version ${VERSION} is live on PyPI (attempt ${attempt})."
+              found="yes"
+              break
+            fi
+            echo "  not yet listed (attempt ${attempt}/60); sleeping 10s..."
+            sleep 10
+          done
+          if [ -z "$found" ]; then
+            echo "::warning::oapi-profile-builder==${VERSION} not visible on PyPI after ~10 min; artifact generation may fail, but the GitHub Release will still be created."
+            echo "pypi_ready=false" >> $GITHUB_OUTPUT
+          else
+            echo "pypi_ready=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Generate minimal profile artifacts
+        if: steps.pypi_wait.outputs.pypi_ready == 'true'
+        continue-on-error: true
         uses: ./
         with:
           config: examples/minimal_profile.yaml
@@ -69,6 +96,8 @@ jobs:
           version: ${{ steps.version.outputs.pip_version }}
 
       - name: Generate insitu observations profile artifacts
+        if: steps.pypi_wait.outputs.pypi_ready == 'true'
+        continue-on-error: true
         uses: ./
         with:
           config: examples/insitu_observations_profile.yaml
@@ -76,6 +105,8 @@ jobs:
           version: ${{ steps.version.outputs.pip_version }}
 
       - name: Generate nwsviz profile artifacts
+        if: steps.pypi_wait.outputs.pypi_ready == 'true'
+        continue-on-error: true
         uses: ./
         with:
           config: examples/nwsviz_profile.yaml
@@ -83,14 +114,17 @@ jobs:
           version: ${{ steps.version.outputs.pip_version }}
 
       - name: Package artifacts
+        continue-on-error: true
         run: |
+          mkdir -p release_artifacts
           cd release_artifacts
+          shopt -s nullglob
           for dir in */; do
             name="${dir%/}"
             zip -r "../${name}_artifacts.zip" "$dir"
             echo "Packaged ${name}_artifacts.zip"
           done
-          ls -lh ../*.zip
+          ls -lh ../*.zip 2>/dev/null || echo "No artifact zips produced."
 
       - name: Build release notes from CHANGELOG
         run: |
@@ -134,7 +168,13 @@ jobs:
           echo "----- release_notes.md -----"
           cat release_notes.md
 
+      # Always create/update the GitHub Release — even if artifact generation was
+      # skipped or failed (e.g. PyPI propagation lag). The Release only needs the
+      # tag + notes; any artifact zips that were produced are attached, and the
+      # glob tolerates missing files so a partial/empty artifact set never blocks
+      # the Release. A later re-run of this job will attach the zips.
       - name: Create GitHub Release
+        if: always()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
@@ -144,5 +184,7 @@ jobs:
             minimal_profile_artifacts.zip
             insitu_observations_profile_artifacts.zip
             nwsviz_profile_artifacts.zip
+          fail_on_unmatched_files: false
           draft: false
           prerelease: false
+          make_latest: true
