@@ -228,7 +228,7 @@ Everything about the document — cover, title-page metadata, legal page, footer
 | Every-page DRAFT-style watermark (over content) | `document_metadata.page_watermark` | `:pdf-stylesheet-override:` (footer overlay) |
 | Requirement / conformance identifier namespace | `spec_uri_base` | derives `req_uri` / `conf_uri` |
 | Submitter table, notice paragraph, normative refs, extra terms | `document_metadata.{submitters, notice, normative_references, terms}` | Metanorma attributes / sections |
-| Features `/items` paging (`limit` parameter) | `paging.{enabled, default_limit, max_limit}` | OpenAPI query parameter |
+| Features `/items` paging (`limit` + `offset` params, `next`/`prev` links, `numberMatched`/`numberReturned`/`timeStamp`) | `paging.{enabled, default_limit, max_limit, offset_enabled, response_metadata}` | OpenAPI query parameters + response metadata |
 
 Custom branding requires Pillow for the cover image: `pip install 'oapi-profile-builder[pdf]'`. Field-by-field detail is in the [`document_metadata`](#document_metadata) reference below; [`examples/nwp_radar.yaml`](examples/nwp_radar.yaml) is a complete DGIWG-branded example. Omit all of these fields and the output keeps the standard OGC house style.
 
@@ -338,7 +338,7 @@ abstract_tests: []
 | `abstract_tests[].method` | string | no | Optional test method description |
 | `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
 | `collection_examples` | object | no | `{collectionId: {instanceId: "..."}}` — used by `validate-server` |
-| `paging` | object | no | Features `/items` paging — adds a validated `limit` query parameter to the generated OpenAPI (see below) |
+| `paging` | object | no | Features `/items` paging — adds `limit` + `offset` query parameters and paging response metadata (`next`/`prev` links, `numberMatched`/`numberReturned`/`timeStamp`) to the generated OpenAPI (see below) |
 | `document_metadata` | object | no | Metanorma PDF header — doc number/type/subtype, status, editors, submitters, dates, notice, normative references (see below) |
 
 ---
@@ -766,16 +766,23 @@ Generates: `/processes/compute-difference`, `/processes/compute-difference/execu
 
 ### `paging`
 
-Controls Features `/items` paging in the generated OpenAPI. When enabled (the default), a validated `limit` query parameter is added to every `/items` endpoint (collection-level and instance-level).
+Controls Features `/items` paging in the generated OpenAPI. When enabled (the default), the `/items` endpoints (collection-level and instance-level) describe the full OGC paging contract: `limit` + `offset` query parameters and a FeatureCollection response that carries paging navigation links and counts.
 
 ```yaml
 paging:
-  enabled: true          # default true; set false to omit the limit parameter
-  default_limit: 10      # OpenAPI schema default for limit (default 10)
-  max_limit: 100         # OpenAPI schema maximum for limit (default 10000)
+  enabled: true            # default true; set false to omit paging entirely
+  default_limit: 10        # OpenAPI schema default for limit (default 10)
+  max_limit: 100           # OpenAPI schema maximum for limit (default 10000)
+  offset_enabled: true     # default true; set false to omit the offset parameter
+  response_metadata: true  # default true; set false for a bare type+features response
 ```
 
-The emitted parameter is `limit` (`in: query`, `type: integer`, `minimum: 1`, `maximum: <max_limit>`, `default: <default_limit>`).
+Query parameters emitted on `/items`:
+
+- `limit` — `in: query`, `type: integer`, `minimum: 1`, `maximum: <max_limit>`, `default: <default_limit>`.
+- `offset` — `in: query`, `type: integer`, `minimum: 0`, `default: 0` (0-based index of the first feature; omitted when `offset_enabled: false`). Lets a client page through a result set rather than only capping the first page.
+
+Response metadata (when `response_metadata: true`): the `/items` FeatureCollection documents a `links` array carrying `self`/`next`/`prev` navigation links, plus `numberMatched`, `numberReturned` and `timeStamp`, and marks `type` and `features` as required. These are scoped to the feature-collection `/items` response — single features (`/items/{featureId}`), instance listings, and coverage data-query responses are unaffected. Set `response_metadata: false` for a bare `type` + `features` collection.
 
 ---
 
