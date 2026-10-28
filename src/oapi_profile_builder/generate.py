@@ -1772,23 +1772,54 @@ def _individual_req_adoc(profile: ServiceProfile, req_id: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _abstract_test_component_adoc(anchor: str, label: str, subject: str, test) -> str:
+    """Render one abstract test in the OGC ATS 'component' form.
+
+    Uses the Metanorma component syntax (`[.component,class=test method]` with
+    `[.component,class=step]` blocks) rather than the `[%metadata]`/`step::`
+    attribute form, so each step can carry multi-line AsciiDoc content — bullet
+    lists, inline code, etc. — exactly as the source Annex A tests do.
+
+    `test.test_purpose`, when set, is emitted verbatim; otherwise a generic
+    purpose is synthesised from the id (backward compatible).
+    """
+    purpose = getattr(test, "test_purpose", None) or (
+        f"Validate that {test.id.replace('-', ' ')} is correctly implemented."
+    )
+    lines = [
+        f"[[{anchor}]]",
+        "====",
+        "[%metadata]",
+        f"label:: {label}",
+        f"subject:: {subject}",
+        f"test-purpose:: {purpose}",
+        "[.component,class=test method]",
+        "=====",
+    ]
+    method_text = getattr(test, "test_method_text", None)
+    if method_text:
+        # A note instead of steps (e.g. "not applicable to ATS testing").
+        lines.append(method_text.rstrip("\n"))
+    else:
+        for step in test.steps:
+            lines.append("[.component,class=step]")
+            lines.append("--")
+            lines.append(step.rstrip("\n"))
+            lines.append("--")
+    lines.append("=====")
+    lines.append("====")
+    return "\n".join(lines) + "\n"
+
+
 def _individual_test_adoc(profile: ServiceProfile, test_id: str) -> str:
     test = next(t for t in profile.abstract_tests if t.id == test_id)
     anchor = f"ats_{profile.name}_{test.id}".replace("/", "_").replace("-", "_")
-    lines = [
-        f"[[{anchor}]]",
-        "[abstract_test]",
-        "====",
-        "[%metadata]",
-        f"identifier:: /conf/{profile.name}/{test.id}",
-        f"target:: /req/{profile.name}/{test.requirement_id}",
-        f"test-purpose:: Validate that {test.id.replace('-', ' ')} is correctly implemented.",
-        f"test-method:: {test.method or ''}",
-    ]
-    for step in test.steps:
-        lines.append(f"step:: {step}")
-    lines.append("====")
-    return "\n".join(lines) + "\n"
+    return _abstract_test_component_adoc(
+        anchor=anchor,
+        label=f"/conf/{profile.name}/{test.id}",
+        subject=f"/req/{profile.name}/{test.requirement_id}",
+        test=test,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1899,20 +1930,12 @@ def _individual_req_adoc_for(profile: ServiceProfile, cls: str, req) -> str:
 
 def _individual_test_adoc_for(profile: ServiceProfile, cls: str, test) -> str:
     anchor = f"ats_{cls}_{test.id}".replace("/", "_").replace("-", "_")
-    lines = [
-        f"[[{anchor}]]",
-        "[abstract_test]",
-        "====",
-        "[%metadata]",
-        f"identifier:: /conf/{cls}/{test.id}",
-        f"target:: /req/{cls}/{test.requirement_id}",
-        f"test-purpose:: Validate that {test.id.replace('-', ' ')} is correctly implemented.",
-        f"test-method:: {test.method or ''}",
-    ]
-    for step in test.steps:
-        lines.append(f"step:: {step}")
-    lines.append("====")
-    return "\n".join(lines) + "\n"
+    return _abstract_test_component_adoc(
+        anchor=anchor,
+        label=f"/conf/{cls}/{test.id}",
+        subject=f"/req/{cls}/{test.requirement_id}",
+        test=test,
+    )
 
 
 # ---------------------------------------------------------------------------

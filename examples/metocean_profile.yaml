@@ -1317,121 +1317,200 @@ requirements:
       - With a crs query param, the system object with type GeographicCRS SHALL set id to the crs query param value.
 
 # ── Abstract Test Suite (transcribed/derived from Annex A) ──────────────────
+# ── Abstract Test Suite (verbatim from Annex A of the source document) ──────
+# Each test's steps and test_purpose are copied verbatim from the upstream
+# abstract_tests/*/ATS_test_*.adoc files; steps render as OGC component-form
+# [.component,class=step] blocks.
 abstract_tests:
   - id: openapi
     requirement_id: openapi
     conformance_class: core
+    test_purpose: Validate that a MetOcean EDR Profile provides an API definition using an OpenAPI document
     steps:
-      - Retrieve the API landing page.
-      - Verify a link with rel=service-desc references an OpenAPI 3.1 document.
-      - Verify a link with rel=service-doc has type text/html.
+      - Construct a path for a landing page.
+      - Issue an HTTP GET request on that path.
+      - Check that the value of the returned HTTP status header is 200.
+      - |-
+        In the `links` array in the landing page response, find the object with `rel` set to `service-desc` and `type` matching one of the following strings:
+
+        * `application/openapi+json`
+        * `application/openapi+yaml`
+        * `application/vnd.oai.openapi+json`
+        * `application/vnd.oai.openapi+yaml`
+
+        Optionally, the string may be suffixed with a version number like `;version=3.1`. In that case, check that the version is >= 3.1.
+      - Issue an HTTP GET request using the value of `href` for that object.
+      - Check that the value of the returned HTTP status header is 200 and check that the response body is a valid OpenAPI document of version 3.1 or higher.
+      - In the ``links`` array in the landing page response, find the object with `rel` set to `service-doc`.
+      - Issue an HTTP GET request using the value of `href` for that object.
+      - Check that the value of the returned HTTP status header is 200 and that the HTTP response header `Content-Type` contains `text/html`.
   - id: collection_identifier
     requirement_id: collection_identifier
     conformance_class: core
+    test_purpose: Validate that a MetOcean EDR Profile API provides a valid collection identifier
+    # Source renders a note (not steps); test_method_text reproduces it verbatim.
+    test_method_text: This requirement is not applicable to ATS testing.
     steps:
-      - Retrieve /collections.
-      - Verify each collection id matches the fixed value list (optionally with a postfix).
+      - This requirement is not applicable to ATS testing.
   - id: collection_title
     requirement_id: collection_title
     conformance_class: core
+    test_purpose: Validate that a MetOcean EDR Profile provides a valid collection title
     steps:
-      - Retrieve /collections.
-      - Verify each collection has a title of at most 50 characters.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the `collections` array, check that the `title` property is present for all array elements.
+      - For each `title` value, check that the value is less than or equal to 50 characters.
   - id: collection_license
     requirement_id: collection_license
     conformance_class: core
+    test_purpose: Validate that a MetOcean EDR Profile API provides a collection links array with a license link.
     steps:
-      - Retrieve a collection.
-      - Verify links contains a rel=license link with type text/html.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the `links` array, check that there exists one `link` object with `rel` set to `license`.
+      - Issue a HTTP GET request to the url in `href` for `link` with rel `license`.
+      - Check that the value of the returned HTTP status header is 200 and the HTTP response header `Content-Type` is `text/html`.
   - id: collection_spatial_extent
     requirement_id: collection_spatial_extent
     conformance_class: core
+    test_purpose: Validate that a MetOcean EDR Profile API provides spatial extent in the correct crs.
     steps:
-      - Retrieve a collection.
-      - Verify extent.spatial.crs is OGC:CRS84 and crs includes OGC:CRS84.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the response document, for each object in the `collections` array, check that the `extent.spatial.crs` property is set to `OGC:CRS84`.
+      - In the `collections` array, check that the `crs` property is set to `OGC:CRS84` for each object.
+      - For each object in `collections` array, for each object in the `data_queries` array, if `crs_details` is specified, check that one of the objects in the `crs_details` array has a `crs` property set to `OGC:CRS84`.
   - id: collection_temporal_extent
     requirement_id: collection_temporal_extent
     conformance_class: core
+    test_purpose: Validate that a MetOcean EDR Profile API provides temporal extent in the correct trs.
     steps:
-      - Retrieve a collection.
-      - Verify extent.temporal.trs equals Gregorian.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the response document, for each object in the `collections` array, check that the `extent.temporal.trs` property is set to `Gregorian`.
   - id: collection_parameter_names
     requirement_id: collection_parameter_names
     conformance_class: core
+    test_purpose: Validate that a MetOcean EDR Profile API provides a valid collection parameter_names
     steps:
-      - Retrieve a collection.
-      - For each parameter verify label, description and unit are present.
-      - Verify unit.symbol.type is a QUDT unit URI and observedProperty.id is a CF standard name URI when present.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the response document, for each object in the `collections` array, check that each object in the `parameter_names` array has the properties `label`, `unit` and `description`.
+      - The value of a `label` property in a `parameter` object is less than or equal to 50 characters.
+      - The value of `unit.symbol.type` in a `parameter` object is a url on the form `https://qudt.org/vocab/unit/{unit}`.
+      - The value of `unit.symbol.value` in a `parameter` object is specified.
   - id: collection_radius_data_query
     requirement_id: collection_radius_data_query
     conformance_class: core
+    test_purpose: Validate that a MetOcean EDR Profile API with a radius data query in a collection has correct metadata.
     steps:
-      - Retrieve a collection that supports radius.
-      - Verify the radius variables within_units array contains m.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the response document, for each object in the `collections` array, if the `data_queries` property contains `radius`, check that the `link.variables` object for `radius` has a `within_units` array that contains `m`.
   - id: locations_query_response_format
     requirement_id: locations_query_response_format
     conformance_class: core
+    test_purpose: Validate that a MetOcean EDR Profile API has a correctly formated response to a locations query.
     steps:
-      - Send a GET /locations query.
-      - Verify the response is a GeoJSON FeatureCollection.
-      - Verify each Feature has a string id and a string properties.name.
+      - 'For every collection and instance of a collection, check if `locations` exists as a key in the `data_queries` object. If so, get the `href` value from the link object with `"rel":"self"` and append `/locations` to the value and issue an HTTP GET request.'
+      - Check that the value of the returned HTTP status header is 200.
+      - Check that the response http header `Content-Type` has value `application/geo+json`.
+      - 'In the response document, check that it has the property `"type": "FeatureCollection"`. For each object in the `features` array, check that the properties `id` and `properties.name` are present.'
   - id: error_handling
     requirement_id: error_handling
     conformance_class: core
+    test_purpose: Validate that a MetOcean EDR Profile API handles errors correctly.
     steps:
-      - Send a query inside the extent that returns no data; verify HTTP 204 with no content.
-      - Send a request that yields a 4xx; verify the body complies with RFC 9457 (application/problem+json).
+      - Issue an HTTP GET request to an non-existent path `/collections/nonexistentcollection`.
+      - Check that the value of the returned HTTP status code is `404` and the HTTP response header `Content-Type` is `application/problem+json`.
+      - Check that the returned JSON document includes the properties `type` and `title`. Check that `title` is a string and that `type` is either an URI or the value `about:blank`.
   - id: collection_data_queries
     requirement_id: collection_data_queries
     conformance_class: insitu-observations
+    test_purpose: Validate that a MetOcean EDR Insitu observations Profile API has implemented the mandatory data queries.
     steps:
-      - Retrieve the insitu-observations collection.
-      - Verify data_queries contains locations, area and radius.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the `collections` array in the returned document, check that each collection has a `data_queries` array containing `area`, `locations` and `radius`.
   - id: collection_parameter_names
     requirement_id: collection_parameter_names
     conformance_class: insitu-observations
+    test_purpose: Validate that a MetOcean EDR Insitu observations Profile API has the required properties for parameter_names
     steps:
-      - Retrieve the insitu-observations collection.
-      - Verify each parameter has metocean:standard_name, metocean:level and measurementType.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - For each object in the `collections` array and for each object in `parameter_names` check that it has the properties `metocean:standard_name` with the value of type string.
+      - For each object in the `collections` array and for each object in `parameter_names` check that it has the property `metocean:level` with a value of type number.
+      - For each object in the `collections` array and for each object in `parameter_names` check that is has the property `measurementType`.
   - id: collection_custom_dimensions
     requirement_id: collection_custom_dimensions
     conformance_class: insitu-observations
+    test_purpose: Validate that a MetOcean EDR Insitu observations Profile API has required custom dimensions.
     steps:
-      - Retrieve the insitu-observations collection.
-      - Verify extent.custom includes standard_name (with the nerc reference) and level.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - Check that the `extent.custom` array has an object with property `id` set to `standard_name` and property `reference` set to `https://vocab.nerc.ac.uk/standard_name/`.
+      - Check that the `extent.custom` array has an object with property `id` set to `level` and property `reference` set to `Height of measurement above ground level in meters`.
   - id: coveragejson_parameters
     requirement_id: coveragejson_parameters
     conformance_class: insitu-observations
+    test_purpose: Validate that a MetOcean EDR Insitu observations Profile API has required metadata in CoverageJSON parameters.
     steps:
-      - Request insitu data as CoverageJSON.
-      - Verify each parameters object has metocean:measurementType, metocean:standard_name and metocean:level.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - For each object in the `collections` array and for each object in `data_queries`, issue a GET request with no crs query parameter specified.
+      - Check that each object in `parameters` array of the response CoverageJSON document contains a property `metocean:standard_name` with a string type.
+      - Check that each `parameter` object in `parameters` in the response CoverageJSON document contains a property `metocean:level` with a number type.
+      - Check that each `parameter` object in `parameters` in the response CoverageJSON document contains a property `metocean:measurementType` which has an object type. Check that this object has the property `method` of type string and property `duration` of type string.
   - id: collection_parameter_names
     requirement_id: collection_parameter_names
     conformance_class: nwp
+    test_purpose: Validate that a MetOcean EDR API has implemented the mandatory parameter names for NWP.
     steps:
-      - Retrieve the NWP collection.
-      - Verify parameter ids use ECMWF short names from Annex D and descriptions carry the parameter name.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the `collections` array in the returned document, check that each collection has a `data_queries` array containing `position` and `cube`.
+      - For each matching collection ``parameter_names`` object, check that all of the <<appendix-d>> ECMWF short names are present via each parameter name key, `id` and `description` properties.
   - id: collection_granularity
     requirement_id: collection_granularity
     conformance_class: nwp
+    test_purpose: Validate that a MetOcean EDR API has implemented the mandatory granularity for NWP.
     steps:
-      - Retrieve /collections/weather_forecast/instances.
-      - Verify each instance id is an RFC3339 datestamp representing a model run.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the `collections` array in the returned document, check that each collection has a `data_queries` array containing `position` and `cube`.
+      - For matching collections, issue an HTTP GET request to path `/collections/{collectionId}/instances`.
+      - For matching instances, ensure that the instance identifier (`id`) is an RFC3339 datestamp.
   - id: collection_data_queries
     requirement_id: collection_data_queries
     conformance_class: nwp
+    test_purpose: Validate that a MetOcean EDR API has implemented the mandatory data query behaviour for NWP.
     steps:
-      - Retrieve the NWP collection.
-      - Verify data_queries contains position and cube.
-      - Verify a datetime range request triggers HTTP 400.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the `collections` array in the returned document, check that each collection has a `data_queries` array containing `position` and `cube`.
+      - For a matching collection, issue an HTTP GET request to path `/collections/{collectionId}/position?coords=POINT(0 0)`.
+      - Check that the value of the returned HTTP status header is 200.
+      - For the same matching collection, issue an HTTP GET request to path `/collections/{collectionId}/instances`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the CoverageJSON response, ensure that the first value of ``domain.axes.t.values`` is equal to the last instance (``id``) from the `/collections/{collectionId}/instances` response captured earlier in this test.
   - id: encoding
     requirement_id: encoding
     conformance_class: data-query-response-format
+    test_purpose: Validate that a MetOcean EDR API has the correct response format for data queries.
     steps:
-      - For each data query, verify CoverageJSON is an offered response format.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - In the returned document, for each object in `data_queries` for each collection in `collections` make a corresponding data query request and check that the returned response has status 200 and has an HTTP response header `Content-Type` with value `application/vnd.cov+json`.
   - id: referencing
     requirement_id: referencing
     conformance_class: data-query-response-format
+    test_purpose: Validate that a MetOcean EDR Profile API CoverageJSON response document provides correct domain referencing values.
     steps:
-      - Request data without a crs param; verify domain.referencing system id is OGC:CRS84.
-      - Request data with a crs param; verify the system id matches the crs param.
+      - Issue an HTTP GET request to path `/collections`.
+      - Check that the value of the returned HTTP status header is 200.
+      - For each object in the `collections` array, for each object in `data_queries`, issue a GET request with no crs query parameter specified.
+      - Check that the response is a CoverageJSON document where each object of `type` `Coverage` contains a `domain.referencing` array which includes an object where `system.type` is set to `GeographicCRS` and `system.id` set to `OGC:CRS84`.
+      - For each object in the `collections` array, for each object in `data_queries`, issue a GET request for each `crs_details` object where `crs` query parameter set to the value in the `crs_details` object.
+      - Check that the response is a CoverageJSON object where `domain.referencing` includes an object where `system.type` is set to `GeographicCRS` and `system.id` is equal to the crs query parameter.

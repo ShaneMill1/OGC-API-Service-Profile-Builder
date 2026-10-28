@@ -379,6 +379,25 @@ class AbstractTest(BaseModel):
     )
     steps: list[str] = Field(min_length=1)
     method: str | None = Field(default=None, description="Optional test method description")
+    test_purpose: str | None = Field(
+        default=None,
+        description=(
+            "Verbatim test-purpose statement for the abstract test (the ATS "
+            "'test-purpose'). When omitted, a generic purpose is synthesised from "
+            "the test id. A step may contain newlines/AsciiDoc markup (e.g. a bullet "
+            "list); it is rendered as a block step so the content survives intact."
+        ),
+    )
+    test_method_text: str | None = Field(
+        default=None,
+        description=(
+            "Free-text body for the test-method block, rendered verbatim instead of "
+            "step components. Use for tests that carry a note rather than steps "
+            "(e.g. 'This requirement is not applicable to ATS testing.'). When set, "
+            "`steps` is ignored for rendering (supply a single placeholder step to "
+            "satisfy the schema)."
+        ),
+    )
 
     @model_validator(mode="after")
     def ids_must_match(self) -> AbstractTest:

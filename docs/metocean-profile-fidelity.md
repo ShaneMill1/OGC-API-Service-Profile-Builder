@@ -55,6 +55,13 @@ source's bare names — see §2).
   Recommendations render as Metanorma `[recommendation]` blocks and are excluded
   from the conformance classes — matching the EDR Part 3 intent that only SHALL
   statements are conformance-tested.
+- **Abstract tests are verbatim.** Each test's `test-purpose` and full
+  step-by-step method (concrete HTTP paths, media types, status codes, the
+  OpenAPI `service-desc` media-type bullet list, the NWP
+  `coords=POINT(0 0)` / `domain.axes.t.values` steps, the "not applicable to ATS
+  testing" note for `collection_identifier`) are copied verbatim from Annex A and
+  rendered in the OGC component form (`[.component,class=step]`). All 19 generated
+  tests diff byte-for-byte (test-purpose + steps) against the upstream ATS files.
 - **Identifiers match the source exactly.** Requirement ids use the source's
   bare names (e.g. `collection_data_queries`) and are unique *within a class and
   obligation* rather than globally, so the generated identifiers read

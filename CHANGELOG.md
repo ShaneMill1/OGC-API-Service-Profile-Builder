@@ -1,5 +1,17 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.13.0] - 2026-10-28
+
+Completes the final MetOcean gap-analysis item (full abstract-test detail): the example's abstract tests now carry the draft's verbatim step-by-step methods instead of one-line summaries. See `docs/metocean-profile-fidelity.md` and issue #10.
+
+### Added
+- **`AbstractTest.test_purpose`**: verbatim ATS `test-purpose` statement (when omitted, a generic purpose is synthesised from the test id, as before).
+- **`AbstractTest.test_method_text`**: free-text test-method body for tests that carry a note rather than steps (e.g. "This requirement is not applicable to ATS testing."), rendered verbatim in place of step components.
+- The MetOcean example now reproduces all 19 Annex A abstract tests verbatim — each `test-purpose` plus full step-by-step method (concrete HTTP paths, media types, status codes, the OpenAPI `service-desc` media-type bullet list, the NWP `coords=POINT(0 0)` / `domain.axes.t.values` steps). Generated tests diff byte-for-byte against the upstream ATS files.
+
+### Changed
+- **Abstract tests render in the OGC component form**: each test is emitted as `[%metadata]` (`label`/`subject`/`test-purpose`) followed by a `[.component,class=test method]` block of `[.component,class=step]` components, instead of the previous `[abstract_test]`/`step::` attribute form. This lets a step carry multi-line AsciiDoc (bullet lists, inline code). Applies to all profiles; verified to compile in the OGC Metanorma flavor and across all bundled examples.
+
 ## [3.12.0] - 2026-10-27
 
 Completes the remaining MetOcean gap-analysis document-fidelity items (abbreviated-terms table and per-class dependency/pre-conditions rows). See `docs/metocean-profile-fidelity.md` and issue #10.
