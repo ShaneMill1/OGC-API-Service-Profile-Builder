@@ -1,8 +1,8 @@
-[[req_minimal_profile_temperature_post_query]]
+[[per_minimal_profile_temperature_post_query]]
 [permission]
 ====
 [%metadata]
-identifier:: /req/minimal_profile/temperature-post-query
+identifier:: /per/minimal_profile/temperature-post-query
 statement:: The service MAY support POST queries for the temperature collection.
 part:: Implementations MAY offer POST alongside GET on data query endpoints.
 ====
