@@ -3,7 +3,7 @@
 ====
 [%metadata]
 identifier:: /req/nws_connect/collections-endpoint
-statement:: The service SHALL provide a /collections endpoint listing all collections.
+part:: The service SHALL provide a /collections endpoint listing all collections.
 part:: The service SHALL provide a /collections endpoint.
 part:: The response SHALL include water_gauge, wwa, space_weather, cwa, and states collections.
 part:: Each collection SHALL have id, title, description, extent, and links properties.

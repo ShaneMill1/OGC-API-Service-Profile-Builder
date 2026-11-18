@@ -85,6 +85,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     }
@@ -93,29 +94,41 @@
   "requirements": [
     {
       "id": "temperature-geojson",
-      "statement": "The temperature collection SHALL return GeoJSON features.",
+      "title": "GeoJSON response",
+      "description": "Clients need a predictable encoding for temperature observations.",
+      "description_position": "before",
       "parts": [
+        "The temperature collection SHALL return GeoJSON features.",
         "The service SHALL provide a /collections/temperature/items endpoint.",
         "The response Content-Type SHALL be application/geo+json."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "temperature-units-label",
-      "statement": "The temperature collection SHOULD label its unit as Celsius.",
+      "title": "Temperature unit label",
+      "description": "A consistent unit label lets clients show temperatures without guessing the unit.",
+      "description_position": "before",
       "parts": [
+        "The temperature collection SHOULD label its unit as Celsius.",
         "Each temp parameter SHOULD expose a unit.label of \"Celsius\"."
       ],
+      "statement": null,
       "level": "recommendation",
       "conformance_class": null
     },
     {
       "id": "temperature-post-query",
-      "statement": "The service MAY support POST queries for the temperature collection.",
+      "title": "POST queries",
+      "description": "Some clients send queries that are too long for a URL.",
+      "description_position": "before",
       "parts": [
+        "The service MAY support POST queries for the temperature collection.",
         "Implementations MAY offer POST alongside GET on data query endpoints."
       ],
+      "statement": null,
       "level": "permission",
       "conformance_class": null
     }
@@ -145,6 +158,7 @@
     "offset_enabled": true,
     "response_metadata": true
   },
+  "http_responses": null,
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
   ],

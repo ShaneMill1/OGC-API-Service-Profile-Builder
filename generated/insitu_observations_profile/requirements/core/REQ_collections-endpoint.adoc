@@ -3,7 +3,7 @@
 ====
 [%metadata]
 identifier:: /req/insitu_observations_profile/collections-endpoint
-statement:: The service SHALL provide a /collections endpoint listing the insitu-observations collection.
+part:: The service SHALL provide a /collections endpoint listing the insitu-observations collection.
 part:: The /collections endpoint SHALL return the insitu-observations collection.
 part:: Each collection SHALL include extent, data_queries, output_formats, and parameter_names.
 ====

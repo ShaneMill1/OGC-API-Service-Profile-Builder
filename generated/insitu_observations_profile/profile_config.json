@@ -411,6 +411,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     }
@@ -419,108 +420,148 @@
   "requirements": [
     {
       "id": "conformance",
-      "statement": "The service SHALL declare conformance to OGC API EDR Core and the MetOcean EDR Profile.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL declare conformance to OGC API EDR Core and the MetOcean EDR Profile.",
         "The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.",
         "The /conformance endpoint SHALL include https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/core.",
         "The /conformance endpoint SHALL include https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/insitu-observations."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "collections-endpoint",
-      "statement": "The service SHALL provide a /collections endpoint listing the insitu-observations collection.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL provide a /collections endpoint listing the insitu-observations collection.",
         "The /collections endpoint SHALL return the insitu-observations collection.",
         "Each collection SHALL include extent, data_queries, output_formats, and parameter_names."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "collection-crs",
-      "statement": "The insitu-observations collection SHALL support OGC CRS84 as its primary CRS.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The insitu-observations collection SHALL support OGC CRS84 as its primary CRS.",
         "The extent.spatial.crs SHALL be http://www.opengis.net/def/crs/OGC/1.3/CRS84.",
         "The crs array SHALL include http://www.opengis.net/def/crs/OGC/1.3/CRS84."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "collection-temporal-extent",
-      "statement": "The insitu-observations collection SHALL declare a temporal extent using the Gregorian TRS.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The insitu-observations collection SHALL declare a temporal extent using the Gregorian TRS.",
         "The extent.temporal.trs SHALL be Gregorian.",
         "The extent.temporal.interval SHALL contain at least one valid ISO 8601 interval."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "collection-custom-dimensions",
-      "statement": "The insitu-observations collection SHALL define standard_name and level custom dimensions.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The insitu-observations collection SHALL define standard_name and level custom dimensions.",
         "extent.custom SHALL contain an object with id standard_name and reference https://vocab.nerc.ac.uk/standard_name/.",
         "extent.custom SHALL contain an object with id level and reference describing measurement height in meters."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "data-queries",
-      "statement": "The insitu-observations collection SHALL support locations, area, and radius data queries.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The insitu-observations collection SHALL support locations, area, and radius data queries.",
         "The collection SHALL provide a /collections/insitu-observations/locations endpoint.",
         "The collection SHALL provide a /collections/insitu-observations/area endpoint.",
         "The collection SHALL provide a /collections/insitu-observations/radius endpoint.",
         "The radius query variables SHALL include within_units containing at least m."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "output-formats",
-      "statement": "All data queries SHALL support CoverageJSON as a response format.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "All data queries SHALL support CoverageJSON as a response format.",
         "All data queries SHALL support application/vnd.cov+json.",
         "The locations query SHALL additionally support application/geo+json."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "parameter-names",
-      "statement": "Each parameter in parameter_names SHALL conform to the MetOcean EDR Profile parameter conventions.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "Each parameter in parameter_names SHALL conform to the MetOcean EDR Profile parameter conventions.",
         "Each parameter SHALL specify label, description, unit, observedProperty, and measurementType.",
         "unit.symbol.type SHALL be a QUDT unit URI of the form https://qudt.org/vocab/unit/<unit>.",
         "observedProperty.id SHALL be a CF standard name URI of the form https://vocab.nerc.ac.uk/standard_name/<name>.",
         "Each parameter SHALL specify metocean:standard_name matching a value in extent.custom standard_name.",
         "Each parameter SHALL specify metocean:level matching a value in extent.custom level."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "locations-response",
-      "statement": "The locations query SHALL return a GeoJSON FeatureCollection of station locations.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The locations query SHALL return a GeoJSON FeatureCollection of station locations.",
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL have an id property of type string.",
         "Each feature SHALL have a properties.name property of type string."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "error-handling",
-      "statement": "The service SHALL handle errors per RFC 9457.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL handle errors per RFC 9457.",
         "A 4xx response SHALL include a body conforming to RFC 9457 Problem Details.",
         "A query for data inside the extent that returns no data SHALL respond with HTTP 204."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     }
@@ -679,6 +720,7 @@
     "offset_enabled": true,
     "response_metadata": true
   },
+  "http_responses": null,
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core",
     "https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/core",

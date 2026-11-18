@@ -85,6 +85,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     }
@@ -338,6 +339,7 @@
     "offset_enabled": true,
     "response_metadata": true
   },
+  "http_responses": null,
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
   ],

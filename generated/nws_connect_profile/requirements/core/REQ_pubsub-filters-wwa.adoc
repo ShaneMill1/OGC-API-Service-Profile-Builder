@@ -3,7 +3,7 @@
 ====
 [%metadata]
 identifier:: /req/nws_connect/pubsub-filters-wwa
-statement:: The wwa collection pub/sub SHALL support filtering by event types, state, CWA, delivery method, warning lifecycle, and Impact-Based Warning thresholds.
+part:: The wwa collection pub/sub SHALL support filtering by event types, state, CWA, delivery method, warning lifecycle, and Impact-Based Warning thresholds.
 part:: Subscriptions SHALL accept event_types filter (array of weather event types).
 part:: Subscriptions SHALL accept state filter (comma-separated USPS state codes or blank for all).
 part:: Subscriptions SHALL accept cwa filter (comma-separated County Warning Area codes).

@@ -3,7 +3,7 @@
 ====
 [%metadata]
 identifier:: /req/nwsviz/items-zarr-endpoint
-statement:: The items query SHALL expose a virtual Zarr endpoint for each collection.
+part:: The items query SHALL expose a virtual Zarr endpoint for each collection.
 part:: Each collection SHALL provide a /collections/{id}/items endpoint.
 part:: The items endpoint SHALL include an item with id zarr that acts as a virtual Zarr store.
 part:: The zarr item SHALL expose the underlying dataset as a Zarr store accessible via the .zarr/ path convention.

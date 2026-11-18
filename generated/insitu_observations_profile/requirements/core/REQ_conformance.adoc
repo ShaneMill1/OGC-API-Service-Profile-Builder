@@ -3,7 +3,7 @@
 ====
 [%metadata]
 identifier:: /req/insitu_observations_profile/conformance
-statement:: The service SHALL declare conformance to OGC API EDR Core and the MetOcean EDR Profile.
+part:: The service SHALL declare conformance to OGC API EDR Core and the MetOcean EDR Profile.
 part:: The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.
 part:: The /conformance endpoint SHALL include https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/core.
 part:: The /conformance endpoint SHALL include https://eumetnet.github.io/spec/metocean-edr-profile/1/conf/insitu-observations.

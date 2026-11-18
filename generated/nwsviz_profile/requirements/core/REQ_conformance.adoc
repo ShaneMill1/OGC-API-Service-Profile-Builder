@@ -3,7 +3,7 @@
 ====
 [%metadata]
 identifier:: /req/nwsviz/conformance
-statement:: The service SHALL declare conformance to OGC API Common, EDR, EDR Part 3, and OGC API Processes.
+part:: The service SHALL declare conformance to OGC API Common, EDR, EDR Part 3, and OGC API Processes.
 part:: The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core.
 part:: The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json.
 part:: The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30.

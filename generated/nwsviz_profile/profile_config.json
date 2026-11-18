@@ -143,6 +143,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -273,6 +274,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -403,6 +405,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -533,6 +536,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -663,6 +667,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -793,6 +798,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -923,6 +929,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -1053,6 +1060,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -1183,6 +1191,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -1313,6 +1322,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -1443,6 +1453,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -1573,6 +1584,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -1692,6 +1704,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     }
@@ -1740,8 +1753,11 @@
   "requirements": [
     {
       "id": "conformance",
-      "statement": "The service SHALL declare conformance to OGC API Common, EDR, EDR Part 3, and OGC API Processes.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL declare conformance to OGC API Common, EDR, EDR Part 3, and OGC API Processes.",
         "The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core.",
         "The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json.",
         "The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30.",
@@ -1750,35 +1766,47 @@
         "The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/conf-class-core.",
         "The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/core."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "collections-endpoint",
-      "statement": "The service SHALL provide a /collections endpoint listing all NWSViz collections.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL provide a /collections endpoint listing all NWSViz collections.",
         "The /collections endpoint SHALL return metadata for all 13 NWSViz collections.",
         "Each collection SHALL include extent, data_queries, and output_formats."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "position-coveragejson",
-      "statement": "The position query SHALL return CoverageJSON.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The position query SHALL return CoverageJSON.",
         "Each collection SHALL provide a /collections/{id}/position endpoint.",
         "The position endpoint SHALL accept a coords parameter containing a WKT POINT geometry.",
         "The position endpoint SHALL return a valid CoverageJSON Coverage object as its default response.",
         "The response Content-Type SHALL be application/prs.coverage+json."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "items-zarr-endpoint",
-      "statement": "The items query SHALL expose a virtual Zarr endpoint for each collection.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The items query SHALL expose a virtual Zarr endpoint for each collection.",
         "Each collection SHALL provide a /collections/{id}/items endpoint.",
         "The items endpoint SHALL include an item with id zarr that acts as a virtual Zarr store.",
         "The zarr item SHALL expose the underlying dataset as a Zarr store accessible via the .zarr/ path convention.",
@@ -1786,39 +1814,51 @@
         "The zarr item response SHALL include a link with rel=zarr pointing to the root of the virtual Zarr store.",
         "The virtual Zarr store SHALL reflect the full spatio-temporal extent of the collection."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "process-zarr-difference",
-      "statement": "The service SHALL provide the edr-zarr-difference process for computing the difference between two EDR Zarr datasets.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL provide the edr-zarr-difference process for computing the difference between two EDR Zarr datasets.",
         "The service SHALL expose a /processes/edr-zarr-difference endpoint.",
         "The process SHALL accept collection_a, instance_a, collection_b, instance_b, parameter_name, zoom_level, crs, and unit as required inputs.",
         "The process SHALL accept datetime as an optional input for valid time selection.",
         "The process SHALL support sync-execute job control.",
         "The process SHALL return a difference_result output containing the result of (A - B) as a virtual Zarr dataset."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "process-zarr-difference-streaming",
-      "statement": "The service SHALL provide the edr-zarr-difference-streaming process for streaming difference computation via a virtual Zarr endpoint.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL provide the edr-zarr-difference-streaming process for streaming difference computation via a virtual Zarr endpoint.",
         "The service SHALL expose a /processes/edr-zarr-difference-streaming endpoint.",
         "The process SHALL accept collection_a, instance_a, collection_b, instance_b, parameter_name, and zoom_level as required inputs.",
         "The process SHALL accept datetime, epsg, and units as optional inputs.",
         "The process SHALL support sync-execute job control.",
         "The process SHALL return a zarr_endpoint output containing a URL to stream difference chunks on-demand."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "process-zarr-wind-streaming",
-      "statement": "The service SHALL provide the edr-zarr-wind-streaming process for deriving wind speed and direction from u/v components via a virtual Zarr endpoint.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL provide the edr-zarr-wind-streaming process for deriving wind speed and direction from u/v components via a virtual Zarr endpoint.",
         "The service SHALL expose a /processes/edr-zarr-wind-streaming endpoint.",
         "The process SHALL accept collection, instance, output_parameters, and zoom_level as required inputs.",
         "The output_parameters input SHALL accept wind_speed, wind_direction, or both.",
@@ -1826,6 +1866,7 @@
         "The process SHALL support sync-execute job control.",
         "The process SHALL return a zarr_endpoint output containing a URL to stream wind data chunks on-demand."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     }
@@ -2042,6 +2083,7 @@
     "offset_enabled": true,
     "response_metadata": true
   },
+  "http_responses": null,
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core",
     "http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/core"

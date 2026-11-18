@@ -3,6 +3,6 @@
 ====
 [%metadata]
 identifier:: /req/nwp_radar/profile-query-types
-statement:: The following data queries SHALL be supported: "cube", "items", "radius".
+part:: The following data queries SHALL be supported: "cube", "items", "radius".
 part:: The collection SHALL advertise cube, items and radius data queries.
 ====

@@ -329,6 +329,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [
         "core",
         "insitu-observations",
@@ -1019,6 +1020,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [
         "core",
         "nwp",
@@ -1107,6 +1109,7 @@
       "id": "openapi",
       "title": null,
       "description": "An OpenAPI specification provides a machine-readable description of the API interface.",
+      "description_position": "before",
       "parts": [
         "The API definition SHALL be described using an OpenAPI document (version 3.1 or higher).",
         "The OpenAPI document SHALL be encoded as one of the OpenAPI JSON/YAML media types.",
@@ -1114,7 +1117,6 @@
         "The landing page SHALL link API documentation with rel=service-doc and type text/html."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
@@ -1122,13 +1124,13 @@
       "id": "collection_identifier",
       "title": null,
       "description": "A collection identifier provides a mechanism to uniquely identify a given collection in an OGC API.",
+      "description_position": "before",
       "parts": [
         "A collection identifier SHALL NOT be used to convey structured metadata.",
         "A collection identifier SHOULD use one of insitu-observations, climate_data, radar_observations, weather_warnings, weather_forecast.",
         "The identifier string MAY include a postfix to the listed values if needed."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
@@ -1136,6 +1138,7 @@
       "id": "collection_title",
       "title": null,
       "description": "A collection title provides a human-readable short description of the given collection.",
+      "description_position": "before",
       "parts": [
         "A title SHALL be set for all collections.",
         "A title SHALL NOT have more than 50 characters.",
@@ -1144,7 +1147,6 @@
         "A title SHOULD describe the collection understandably for non-experts (topic/domain and geographical area)."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
@@ -1152,6 +1154,7 @@
       "id": "collection_license",
       "title": null,
       "description": "A license describes the usage permissions for the data in a collection.",
+      "description_position": "before",
       "parts": [
         "The links property in a collection SHALL contain a link to a license of its data.",
         "The license link SHALL set the rel property to license.",
@@ -1159,7 +1162,6 @@
         "If the data is open data, the license SHALL be CC BY 4.0 with href https://creativecommons.org/licenses/by/4.0/."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
@@ -1167,6 +1169,7 @@
       "id": "collection_spatial_extent",
       "title": null,
       "description": "Spatial extent of a collection.",
+      "description_position": "before",
       "parts": [
         "The value of extent.spatial.crs SHALL be OGC:CRS84.",
         "The value of crs SHALL include the element OGC:CRS84.",
@@ -1174,7 +1177,6 @@
         "Additional CRSs SHOULD be presented as EPSG:<code> in crs and data_queries.*.crs_details.crs."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
@@ -1182,11 +1184,11 @@
       "id": "collection_temporal_extent",
       "title": null,
       "description": "Temporal extent of a collection.",
+      "description_position": "before",
       "parts": [
         "The value of extent.temporal.trs SHALL be Gregorian."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
@@ -1194,11 +1196,11 @@
       "id": "collection_vertical_extent",
       "title": null,
       "description": "Vertical extent of a collection.",
+      "description_position": "before",
       "parts": [
         "If extent.vertical is defined, the value of extent.vertical.vrs SHOULD be one of \"Pressure level in hPa\", \"Geopotential height in gpm\", \"Geometrical altitude above mean sea level in meters\", \"Height above ground in meters\" or \"Flight level\"."
       ],
       "statement": null,
-      "content": [],
       "level": "recommendation",
       "conformance_class": "core"
     },
@@ -1206,6 +1208,7 @@
       "id": "collection_parameter_names",
       "title": null,
       "description": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
+      "description_position": "before",
       "parts": [
         "The keys in parameter_names and id in the parameter object SHALL NOT convey structured metadata.",
         "A parameter object SHALL specify the fields label, description and unit.",
@@ -1215,7 +1218,6 @@
         "observedProperty SHALL use the CF-convention (observedProperty.id = https://vocab.nerc.ac.uk/standard_name/<name>) when available; otherwise use observedProperty.description."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
@@ -1223,13 +1225,13 @@
       "id": "collection_radius_data_query",
       "title": null,
       "description": "Metadata about the radius data query in a collection.",
+      "description_position": "before",
       "parts": [
         "The within_units array in a variables object for a radius data query SHALL contain m.",
         "within_units MAY contain more values, each defined as a unit at https://qudt.org using the unit symbol.",
         "A radius query with a limit parameter SHOULD return the closest items to the radius centre."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
@@ -1237,6 +1239,7 @@
       "id": "locations_query_response_format",
       "title": null,
       "description": "Structure of the response document for a /locations query.",
+      "description_position": "before",
       "parts": [
         "The /locations response SHALL be a GeoJSON document with a FeatureCollection object.",
         "Each Feature SHALL have id of type string and properties.name of type string.",
@@ -1246,7 +1249,6 @@
         "All strings SHALL be in English."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
@@ -1254,13 +1256,13 @@
       "id": "error_handling",
       "title": null,
       "description": "HTTP status codes and response documents for responding to errors.",
+      "description_position": "before",
       "parts": [
         "A query for data inside the extent that results in no data SHALL return HTTP 204 with no content.",
         "A query partially within the extent SHALL respond as within the extent, returning only the in-extent portion.",
         "Any 4xx response SHOULD comply with RFC 9457 Problem Details for HTTP APIs."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
@@ -1268,11 +1270,11 @@
       "id": "data_query_response_metadata",
       "title": null,
       "description": "Metadata in the response to a data query.",
+      "description_position": "before",
       "parts": [
         "The metadata in the response to a data query (e.g. crs, parameters and units) SHOULD mirror as closely as possible the terms and vocabularies used in the collection metadata."
       ],
       "statement": null,
-      "content": [],
       "level": "recommendation",
       "conformance_class": "core"
     },
@@ -1280,11 +1282,11 @@
       "id": "collection_data_queries",
       "title": null,
       "description": "The types of data queries implemented in a collection.",
+      "description_position": "before",
       "parts": [
         "A collection SHALL support locations, area and radius."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "insitu-observations"
     },
@@ -1292,13 +1294,13 @@
       "id": "collection_parameter_names",
       "title": null,
       "description": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
+      "description_position": "before",
       "parts": [
         "Each parameter SHALL specify metocean:standard_name set to a value from the standard_name custom dimension.",
         "Each parameter SHALL specify metocean:level set to a value from the level custom dimension.",
         "Each parameter SHALL specify measurementType."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "insitu-observations"
     },
@@ -1306,11 +1308,11 @@
       "id": "collection_parameter_names",
       "title": null,
       "description": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
+      "description_position": "before",
       "parts": [
         "Each measurementType.method object in parameter_names SHOULD follow the CF-convention cell methods and use a value from the CF cell-methods appendix."
       ],
       "statement": null,
-      "content": [],
       "level": "recommendation",
       "conformance_class": "insitu-observations"
     },
@@ -1318,6 +1320,7 @@
       "id": "collection_custom_dimensions",
       "title": null,
       "description": "The custom dimensions for which you can query the collection.",
+      "description_position": "before",
       "parts": [
         "The collection SHALL have an extent.custom object with id standard_name.",
         "Custom dimension standard_name SHALL list CF standard names in values.",
@@ -1326,7 +1329,6 @@
         "Custom dimension level SHALL specify reference \"Height of measurement above ground level in meters\"."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "insitu-observations"
     },
@@ -1334,13 +1336,13 @@
       "id": "coveragejson_parameters",
       "title": null,
       "description": "The metadata about parameters in CoverageJSON.",
+      "description_position": "before",
       "parts": [
         "Each object in parameters in a coverage SHALL have metocean:measurementType with the same properties as measurementType.",
         "Each object in parameters SHALL have metocean:standard_name.",
         "Each object in parameters SHALL have metocean:level."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "insitu-observations"
     },
@@ -1348,13 +1350,13 @@
       "id": "collection_parameter_names",
       "title": null,
       "description": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
+      "description_position": "before",
       "parts": [
         "WIPPS Manual Global Deterministic NWP parameters SHALL be provided using ECMWF short names per Annex D.",
         "The parameter name SHALL be provided in the description property.",
         "The ECMWF short name SHALL be provided in the id property."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "nwp"
     },
@@ -1362,6 +1364,7 @@
       "id": "collection_granularity",
       "title": null,
       "description": "The organization of NWP data advertised as collections and instances.",
+      "description_position": "before",
       "parts": [
         "A collection SHALL represent and describe a model.",
         "A collection instance SHALL represent and describe a model run.",
@@ -1369,7 +1372,6 @@
         "A collection temporal instance or interval SHALL represent a timestep or timesteps of a model run."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "nwp"
     },
@@ -1377,13 +1379,13 @@
       "id": "collection_data_queries",
       "title": null,
       "description": "The types of data queries implemented in a collection.",
+      "description_position": "before",
       "parts": [
         "A collection SHALL support position and cube queries.",
         "Data queries without an instance SHALL be interpreted as the latest instance of a collection.",
         "A datetime parameter between two timestamps SHALL trigger an HTTP 400 Bad Request."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "nwp"
     },
@@ -1391,11 +1393,11 @@
       "id": "encoding",
       "title": null,
       "description": "The response format for data queries.",
+      "description_position": "before",
       "parts": [
         "All data queries SHALL support CoverageJSON as a response format."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "data-query-response-format"
     },
@@ -1403,12 +1405,12 @@
       "id": "referencing",
       "title": null,
       "description": "Coordinate referencing metadata in CoverageJSON.",
+      "description_position": "before",
       "parts": [
         "With no crs query param, domain.referencing.* system SHALL have type GeographicCRS and id OGC:CRS84.",
         "With a crs query param, the system object with type GeographicCRS SHALL set id to the crs query param value."
       ],
       "statement": null,
-      "content": [],
       "level": "requirement",
       "conformance_class": "data-query-response-format"
     }
@@ -2041,6 +2043,7 @@
     "offset_enabled": true,
     "response_metadata": true
   },
+  "http_responses": null,
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core",
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/collections",

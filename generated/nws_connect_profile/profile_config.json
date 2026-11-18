@@ -174,6 +174,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -511,6 +512,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -668,6 +670,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -737,6 +740,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     },
@@ -811,6 +815,7 @@
       "metadata_date": null,
       "resource_service_publish_date": null,
       "resource_default_locale": null,
+      "query_options": {},
       "conformance_classes": [],
       "parameter_schema": null
     }
@@ -819,44 +824,59 @@
   "requirements": [
     {
       "id": "conformance",
-      "statement": "The service SHALL declare conformance to OGC API - EDR Part 1 Core and Part 2 PubSub.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL declare conformance to OGC API - EDR Part 1 Core and Part 2 PubSub.",
         "The service SHALL provide a /conformance endpoint.",
         "The response SHALL include http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core.",
         "The response SHALL include http://www.opengis.net/spec/ogcapi-edr-2/1.0/conf/pubsub."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "collections-endpoint",
-      "statement": "The service SHALL provide a /collections endpoint listing all collections.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL provide a /collections endpoint listing all collections.",
         "The service SHALL provide a /collections endpoint.",
         "The response SHALL include water_gauge, wwa, space_weather, cwa, and states collections.",
         "Each collection SHALL have id, title, description, extent, and links properties.",
         "The /collections/{collectionId}/queryables endpoint SHALL expose Part 3 custom dimensions (e.g. for wwa, alert_action / ibw_tier / max_hail_size_in / max_wind_gust_mph / parent_item_id) so partners can discover filterable attributes."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "water-gauge-collection",
-      "statement": "The water_gauge collection SHALL provide GeoJSON features with flood stage information.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The water_gauge collection SHALL provide GeoJSON features with flood stage information.",
         "The service SHALL provide a /collections/water_gauge endpoint.",
         "The service SHALL provide a /collections/water_gauge/items endpoint.",
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL include flood_stage, feet_above_stage, and value properties.",
         "Each feature geometry SHALL be a GeoJSON Point."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "wwa-collection",
-      "statement": "The wwa collection SHALL provide GeoJSON features for weather watches and warnings.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The wwa collection SHALL provide GeoJSON features for weather watches and warnings.",
         "The service SHALL provide a /collections/wwa endpoint.",
         "The service SHALL provide a /collections/wwa/items endpoint.",
         "The response Content-Type SHALL be application/geo+json.",
@@ -870,62 +890,82 @@
         "Each SVR / TOR / SVS feature MAY include a banner object with text, bg (background color), fg (foreground color), and severity (1-5) when a life-safety banner applies (TORNADO EMERGENCY, PARTICULARLY DANGEROUS SITUATION, DESTRUCTIVE / CONSIDERABLE DAMAGE THREAT, TORNADO POSSIBLE, TORNADO OBSERVED, FLASH FLOOD EMERGENCY).",
         "Each feature MAY include a states property listing two-letter USPS state codes covered by the warning geometry, derived from CAP UGC and SAME geocodes."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "space-weather-collection",
-      "statement": "The space_weather collection SHALL provide GeoJSON features for NOAA SWPC space weather alerts.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The space_weather collection SHALL provide GeoJSON features for NOAA SWPC space weather alerts.",
         "The service SHALL provide a /collections/space_weather endpoint.",
         "The service SHALL provide a /collections/space_weather/items endpoint.",
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL include message_type, noaa_scale, scale_category, and scale_level properties."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "cwa-collection",
-      "statement": "The cwa collection SHALL provide GeoJSON features for NWS County Warning Areas.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The cwa collection SHALL provide GeoJSON features for NWS County Warning Areas.",
         "The service SHALL provide a /collections/cwa endpoint.",
         "The service SHALL provide a /collections/cwa/items endpoint.",
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL include a CWA identifier property.",
         "Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "states-collection",
-      "statement": "The states collection SHALL provide GeoJSON features for US state boundaries.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The states collection SHALL provide GeoJSON features for US state boundaries.",
         "The service SHALL provide a /collections/states endpoint.",
         "The service SHALL provide a /collections/states/items endpoint.",
         "The response Content-Type SHALL be application/geo+json.",
         "Each feature SHALL include a state identifier property.",
         "Each feature geometry SHALL be a GeoJSON Polygon or MultiPolygon."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "items-by-id",
-      "statement": "All collections SHALL support retrieval of individual features by ID.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "All collections SHALL support retrieval of individual features by ID.",
         "Each collection SHALL provide a /collections/{collectionId}/items/{featureId} endpoint.",
         "The response SHALL return a single GeoJSON feature.",
         "The response SHALL return 404 if the feature does not exist."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "pubsub-amqp",
-      "statement": "The service SHALL support AMQP 1.0 and MQTT pub/sub for real-time notifications on water_gauge, wwa, and space_weather collections.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL support AMQP 1.0 and MQTT pub/sub for real-time notifications on water_gauge, wwa, and space_weather collections.",
         "The service SHALL provide an AMQP 1.0 broker (edr-broker) on port 5672 (RabbitMQ 4.x native AMQP 1.0).",
         "The service SHALL provide an MQTT broker (edr-broker) on port 1883 over the same amq.topic exchange.",
         "Clients SHALL be able to consume from a queue bound to amq.topic with binding key collections.water_gauge.items.",
@@ -934,36 +974,48 @@
         "Clients SHALL authenticate with SASL PLAIN using their account email as the username and a named WebSocket key (wsk_...) as the password.",
         "Notifications SHALL be published as GeoJSON features."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "pubsub-websocket",
-      "statement": "The service SHALL support a native WebSocket pub/sub endpoint for browser clients.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL support a native WebSocket pub/sub endpoint for browser clients.",
         "The service SHALL provide a WebSocket endpoint at /ws for local development (ws) and production (wss).",
         "The WebSocket endpoint SHALL deliver the same GeoJSON feature notifications as the AMQP 1.0 and MQTT transports.",
         "WebSocket connections SHALL authenticate with the same identity used for the AMQP/MQTT transports."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "pubsub-filters-water-gauge",
-      "statement": "The water_gauge collection pub/sub SHALL support filtering by flood stages, stations, and WFO.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The water_gauge collection pub/sub SHALL support filtering by flood stages, stations, and WFO.",
         "Subscriptions SHALL accept flood_stages filter (array of stage values).",
         "Subscriptions SHALL accept stations filter (comma-separated station IDs or 'all').",
         "Subscriptions SHALL accept wfo filter (Weather Forecast Office codes).",
         "Subscriptions SHALL accept email filter for notification delivery."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "pubsub-filters-wwa",
-      "statement": "The wwa collection pub/sub SHALL support filtering by event types, state, CWA, delivery method, warning lifecycle, and Impact-Based Warning thresholds.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The wwa collection pub/sub SHALL support filtering by event types, state, CWA, delivery method, warning lifecycle, and Impact-Based Warning thresholds.",
         "Subscriptions SHALL accept event_types filter (array of weather event types).",
         "Subscriptions SHALL accept state filter (comma-separated USPS state codes or blank for all).",
         "Subscriptions SHALL accept cwa filter (comma-separated County Warning Area codes).",
@@ -976,13 +1028,17 @@
         "Subscriptions SHALL accept hail_min_in and wind_min_mph numeric filters; when both are set they combine via logical OR so either threshold fires the alert.",
         "When a subscription opts in to upgrade re-alerts on a Severe Thunderstorm Warning or Tornado Warning event type, the service SHALL automatically include 'Severe Weather Statement' in the effective event filter so follow-up SVS products can trigger the alert."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "pubsub-message-attributes-wwa",
-      "statement": "Each wwa pub/sub notification SHALL carry a set of message attributes that enable partner-side and broker-side filtering across all supported transports (SNS filter policies, AMQP 1.0 message properties, MQTT subscription topics).",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "Each wwa pub/sub notification SHALL carry a set of message attributes that enable partner-side and broker-side filtering across all supported transports (SNS filter policies, AMQP 1.0 message properties, MQTT subscription topics).",
         "Each notification SHALL carry event, severity, urgency, certainty, wfo, and sender String attributes.",
         "Each notification SHALL carry alert_action, ibw_tier, ibw_prior_tier, vtec_phenomenon, vtec_significance, vtec_action, vtec_etn, and parent_item_id String attributes when applicable.",
         "Each notification SHALL carry max_hail_size_in and max_wind_gust_mph Number attributes (0 when unknown) so numeric filter policies can express threshold-based subscriptions.",
@@ -990,18 +1046,23 @@
         "Each notification SHALL carry a states String.Array attribute listing the two-letter USPS codes covered by the warning geometry.",
         "Each notification SHALL carry a dedup_token String attribute keyed by (parent_item_id, ibw_tier, alert_action) so downstream paging systems cannot collapse a genuine upgrade re-alert as a duplicate of the parent warning."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "pubsub-filters-space-weather",
-      "statement": "The space_weather collection pub/sub SHALL support filtering by message type and NOAA scale.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The space_weather collection pub/sub SHALL support filtering by message type and NOAA scale.",
         "Subscriptions SHALL accept message_type filter (Alert, Warning, Watch, Summary).",
         "Subscriptions SHALL accept scale_category filter (G, S, R).",
         "Subscriptions SHALL accept scale_level filter (minimum NOAA scale level 1-5).",
         "Subscriptions SHALL accept email filter for notification delivery."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     }
@@ -1438,6 +1499,7 @@
     "offset_enabled": true,
     "response_metadata": true
   },
+  "http_responses": null,
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core",
     "http://www.opengis.net/spec/ogcapi-edr-2/1.0/conf/pubsub"

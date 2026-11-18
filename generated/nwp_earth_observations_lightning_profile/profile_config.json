@@ -44,6 +44,26 @@
           "length": null,
           "templated": null,
           "variables": null
+        },
+        {
+          "href": "https://example.com/collections/earth_observations_lightning",
+          "hreflang": null,
+          "rel": "alternate",
+          "type": "text/html",
+          "title": "Earth observations lightning strikes",
+          "length": null,
+          "templated": null,
+          "variables": null
+        },
+        {
+          "href": "https://example.com/terms_resource_use_limitation.html",
+          "hreflang": null,
+          "rel": "terms_of_service",
+          "type": "text/html",
+          "title": "Resource Use Limitation",
+          "length": null,
+          "templated": null,
+          "variables": null
         }
       ],
       "extent": {
@@ -178,9 +198,44 @@
       "classification": null,
       "provider": null,
       "attribution": null,
-      "metadata_date": null,
-      "resource_service_publish_date": null,
+      "metadata_date": "2026-07-16",
+      "resource_service_publish_date": "2026-07-16",
       "resource_default_locale": null,
+      "query_options": {
+        "items": {
+          "parameters": [
+            "datetime",
+            "parameter-name",
+            "crs"
+          ],
+          "http_responses": null,
+          "geometry_types": [
+            "Point"
+          ]
+        },
+        "radius": {
+          "parameters": [
+            "datetime",
+            "parameter-name",
+            "crs"
+          ],
+          "http_responses": null,
+          "geometry_types": [
+            "Point"
+          ]
+        },
+        "cube": {
+          "parameters": [
+            "datetime",
+            "parameter-name",
+            "crs"
+          ],
+          "http_responses": null,
+          "geometry_types": [
+            "Point"
+          ]
+        }
+      },
       "conformance_classes": [],
       "parameter_schema": null
     }
@@ -189,34 +244,46 @@
   "requirements": [
     {
       "id": "items-endpoint",
-      "statement": "The service SHALL provide a /collections/earth_observations_lightning/items endpoint.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL provide a /collections/earth_observations_lightning/items endpoint.",
         "The service SHALL return GeoJSON FeatureCollection.",
         "Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.",
         "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "cube-endpoint",
-      "statement": "The service SHALL provide a /collections/earth_observations_lightning/cube endpoint.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL provide a /collections/earth_observations_lightning/cube endpoint.",
         "The service SHALL return CoverageJSON FeatureCollection.",
         "Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.",
         "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "radius-endpoint",
-      "statement": "The service SHALL provide a /collections/earth_observations_lightning/radius endpoint.",
+      "title": null,
+      "description": null,
+      "description_position": "before",
       "parts": [
+        "The service SHALL provide a /collections/earth_observations_lightning/radius endpoint.",
         "The service SHALL return CoverageJSON FeatureCollection.",
         "Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.",
         "Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z."
       ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     }
@@ -392,6 +459,62 @@
     "offset_enabled": true,
     "response_metadata": true
   },
+  "http_responses": {
+    "200": {
+      "description": "Success - the query executed successfully",
+      "title": null,
+      "detail": null,
+      "type": "about:blank"
+    },
+    "204": {
+      "description": "Success - the server processed the request and is not returning any content",
+      "title": null,
+      "detail": null,
+      "type": "about:blank"
+    },
+    "304": {
+      "description": "Redirection - not modified",
+      "title": null,
+      "detail": null,
+      "type": "about:blank"
+    },
+    "400": {
+      "description": "Client error - bad request",
+      "title": "Bad request",
+      "detail": "The request is malformed or a parameter is invalid.",
+      "type": "about:blank"
+    },
+    "404": {
+      "description": "Client error - not found",
+      "title": "Not found",
+      "detail": "The requested resource does not exist.",
+      "type": "about:blank"
+    },
+    "405": {
+      "description": "Client error - method not allowed",
+      "title": "Method not allowed",
+      "detail": "Use POST for this request.",
+      "type": "about:blank"
+    },
+    "408": {
+      "description": "Client error - request timed out",
+      "title": "Request timeout",
+      "detail": "The server timed out waiting for the request.",
+      "type": "about:blank"
+    },
+    "413": {
+      "description": "Client error - content too large",
+      "title": "Content too large",
+      "detail": "The request asks for more data than the server allows.",
+      "type": "about:blank"
+    },
+    "500": {
+      "description": "Server error - internal server error",
+      "title": "Internal server error",
+      "detail": "An unexpected condition was encountered.",
+      "type": "about:blank"
+    }
+  },
   "required_conformance_classes": [
     "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
     "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections",
@@ -442,7 +565,7 @@
     },
     {
       "name": "CoverageJSON",
-      "media_type": "application/json",
+      "media_type": "application/prs.coverage+json",
       "schema_ref": "https://schemas.opengis.net/covjson/1.0/coveragejson.json"
     }
   ],

@@ -1,9 +1,13 @@
+
+Clients need a predictable encoding for temperature observations.
+
 [[req_minimal_profile_temperature_geojson]]
+.GeoJSON response
 [requirement]
 ====
 [%metadata]
 identifier:: /req/minimal_profile/temperature-geojson
-statement:: The temperature collection SHALL return GeoJSON features.
+part:: The temperature collection SHALL return GeoJSON features.
 part:: The service SHALL provide a /collections/temperature/items endpoint.
 part:: The response Content-Type SHALL be application/geo+json.
 ====

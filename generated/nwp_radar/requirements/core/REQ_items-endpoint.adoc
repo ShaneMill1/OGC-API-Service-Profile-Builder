@@ -3,7 +3,7 @@
 ====
 [%metadata]
 identifier:: /req/nwp_radar/items-endpoint
-statement:: The service SHALL provide a /collections/nwp_radar_precipitation/items endpoint.
+part:: The service SHALL provide a /collections/nwp_radar_precipitation/items endpoint.
 part:: The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
 part:: The service SHALL return a default file format of GeoTIFF.
 part:: Each feature SHALL include precipitation_amount property.
