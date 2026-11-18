@@ -5,8 +5,8 @@
 Feature requests from the OGC MetOcean Profile Workshop (#51): requirement `title` and `description`, Markdown and diagrams, and your own preformatted text or AsciiDoc in any section. See [`examples/documentation_content_profile.yaml`](examples/documentation_content_profile.yaml).
 
 ### Added
-- **Requirements laid out like OGC 26-027.** `title` is the requirement's heading (derived from the `id` when omitted), `description` is an informative paragraph before the box, and the box holds the identifier and the normative `parts`, with no Statement row.
-- **Content blocks** (`asciidoc`, `markdown`, `preformatted`, `plantuml`) in `requirements[].content`, in clause and annex `blocks`, and in any generated section through `document_body.section_content` (`start`/`end`, with `end_title` for sections that end in a sub-clause). Unknown keys and unsafe placements are reported by `validate`.
+- **Requirements laid out like OGC 26-027.** `title` is the requirement's heading (derived from the `id` when omitted), `description` is informative text before the box (or after it, with `description_position: after`): one sentence, or content blocks with tables, figures and diagrams. The box holds the identifier and the normative `parts`, with no Statement row.
+- **Content blocks** (`asciidoc`, `markdown`, `preformatted`, `plantuml`) in `requirements[].description`, in clause and annex `blocks`, and in any generated section through `document_body.section_content` (`start`/`end`, with `end_title` for sections that end in a sub-clause). Unknown keys and unsafe placements are reported by `validate`.
 - **Markdown** for blocks, clause and annex bodies (`format: markdown`), and for the prose fields (`text_format: markdown`). Adds the `markdown-it-py` dependency.
 - **PlantUML diagrams**, rendered by Metanorma during `--pdf`.
 - **Preformatted text** reproduced exactly: spacing, tabs (8-column stops), and characters AsciiDoc would otherwise interpret.

@@ -359,13 +359,23 @@ class Requirement(BaseModel):
             "26-027 §7.2 'OpenAPI'). When omitted, it is derived from the id."
         ),
     )
-    description: str | None = Field(
+    description: str | list[ContentBlock] | None = Field(
         default=None,
         description=(
-            "Informative text introducing the requirement, shown as a paragraph "
-            "before the requirement box (OGC 26-027 style, e.g. 'An OpenAPI "
-            "specification provides a machine-readable description of the API "
-            "interface.'). Not normative: the normative text goes in `parts`."
+            "Informative text describing the requirement, shown before the "
+            "requirement box (OGC 26-027 style, e.g. 'An OpenAPI specification "
+            "provides a machine-readable description of the API interface.'). Either "
+            "a string (AsciiDoc, or Markdown with document_body.text_format) or a list "
+            "of content blocks (markdown, asciidoc, preformatted, plantuml) for tables, "
+            "figures and diagrams. Not normative: the normative text goes in `parts`."
+        ),
+    )
+    description_position: Literal["before", "after"] = Field(
+        default="before",
+        description=(
+            "Where the description goes: 'before' the requirement box (OGC 26-027 "
+            "MetOcean style) or 'after' it (e.g. an explanatory note, as in OGC API - "
+            "Records)."
         ),
     )
     parts: list[str] = Field(
@@ -382,13 +392,6 @@ class Requirement(BaseModel):
             "the requirement box. Kept so existing profiles render unchanged; new "
             "profiles should put normative text in `parts` and use `description` "
             "for the informative introduction."
-        ),
-    )
-    content: list[ContentBlock] = Field(
-        default_factory=list,
-        description=(
-            "Extra author-supplied content (AsciiDoc, Markdown, preformatted text or a "
-            "PlantUML diagram) rendered immediately after this requirement."
         ),
     )
     level: RequirementLevel = Field(
@@ -440,6 +443,13 @@ class Requirement(BaseModel):
         """
         if not isinstance(data, dict):
             return data
+        if "content" in data:
+            # Merged into `description` before release; fail loudly rather than
+            # silently dropping the author's material.
+            raise ValueError(
+                f"Requirement '{data.get('id', '?')}': 'content' has been merged into "
+                "'description'. Move its blocks into a 'description' list."
+            )
         if data.get("statement") is not None:
             # One generic message so Python's default filter shows it once, not once
             # per requirement. The CLI replaces it with a count (see cli.py).

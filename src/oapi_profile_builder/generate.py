@@ -1834,25 +1834,46 @@ def _conf_adoc(profile: ServiceProfile) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _render_description(profile: ServiceProfile, req, heading_offset: int = 2) -> str:
+    """Render a requirement's description: a string (prose field) or content blocks.
+
+    Headings inside blocks are discrete, so they cannot capture the requirement
+    box or the requirements that follow.
+    """
+    d = req.description
+    if not d:
+        return ""
+    if isinstance(d, str):
+        return _prose(profile, d, heading_offset).rstrip()
+    return render_blocks(d, heading_offset=heading_offset, discrete=True).rstrip()
+
+
 def _requirement_block_adoc(profile: ServiceProfile, anchor: str, block: str,
                             identifier: str, req) -> str:
-    """Render one requirement/recommendation/permission file (OGC 26-027 layout).
+    """Render one requirement/recommendation/permission file.
 
     The box holds the identifier and the ``parts`` (rows A, B, C...). The
-    informative ``description`` is a paragraph before the box; in the clause
-    layout the sub-clause renders it instead (see _requirement_clause_sections).
-    An explicit ``title`` is the box title in the flat layout; in the clause
-    layout it is already the sub-clause heading. A legacy ``statement`` is still
-    rendered as a 'Statement' row so existing profiles are unchanged. Any
-    ``content`` blocks follow the box.
+    informative ``description`` goes before the box (OGC 26-027 MetOcean style;
+    in the clause layout the sub-clause renders it, see
+    _requirement_clause_sections) or after it when ``description_position`` is
+    'after' (e.g. an explanatory note, as in OGC API - Records). An explicit
+    ``title`` is the box title in the flat layout; in the clause layout it is
+    already the sub-clause heading. A legacy ``statement`` is still rendered as a
+    'Statement' row so existing profiles are unchanged.
     """
     body = _doc_body(profile)
     clause_mode = bool(
         body and body.render_requirement_clauses and _requirement_class_groups(profile) is not None
     )
+    # Under a '===' sub-clause the next heading level is '====' (offset 3);
+    # under the flat '== Requirements' section it is '===' (offset 2).
+    offset = 3 if clause_mode else 2
+    after = req.description_position == "after"
     lines = []
-    if req.description and not clause_mode:
-        lines += [_prose(profile, req.description).rstrip(), ""]
+    if req.description and not after and not clause_mode:
+        # Leading blank line: requirement files are included back to back, so
+        # without it this paragraph would merge with text ending the previous file.
+        lines += ["", _render_description(profile, req, offset), ""]
     lines.append(f"[[{anchor}]]")
     if req.title and not clause_mode:
         lines.append(f".{req.title}")
@@ -1868,10 +1889,10 @@ def _requirement_block_adoc(profile: ServiceProfile, anchor: str, block: str,
         lines.append(f"part:: {part}")
     lines.append("====")
     text = "\n".join(lines) + "\n"
-    if req.content:
-        # Under a '===' sub-clause the next heading level is '====' (offset 3);
-        # under the flat '== Requirements' section it is '===' (offset 2).
-        text += "\n" + render_blocks(req.content, heading_offset=3 if clause_mode else 2, discrete=True)
+    if req.description and after:
+        # Trailing blank line, for the same reason: keep it separate from
+        # whatever the next included requirement file starts with.
+        text += "\n" + _render_description(profile, req, offset) + "\n\n"
     return text
 
 
@@ -2582,7 +2603,8 @@ def _prose(profile: ServiceProfile, text: str, heading_offset: int = 2) -> str:
 def _all_content_blocks(profile: ServiceProfile):
     """Yield every author-supplied content block in the profile."""
     for r in profile.requirements:
-        yield from r.content
+        if isinstance(r.description, list):
+            yield from r.description
     body = _doc_body(profile)
     if body:
         for sc in body.section_content.values():
@@ -2688,23 +2710,27 @@ def _requirement_clause_sections(profile: ServiceProfile, groups) -> str:
                 or req_headings.get(r.id)
                 or r.display_title
             )
-            # The requirement's own description wins over requirement_intros.
-            intro = (
-                r.description
-                or req_intros.get(f"{cls}/{seg}/{r.id}")
-                or req_intros.get(f"{cls}/{r.id}")
-                or req_intros.get(r.id)
-            )
+            # A 'before' description is the sub-clause's lead-in and wins over
+            # requirement_intros; an 'after' description is rendered after the box.
+            own = r.description if r.description_position == "before" else None
+            intro = own and _render_description(profile, r, heading_offset=3)
+            if not intro:
+                fallback = (
+                    req_intros.get(f"{cls}/{seg}/{r.id}")
+                    or req_intros.get(f"{cls}/{r.id}")
+                    or req_intros.get(r.id)
+                )
+                intro = fallback and _prose(profile, fallback, heading_offset=3).rstrip()
             if heading != prev_heading:
                 # New topic sub-clause: emit the heading (and its lead-in prose).
                 lines.append(f"=== {heading}")
                 if intro:
-                    lines.append(_prose(profile, intro, heading_offset=3).rstrip())
+                    lines.append(intro)
                 prev_heading = heading
-            elif r.description:
+            elif own:
                 # Same topic as the previous member: keep this member's own
                 # description rather than dropping it.
-                lines.append(_prose(profile, r.description, heading_offset=3).rstrip())
+                lines.append(intro)
             # Append this member's REQ/REC include under the current heading.
             lines.append(f"include::../requirements/{cls}/{_req_file_prefix(r)}_{r.id}.adoc[]")
             lines.append("")

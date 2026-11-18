@@ -1,5 +1,3 @@
-A consistent unit label lets clients show temperatures without guessing the unit.
-
 [[rec_documentation_content_profile_temperature_units_label]]
 .Temperature unit label
 [recommendation]
@@ -9,3 +7,6 @@ identifier:: /rec/documentation_content_profile/temperature-units-label
 part:: The temperature collection SHOULD label its unit as Celsius.
 part:: Each temp parameter SHOULD expose a unit.label of "Celsius".
 ====
+
+NOTE: A consistent unit label lets clients show temperatures without guessing the unit.
+

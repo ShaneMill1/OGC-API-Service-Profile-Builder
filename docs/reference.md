@@ -294,10 +294,10 @@ abstract_tests: []
 | `processes` | list | no | OGC API Processes to expose in the OpenAPI |
 | `requirements` | list | no | Requirements for the AsciiDoc/PDF. Each may set `level` (`requirement`/`recommendation`/`permission`) — see [Requirement levels](#requirement-levels-shall--should--may) |
 | `requirements[].title` | string | no | The requirement's heading. Derived from the `id` when omitted |
-| `requirements[].description` | string | no | Informative paragraph shown before the requirement box. Not normative |
+| `requirements[].description` | string or list | no | Informative text for the requirement: a string, or content blocks (`markdown`, `asciidoc`, `preformatted`, `plantuml`) for tables, figures and diagrams. Not normative |
+| `requirements[].description_position` | string | no | `before` (default) or `after` the requirement box |
 | `requirements[].parts` | list | yes | The normative provisions, one row (A, B, C…) each |
 | `requirements[].statement` | string | no | Deprecated. Renders a 'Statement' row in the box; kept so existing profiles are unchanged |
-| `requirements[].content` | list | no | Extra content blocks rendered after the requirement: `asciidoc`, `markdown`, `preformatted` or `plantuml`. See [Authored content](#authored-content-markdown-diagrams-and-your-own-asciidoc) |
 | `requirements[].level` | string | no | RFC 2119 level. `requirement` (SHALL) is conformance-tested; `recommendation` (SHOULD) and `permission` (MAY) are informative and never fail validation. Inferred from the RFC 2119 keyword in the title, description and parts when omitted; defaults to `requirement`. See [Requirement levels](#requirement-levels-shall--should--may) |
 | `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id`. Only SHALL-level requirements are listed in the conformance class |
 | `abstract_tests[].method` | string | no | Optional test method description |
@@ -696,7 +696,7 @@ Requirements follow the layout of [OGC 26-027](https://docs.ogc.org/DRAFTS/26-02
 | Field | Renders as | 26-027 example |
 |---|---|---|
 | `title` | The requirement's heading (sub-clause heading with `render_requirement_clauses`, box title otherwise). Derived from the `id` when omitted; wins over `requirement_headings` | "7.2. OpenAPI" |
-| `description` | Informative paragraph before the box; wins over `requirement_intros` | "An OpenAPI specification provides a machine-readable description of the API interface." |
+| `description` | Informative text before the box (or after, with `description_position: after`). A string or content blocks; wins over `requirement_intros` | "An OpenAPI specification provides a machine-readable description of the API interface." |
 | `parts` | The box rows A, B, C…: all normative SHALL/SHOULD/MAY text | "An API definition SHALL be described using an OpenAPI document…" |
 
 The box holds the identifier and the `parts`, with no Statement row. `statement` is deprecated but still supported: a profile that sets it keeps its Statement row unchanged, and the CLI prints one warning. [`examples/metocean_profile.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/metocean_profile.yaml) reproduces 26-027 this way.
@@ -737,7 +737,7 @@ A **content block** has a `format`, a `body`, and optionally a `title` (caption;
 
 Blocks go in:
 
-- **`requirements[].content`**: after the requirement box.
+- **`requirements[].description`**: before the requirement box, or after it with `description_position: after`.
 - **`document_metadata.body.section_content.<key>`**: inside a generated section, keeping its text. Use `start` (after the heading) and/or `end` (after everything); a plain list means `end`. Keys: `abstract`, `preface`, `submitters`, `security-considerations` (only with `preface_front_matter`), `scope`, `conformance`, `references` (`end` only; Metanorma owns its introduction), `terms`, `requirements`, `abstract-tests`, and `class:<name>` for a conformance-class clause when `render_requirement_clauses` is on (it replaces `requirements`).
 - **`clauses[]` / `annexes[]`**: `format: markdown` for the `body`, plus a `blocks` list.
 
@@ -745,9 +745,8 @@ Blocks go in:
 requirements:
   - id: temperature-geojson
     title: Temperature GeoJSON response
-    description: The temperature collection SHALL return GeoJSON features.
-    parts: [The response Content-Type SHALL be application/geo+json.]
-    content:
+    parts: [The temperature collection SHALL return GeoJSON features.]
+    description:                      # before the box (default)
       - format: plantuml
         title: Request/response flow
         body: "Client -> Service: GET /collections/temperature/items"

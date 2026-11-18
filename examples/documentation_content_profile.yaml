@@ -69,16 +69,13 @@ requirements:
   # requirement (SHALL) — conformance-tested. Level defaults to `requirement`.
   - id: temperature-geojson
     title: Temperature GeoJSON response
-    description: Clients need a predictable encoding for temperature observations.
-    parts:
-      - The temperature collection SHALL return GeoJSON features.
-      - The service SHALL provide a /collections/temperature/items endpoint.
-      - The response Content-Type SHALL be application/geo+json.
-    # Extra material rendered right after this requirement. Four formats:
-    #   asciidoc | markdown | preformatted (spacing kept) | plantuml (diagram)
-    content:
+    # The description: informative text before the requirement box. A plain
+    # string, or blocks: markdown | asciidoc | preformatted | plantuml.
+    description:
       - format: markdown
         body: |
+          Clients need a predictable encoding for temperature observations.
+
           ![Metadata discovery workflow](metadata-discovery-workflow.png)
 
           The response is a GeoJSON `FeatureCollection`. Each feature carries:
@@ -100,11 +97,16 @@ requirements:
               +-- properties
                   +-- temp   number (degC)
 
+    parts:
+      - The temperature collection SHALL return GeoJSON features.
+      - The service SHALL provide a /collections/temperature/items endpoint.
+      - The response Content-Type SHALL be application/geo+json.
   # recommendation (SHOULD) — informative. Level is set explicitly here.
   - id: temperature-units-label
     title: Temperature unit label
     level: recommendation
-    description: A consistent unit label lets clients show temperatures without guessing the unit.
+    description: "NOTE: A consistent unit label lets clients show temperatures without guessing the unit."
+    description_position: after           # rendered after the box, like a note
     parts:
       - The temperature collection SHOULD label its unit as Celsius.
       - Each temp parameter SHOULD expose a unit.label of "Celsius".

@@ -2995,12 +2995,28 @@
               "type": "string"
             },
             {
+              "items": {
+                "$ref": "#/$defs/ContentBlock"
+              },
+              "type": "array"
+            },
+            {
               "type": "null"
             }
           ],
           "default": null,
-          "description": "Informative text introducing the requirement, shown as a paragraph before the requirement box (OGC 26-027 style, e.g. 'An OpenAPI specification provides a machine-readable description of the API interface.'). Not normative: the normative text goes in `parts`.",
+          "description": "Informative text describing the requirement, shown before the requirement box (OGC 26-027 style, e.g. 'An OpenAPI specification provides a machine-readable description of the API interface.'). Either a string (AsciiDoc, or Markdown with document_body.text_format) or a list of content blocks (markdown, asciidoc, preformatted, plantuml) for tables, figures and diagrams. Not normative: the normative text goes in `parts`.",
           "title": "Description"
+        },
+        "description_position": {
+          "default": "before",
+          "description": "Where the description goes: 'before' the requirement box (OGC 26-027 MetOcean style) or 'after' it (e.g. an explanatory note, as in OGC API - Records).",
+          "enum": [
+            "before",
+            "after"
+          ],
+          "title": "Description Position",
+          "type": "string"
         },
         "parts": {
           "description": "The normative provisions, rendered as rows A, B, C... in the requirement box. Put every SHALL/SHOULD/MAY sentence here.",
@@ -3023,14 +3039,6 @@
           "default": null,
           "description": "Deprecated. A one-line normative summary rendered as a 'Statement' row in the requirement box. Kept so existing profiles render unchanged; new profiles should put normative text in `parts` and use `description` for the informative introduction.",
           "title": "Statement"
-        },
-        "content": {
-          "description": "Extra author-supplied content (AsciiDoc, Markdown, preformatted text or a PlantUML diagram) rendered immediately after this requirement.",
-          "items": {
-            "$ref": "#/$defs/ContentBlock"
-          },
-          "title": "Content",
-          "type": "array"
         },
         "level": {
           "allOf": [
