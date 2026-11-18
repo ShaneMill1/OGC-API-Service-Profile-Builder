@@ -156,7 +156,7 @@ jobs:
 |---|---|---|
 | `config` | — | Path to the profile config YAML (required) |
 | `output` | `./profile_output` | Output directory |
-| `version` | `latest` | Package version to install |
+| `version` | `latest` | Package version to install from PyPI, or `local` to install from the action's own checkout |
 | `pdf` | `false` | Compile PDF via Metanorma (Docker required on runner) |
 | `cite-url` | — | Run OGC CITE tests against this server URL |
 | `cite-type` | `edr` | `edr`, `features`, or `both` |
