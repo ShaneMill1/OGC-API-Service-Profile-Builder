@@ -69,8 +69,9 @@ requirements:
   # requirement (SHALL) — conformance-tested. Level defaults to `requirement`.
   - id: temperature-geojson
     title: Temperature GeoJSON response
-    description: The temperature collection SHALL return GeoJSON features.
+    description: Clients need a predictable encoding for temperature observations.
     parts:
+      - The temperature collection SHALL return GeoJSON features.
       - The service SHALL provide a /collections/temperature/items endpoint.
       - The response Content-Type SHALL be application/geo+json.
     # Extra material rendered right after this requirement. Four formats:
@@ -103,15 +104,17 @@ requirements:
   - id: temperature-units-label
     title: Temperature unit label
     level: recommendation
-    description: The temperature collection SHOULD label its unit as Celsius.
+    description: A consistent unit label lets clients show temperatures without guessing the unit.
     parts:
+      - The temperature collection SHOULD label its unit as Celsius.
       - Each temp parameter SHOULD expose a unit.label of "Celsius".
 
   # permission (MAY) — informative. No `level:` set; inferred from "MAY".
   - id: temperature-post-query
     title: POST queries
-    description: The service MAY support POST queries for the temperature collection.
+    description: Some clients send queries that are too long for a URL.
     parts:
+      - The service MAY support POST queries for the temperature collection.
       - Implementations MAY offer POST alongside GET on data query endpoints.
 
 # Only requirements (SHALL) are conformance-tested, so only the SHALL statement

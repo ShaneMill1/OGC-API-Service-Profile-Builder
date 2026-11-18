@@ -5,22 +5,21 @@
 Feature requests from the OGC MetOcean Profile Workshop (#51): requirement `title` and `description`, Markdown and diagrams, and your own preformatted text or AsciiDoc in any section. See [`examples/documentation_content_profile.yaml`](examples/documentation_content_profile.yaml).
 
 ### Added
-- **`Requirement.title` and `Requirement.description`.** `title` heads the requirement (derived from the `id` when omitted); `description` is its text.
+- **Requirements laid out like OGC 26-027.** `title` is the requirement's heading (derived from the `id` when omitted), `description` is an informative paragraph before the box, and the box holds the identifier and the normative `parts`, with no Statement row.
 - **Content blocks** (`asciidoc`, `markdown`, `preformatted`, `plantuml`) in `requirements[].content`, in clause and annex `blocks`, and in any generated section through `document_body.section_content` (`start`/`end`, with `end_title` for sections that end in a sub-clause). Unknown keys and unsafe placements are reported by `validate`.
 - **Markdown** for blocks, clause and annex bodies (`format: markdown`), and for the prose fields (`text_format: markdown`). Adds the `markdown-it-py` dependency.
 - **PlantUML diagrams**, rendered by Metanorma during `--pdf`.
 - **Preformatted text** reproduced exactly: spacing, tabs (8-column stops), and characters AsciiDoc would otherwise interpret.
 
 ### Changed
-- **`statement` is deprecated** in favour of `description`. It still works, and the CLI prints one warning naming the affected requirements. Examples and docs use `description`. Old configs generate identical output.
+- **`statement` is deprecated.** Profiles that set it keep their Statement row unchanged (old configs generate identical output), and the CLI prints one warning naming the affected requirements. Examples move normative text into `parts`; `examples/metocean_profile.yaml` now matches 26-027, with its introductory sentences as `description`.
 - **Docs:** the README is now a short usage guide; the full command, option and field detail moved to [`docs/reference.md`](docs/reference.md), which is also on the docs site.
-- An explicit `title` takes precedence over `requirement_headings`. RFC 2119 level inference reads the title, description and parts.
+- An explicit `title` takes precedence over `requirement_headings`, and `description` over `requirement_intros`. RFC 2119 level inference reads `parts` (and a legacy `statement`); `title` and `description` are informative.
 
 ### Fixed
 - `generate --pdf` exits 1 and points to Metanorma's `document.err.html` when compilation fails. It used to exit 0 silently.
 
 ### Notes
-- The PDF labels a requirement's text "Statement", the OGC ModSpec term, whichever config key is used.
 - Mermaid isn't supported by Metanorma; export it to an image and add it under `figures`.
 
 ## [3.15.0] - 2026-10-28

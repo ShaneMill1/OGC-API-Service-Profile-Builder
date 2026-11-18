@@ -355,19 +355,35 @@ class Requirement(BaseModel):
         default=None,
         description=(
             "Short human-readable title of the requirement, e.g. 'Collection license'. "
-            "Used as the sub-clause heading in the generated document. When omitted, "
-            "it is derived from the id."
+            "The heading of the requirement in the generated document (as in OGC "
+            "26-027 §7.2 'OpenAPI'). When omitted, it is derived from the id."
         ),
     )
-    description: str = Field(
+    description: str | None = Field(
+        default=None,
         description=(
-            "The requirement text (rendered as the requirement's statement). Write "
-            "it as a single paragraph; use `parts` for the individual provisions and "
-            "`content` for longer explanatory material. Replaces the deprecated "
-            "`statement` field."
+            "Informative text introducing the requirement, shown as a paragraph "
+            "before the requirement box (OGC 26-027 style, e.g. 'An OpenAPI "
+            "specification provides a machine-readable description of the API "
+            "interface.'). Not normative: the normative text goes in `parts`."
         ),
     )
-    parts: list[str] = Field(min_length=1)
+    parts: list[str] = Field(
+        min_length=1,
+        description=(
+            "The normative provisions, rendered as rows A, B, C... in the requirement "
+            "box. Put every SHALL/SHOULD/MAY sentence here."
+        ),
+    )
+    statement: str | None = Field(
+        default=None,
+        description=(
+            "Deprecated. A one-line normative summary rendered as a 'Statement' row in "
+            "the requirement box. Kept so existing profiles render unchanged; new "
+            "profiles should put normative text in `parts` and use `description` "
+            "for the informative introduction."
+        ),
+    )
     content: list[ContentBlock] = Field(
         default_factory=list,
         description=(
@@ -385,7 +401,7 @@ class Requirement(BaseModel):
             "informatively: they are rendered with the matching Metanorma obligation "
             "and reported in the profile's quality assessment, but they never cause "
             "validation to fail. When omitted, the level is inferred from the RFC 2119 "
-            "keyword in the statement text, defaulting to 'requirement'."
+            "keyword in `parts` (and a legacy `statement`), defaulting to 'requirement'."
         ),
     )
     conformance_class: str | None = Field(
@@ -410,41 +426,34 @@ class Requirement(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def normalize_input(cls, data):
-        """Accept the legacy `statement` key, then infer the RFC 2119 level.
+        """Warn about the legacy `statement` key, then infer the RFC 2119 level.
 
-        `statement` was replaced by `title` + `description`. Existing configs keep
-        working: a legacy `statement` becomes the `description` (a FutureWarning
-        asks the author to migrate).
+        `statement` still renders its 'Statement' row, so existing profiles do not
+        change, but a FutureWarning asks the author to migrate.
 
-        When `level` is not set it is inferred from the text: SHALL/MUST ->
-        requirement, SHOULD/RECOMMENDED -> recommendation, MAY/OPTIONAL ->
-        permission. An explicit `level` always wins; mixed text falls back to the
-        strongest keyword present so a mandatory statement is never silently
-        downgraded.
+        When `level` is not set it is inferred from the normative text (`parts`,
+        plus a legacy `statement`): SHALL/MUST -> requirement, SHOULD/RECOMMENDED
+        -> recommendation, MAY/OPTIONAL -> permission. `title` and `description`
+        are informative and are not read. An explicit `level` always wins; mixed
+        text falls back to the strongest keyword present so a mandatory provision
+        is never silently downgraded.
         """
         if not isinstance(data, dict):
             return data
-        data = dict(data)  # never mutate the caller's mapping
-        if "statement" in data:
-            legacy = data.pop("statement")
-            if data.get("description") is None:
-                data["description"] = legacy
+        if data.get("statement") is not None:
             # One generic message so Python's default filter shows it once, not once
             # per requirement. The CLI replaces it with a count (see cli.py).
             warnings.warn(
-                "Requirement 'statement' is deprecated; rename it to 'description' "
-                "(and optionally add a 'title').",
+                "Requirement 'statement' is deprecated; put the normative text in "
+                "'parts' and use 'description' for the informative introduction.",
                 FutureWarning,
                 stacklevel=2,
             )
         if data.get("level") is not None:
             return data
+        data = dict(data)  # never mutate the caller's mapping
         text = " ".join(
-            str(x)
-            for x in (
-                [data.get("title") or "", data.get("description") or ""]
-                + list(data.get("parts") or [])
-            )
+            str(x) for x in ([data.get("statement") or ""] + list(data.get("parts") or []))
         ).upper()
         if re.search(r"\bSHALL\b|\bMUST\b", text):
             data["level"] = RequirementLevel.requirement.value
@@ -2027,7 +2036,8 @@ class ServiceProfile(BaseModel):
         if self.pubsub:
             # Check if there's a requirement for Part 2 conformance
             has_part2_req = any(
-                "part 2" in req.description.lower() or "part-2" in req.description.lower() or "pubsub" in req.description.lower()
+                any(k in " ".join([req.description or "", req.statement or "", *req.parts]).lower()
+                    for k in ("part 2", "part-2", "pubsub"))
                 for req in self.requirements
             )
             if not has_part2_req:
@@ -2036,8 +2046,9 @@ class ServiceProfile(BaseModel):
                     Requirement(
                         id="pubsub-part2-conformance",
                         title="Pub/Sub conformance",
-                        description="The service SHALL conform to OGC API - EDR Part 2: Publish-Subscribe",
+                        description="Services that publish notifications follow OGC API - EDR Part 2.",
                         parts=[
+                            "The service SHALL conform to OGC API - EDR Part 2: Publish-Subscribe",
                             "The service SHALL implement the channels defined in the AsyncAPI document",
                             "The service SHALL support the message payloads defined for each channel"
                         ]

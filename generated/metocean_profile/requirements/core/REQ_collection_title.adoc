@@ -3,7 +3,6 @@
 ====
 [%metadata]
 identifier:: /req/core/collection_title
-statement:: A title SHALL be set for all collections and SHALL NOT exceed 50 characters.
 part:: A title SHALL be set for all collections.
 part:: A title SHALL NOT have more than 50 characters.
 part:: A title SHOULD be written in English.

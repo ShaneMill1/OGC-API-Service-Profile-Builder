@@ -293,8 +293,10 @@ abstract_tests: []
 | `conformance_class_requirements` | object | no | Map of conformance-class short name → constraints (`required_data_queries`, `radius_within_units_required`) applied only to collections that declare the class. Lets one profile document model several EDR Part 3 requirements classes (see below) |
 | `processes` | list | no | OGC API Processes to expose in the OpenAPI |
 | `requirements` | list | no | Requirements for the AsciiDoc/PDF. Each may set `level` (`requirement`/`recommendation`/`permission`) — see [Requirement levels](#requirement-levels-shall--should--may) |
-| `requirements[].title` | string | no | Short heading for the requirement. Derived from the `id` when omitted |
-| `requirements[].description` | string | yes | The requirement text (replaces the deprecated `statement`) |
+| `requirements[].title` | string | no | The requirement's heading. Derived from the `id` when omitted |
+| `requirements[].description` | string | no | Informative paragraph shown before the requirement box. Not normative |
+| `requirements[].parts` | list | yes | The normative provisions, one row (A, B, C…) each |
+| `requirements[].statement` | string | no | Deprecated. Renders a 'Statement' row in the box; kept so existing profiles are unchanged |
 | `requirements[].content` | list | no | Extra content blocks rendered after the requirement: `asciidoc`, `markdown`, `preformatted` or `plantuml`. See [Authored content](#authored-content-markdown-diagrams-and-your-own-asciidoc) |
 | `requirements[].level` | string | no | RFC 2119 level. `requirement` (SHALL) is conformance-tested; `recommendation` (SHOULD) and `permission` (MAY) are informative and never fail validation. Inferred from the RFC 2119 keyword in the title, description and parts when omitted; defaults to `requirement`. See [Requirement levels](#requirement-levels-shall--should--may) |
 | `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id`. Only SHALL-level requirements are listed in the conformance class |
@@ -504,7 +506,7 @@ conformance-tested**.
 #### Setting the level
 
 You can set `level` explicitly, or let the tool infer it from the RFC 2119 keyword in the
-title, description and parts. When `level` is omitted, the strongest keyword present wins
+`parts` (and a legacy `statement`). `title` and `description` are informative and not read. When `level` is omitted, the strongest keyword present wins
 (SHALL/MUST → `requirement`, SHOULD/RECOMMENDED → `recommendation`, MAY/OPTIONAL →
 `permission`); if no keyword is found it defaults to `requirement`. An explicit `level`
 always overrides inference — so a statement can never be silently downgraded from mandatory.
@@ -689,16 +691,23 @@ See [`examples/insitu_observations_profile.yaml`](https://github.com/ShaneMill1/
 
 Requirements drive the AsciiDoc/PDF output. Abstract tests must reference a valid requirement `id`.
 
-Each requirement has an `id` (lowercase, hyphens or underscores), an optional `title`, a `description`, and at least one `parts` entry. The `title` heads the requirement (its sub-clause heading with `render_requirement_clauses`, its box title otherwise) and wins over `requirement_headings`; without one, it is derived from the `id`. `statement` is deprecated: it still works as `description`, and the CLI warns once.
+Requirements follow the layout of [OGC 26-027](https://docs.ogc.org/DRAFTS/26-027.pdf) (§7.2 onward):
 
-The requirement box in the PDF labels this text **"Statement"**. That is the OGC ModSpec term for a requirement's normative text, and Metanorma's OGC flavor applies it to requirements, recommendations and permissions whichever key you use.
+| Field | Renders as | 26-027 example |
+|---|---|---|
+| `title` | The requirement's heading (sub-clause heading with `render_requirement_clauses`, box title otherwise). Derived from the `id` when omitted; wins over `requirement_headings` | "7.2. OpenAPI" |
+| `description` | Informative paragraph before the box; wins over `requirement_intros` | "An OpenAPI specification provides a machine-readable description of the API interface." |
+| `parts` | The box rows A, B, C…: all normative SHALL/SHOULD/MAY text | "An API definition SHALL be described using an OpenAPI document…" |
+
+The box holds the identifier and the `parts`, with no Statement row. `statement` is deprecated but still supported: a profile that sets it keeps its Statement row unchanged, and the CLI prints one warning. [`examples/metocean_profile.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/metocean_profile.yaml) reproduces 26-027 this way.
 
 ```yaml
 requirements:
   - id: position-coveragejson          # lowercase, hyphens only
     title: Position query response
-    description: The position query SHALL return CoverageJSON.
+    description: The position query returns data at a single point.
     parts:
+      - The position query SHALL return CoverageJSON.
       - The service SHALL provide a /collections/{id}/position endpoint.
       - The response Content-Type SHALL be application/prs.coverage+json.
 
@@ -1030,7 +1039,7 @@ It lets one YAML config carry the bespoke prose, figure and annexes of a full st
 | `abstract` / `scope` | Prose replacing the generic Abstract / Scope text (AsciiDoc, or Markdown with `text_format`) |
 | `render_requirement_clauses` | When `true`, render each conformance class as an OGC-style clause (class heading → requirements-class block → one sub-clause per requirement/recommendation) instead of the flat Requirements section. Requires per-class requirement grouping (`conformance_class` on requirements) |
 | `class_intros` | Map of class short name → lead-in prose shown under the class heading |
-| `requirement_intros` | Map of requirement/recommendation id → lead-in sentence shown before that requirement's box |
+| `requirement_intros` | Map of requirement/recommendation id → lead-in sentence shown before that requirement's box. A requirement's own `description` takes precedence |
 | `requirement_headings` | Map of requirement id → sub-clause heading (defaults to a title-cased id) |
 | `clauses` | Extra authored top-level clauses (e.g. Conventions, Introduction), each with `id`, `title`, `body` (AsciiDoc or `format: markdown`), optional `blocks`, `obligation`, and a `position` slotting it into the canonical order (`after-scope`, `after-conformance`, `after-references`, `after-terms`, `before-requirements`, `after-requirements`) |
 | `figures` | Images copied into `images/` and referenceable from any authored body as `image::<filename>[]` (the builder sets `:imagesdir: images:` + `:data-uri-image:` automatically). `path` is resolved relative to the config file |

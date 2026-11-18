@@ -66,9 +66,10 @@ collections:                          # what a conforming service exposes
 
 requirements:                         # SHALL = requirement, SHOULD = recommendation, MAY = permission
   - id: temperature-geojson
-    title: GeoJSON response
-    description: The temperature collection SHALL return GeoJSON features.
-    parts:
+    title: GeoJSON response            # the requirement's heading
+    description: Clients need a predictable encoding for temperature observations.   # informative
+    parts:                             # the normative text, one row each
+      - The temperature collection SHALL return GeoJSON features.
       - The response Content-Type SHALL be application/geo+json.
 
 abstract_tests:                       # one per requirement (SHALL)
@@ -108,8 +109,7 @@ The PDF is generated from the config, and you can add your own material anywhere
 requirements:
   - id: temperature-geojson
     title: GeoJSON response
-    description: The temperature collection SHALL return GeoJSON features.
-    parts: [The response Content-Type SHALL be application/geo+json.]
+    parts: [The temperature collection SHALL return GeoJSON features.]
     content:                                # shown after the requirement
       - format: plantuml
         title: Request flow
@@ -127,7 +127,7 @@ document_metadata:
 
 Content can go in any generated section, at its start or end, and in your own clauses and annexes. The [`documentation_content` example](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/documentation_content_profile.yaml) uses every option; see its [compiled PDF](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/generated/documentation_content_profile/document.pdf). Details are in the [Reference](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/reference.md#authored-content-markdown-diagrams-and-your-own-asciidoc).
 
-> In the PDF, a requirement's text is labeled **Statement**, the OGC ModSpec term. You set it with `description`.
+> Requirements are laid out like [OGC 26-027](https://docs.ogc.org/DRAFTS/26-027.pdf): the `title` is the heading, the `description` is an informative paragraph before the box, and the box holds the identifier and the `parts`. There is no Statement row. Profiles that still use `statement` keep their Statement row, with a deprecation warning.
 
 ## Examples
 

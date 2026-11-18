@@ -330,52 +330,52 @@ collections:
 
 requirements:
   - id: spatial-extents-crs
-    description: The coordinates for the bounding box SHALL be defined in the CRS EPSG:4326 (WGS84) with geographical latitude, then longitude, in decimal degrees.
     parts:
+      - The coordinates for the bounding box SHALL be defined in the CRS EPSG:4326 (WGS84) with geographical latitude, then longitude, in decimal degrees.
       - The service bbox SHALL have a geometry defined in WGS84.
       - The service bounding box coordinates SHALL be returned with geographical latitude, then longitude.
       - The service bounding box coordinates SHALL be returned in decimal degrees.
 
   - id: profile-bbox-coordinates
-    description: The coordinates for the 2D bounding box SHALL be defined in the CRS84 EPSG:4326 (WGS84) for the extent [-180, -90, 180, 90].
     parts:
+      - The coordinates for the 2D bounding box SHALL be defined in the CRS84 EPSG:4326 (WGS84) for the extent [-180, -90, 180, 90].
       - The 2D bounding box boundary SHALL be for the extent [-180, -90, 180, 90].
       - The coordinate reference system for the bounding box SHALL be EPSG:4326 (WGS84).
 
   - id: profile-trs-values
-    description: Temporal Reference System (trs) values SHALL be presented in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second according to the time format specified in RFC 3339.
     parts:
+      - Temporal Reference System (trs) values SHALL be presented in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second according to the time format specified in RFC 3339.
       - The service trs SHALL be in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.
       - The service trs SHALL be the time format specified in RFC 3339.
 
   - id: profile-vrs-values
-    description: Vertical Reference System (vrs) values SHALL be height in metres, with an unambiguous direction of increase declared.
     parts:
+      - Vertical Reference System (vrs) values SHALL be height in metres, with an unambiguous direction of increase declared.
       - The service vrs SHALL be in height metres.
       - The service vrs SHALL be EPSG:3855.
       - The service vrs SHALL use the vertical datum EGM2008 geoid as the zero-height reference (orthometric height relative to mean sea level).
       - The service SHALL declare extent.vertical.positive as "up" or "down" so vertical interval ordering (e.g. pressure levels ordered top-to-bottom vs. bottom-to-top) is unambiguous.
 
   - id: profile-keywords
-    description: 'The following keywords SHALL be included in the collection response: "cube", "radius", "items", "precipitation_amount", "radar".'
     parts:
+      - 'The following keywords SHALL be included in the collection response: "cube", "radius", "items", "precipitation_amount", "radar".'
       - The collection keywords array SHALL include "cube", "radius", and "items".
       - The collection keywords array SHALL include "precipitation_amount" and "radar".
 
   - id: profile-links
-    description: All links objects SHALL have href, rel, title and type attributes.
     parts:
+      - All links objects SHALL have href, rel, title and type attributes.
       - Each link object SHALL include a non-empty href attribute.
       - Each link object SHALL include rel, title and type attributes.
 
   - id: profile-query-types
-    description: 'The following data queries SHALL be supported: "cube", "items", "radius".'
     parts:
+      - 'The following data queries SHALL be supported: "cube", "items", "radius".'
       - The collection SHALL advertise cube, items and radius data queries.
 
   - id: items-endpoint
-    description: The service SHALL provide a /collections/nwp_radar_precipitation/items endpoint.
     parts:
+      - The service SHALL provide a /collections/nwp_radar_precipitation/items endpoint.
       - The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
       - The service SHALL return a default file format of GeoTIFF.
       - Each feature SHALL include precipitation_amount property.
@@ -387,8 +387,8 @@ requirements:
       - The items data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.
 
   - id: cube-endpoint
-    description: The service SHALL provide a /collections/nwp_radar_precipitation/cube endpoint.
     parts:
+      - The service SHALL provide a /collections/nwp_radar_precipitation/cube endpoint.
       - The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
       - The service SHALL return a default file format of GeoTIFF.
       - Each feature SHALL include precipitation_amount property.
@@ -400,8 +400,8 @@ requirements:
       - The cube data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.
 
   - id: radius-endpoint
-    description: The service SHALL provide a /collections/nwp_radar_precipitation/radius endpoint.
     parts:
+      - The service SHALL provide a /collections/nwp_radar_precipitation/radius endpoint.
       - The service SHALL return CoverageJSON FeatureCollection and GRIB2, GeoTIFF, HDF5, NetCDF4, PNG file formats.
       - The service SHALL return a default file format of GeoTIFF.
       - Each feature SHALL include precipitation_amount property.
@@ -413,15 +413,15 @@ requirements:
       - The radius data queries SHALL return NetCDF4 which complies with the CF-NetCDF v1.13 conventions - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html.
 
   - id: profile-nwp-parameters
-    description: "The following parameters SHALL be supported: datetime, precipitation_amount."
     parts:
+      - "The following parameters SHALL be supported: datetime, precipitation_amount."
       - The parameter datetime SHALL be in Gregorian calendar Zulu datetime (UTC) in 24 hour clock with a precision to the second.
       - The parameter datetime SHALL be the time format specified in RFC 3339.
       - The parameter precipitation_amount SHALL return values in kg m-2 units.
 
   - id: http-methods
-    description: The service SHALL be configured to return data for both GET and POST HTTP Method Requests.
     parts:
+      - The service SHALL be configured to return data for both GET and POST HTTP Method Requests.
       - The service SHALL support both GET and POST HTTP Methods for queries.
 
 abstract_tests:

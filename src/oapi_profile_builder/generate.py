@@ -1836,16 +1836,24 @@ def _conf_adoc(profile: ServiceProfile) -> str:
 
 def _requirement_block_adoc(profile: ServiceProfile, anchor: str, block: str,
                             identifier: str, req) -> str:
-    """Render one requirement/recommendation/permission file.
+    """Render one requirement/recommendation/permission file (OGC 26-027 layout).
 
-    ``description`` becomes the block's ``statement`` (collapsed to one line, as a
-    metadata value must be). An explicit ``title`` is shown as the block title
-    unless the document renders per-requirement clauses, where the title is
-    already the sub-clause heading. Any ``content`` blocks follow the box.
+    The box holds the identifier and the ``parts`` (rows A, B, C...). The
+    informative ``description`` is a paragraph before the box; in the clause
+    layout the sub-clause renders it instead (see _requirement_clause_sections).
+    An explicit ``title`` is the box title in the flat layout; in the clause
+    layout it is already the sub-clause heading. A legacy ``statement`` is still
+    rendered as a 'Statement' row so existing profiles are unchanged. Any
+    ``content`` blocks follow the box.
     """
     body = _doc_body(profile)
-    clause_mode = bool(body and body.render_requirement_clauses)
-    lines = [f"[[{anchor}]]"]
+    clause_mode = bool(
+        body and body.render_requirement_clauses and _requirement_class_groups(profile) is not None
+    )
+    lines = []
+    if req.description and not clause_mode:
+        lines += [_prose(profile, req.description).rstrip(), ""]
+    lines.append(f"[[{anchor}]]")
     if req.title and not clause_mode:
         lines.append(f".{req.title}")
     lines += [
@@ -1853,8 +1861,9 @@ def _requirement_block_adoc(profile: ServiceProfile, anchor: str, block: str,
         "====",
         "[%metadata]",
         f"identifier:: {identifier}",
-        f"statement:: {' '.join(req.description.split())}",
     ]
+    if req.statement:
+        lines.append(f"statement:: {' '.join(req.statement.split())}")
     for part in req.parts:
         lines.append(f"part:: {part}")
     lines.append("====")
@@ -2679,8 +2688,10 @@ def _requirement_clause_sections(profile: ServiceProfile, groups) -> str:
                 or req_headings.get(r.id)
                 or r.display_title
             )
+            # The requirement's own description wins over requirement_intros.
             intro = (
-                req_intros.get(f"{cls}/{seg}/{r.id}")
+                r.description
+                or req_intros.get(f"{cls}/{seg}/{r.id}")
                 or req_intros.get(f"{cls}/{r.id}")
                 or req_intros.get(r.id)
             )
@@ -2690,6 +2701,10 @@ def _requirement_clause_sections(profile: ServiceProfile, groups) -> str:
                 if intro:
                     lines.append(_prose(profile, intro, heading_offset=3).rstrip())
                 prev_heading = heading
+            elif r.description:
+                # Same topic as the previous member: keep this member's own
+                # description rather than dropping it.
+                lines.append(_prose(profile, r.description, heading_offset=3).rstrip())
             # Append this member's REQ/REC include under the current heading.
             lines.append(f"include::../requirements/{cls}/{_req_file_prefix(r)}_{r.id}.adoc[]")
             lines.append("")

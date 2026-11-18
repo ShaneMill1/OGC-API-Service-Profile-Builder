@@ -94,11 +94,13 @@
     {
       "id": "temperature-geojson",
       "title": "Temperature GeoJSON response",
-      "description": "The temperature collection SHALL return GeoJSON features.",
+      "description": "Clients need a predictable encoding for temperature observations.",
       "parts": [
+        "The temperature collection SHALL return GeoJSON features.",
         "The service SHALL provide a /collections/temperature/items endpoint.",
         "The response Content-Type SHALL be application/geo+json."
       ],
+      "statement": null,
       "content": [
         {
           "format": "markdown",
@@ -125,10 +127,12 @@
     {
       "id": "temperature-units-label",
       "title": "Temperature unit label",
-      "description": "The temperature collection SHOULD label its unit as Celsius.",
+      "description": "A consistent unit label lets clients show temperatures without guessing the unit.",
       "parts": [
+        "The temperature collection SHOULD label its unit as Celsius.",
         "Each temp parameter SHOULD expose a unit.label of \"Celsius\"."
       ],
+      "statement": null,
       "content": [],
       "level": "recommendation",
       "conformance_class": null
@@ -136,10 +140,12 @@
     {
       "id": "temperature-post-query",
       "title": "POST queries",
-      "description": "The service MAY support POST queries for the temperature collection.",
+      "description": "Some clients send queries that are too long for a URL.",
       "parts": [
+        "The service MAY support POST queries for the temperature collection.",
         "Implementations MAY offer POST alongside GET on data query endpoints."
       ],
+      "statement": null,
       "content": [],
       "level": "permission",
       "conformance_class": null

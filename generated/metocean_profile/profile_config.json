@@ -1105,30 +1105,37 @@
   "requirements": [
     {
       "id": "openapi",
-      "statement": "An API definition SHALL be described using an OpenAPI 3.1 document.",
+      "title": null,
+      "description": "An OpenAPI specification provides a machine-readable description of the API interface.",
       "parts": [
         "The API definition SHALL be described using an OpenAPI document (version 3.1 or higher).",
         "The OpenAPI document SHALL be encoded as one of the OpenAPI JSON/YAML media types.",
         "The landing page SHALL link the OpenAPI document with rel=service-desc.",
         "The landing page SHALL link API documentation with rel=service-doc and type text/html."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
     {
       "id": "collection_identifier",
-      "statement": "A collection identifier SHALL NOT convey structured metadata and SHOULD use the fixed value list.",
+      "title": null,
+      "description": "A collection identifier provides a mechanism to uniquely identify a given collection in an OGC API.",
       "parts": [
         "A collection identifier SHALL NOT be used to convey structured metadata.",
         "A collection identifier SHOULD use one of insitu-observations, climate_data, radar_observations, weather_warnings, weather_forecast.",
         "The identifier string MAY include a postfix to the listed values if needed."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
     {
       "id": "collection_title",
-      "statement": "A title SHALL be set for all collections and SHALL NOT exceed 50 characters.",
+      "title": null,
+      "description": "A collection title provides a human-readable short description of the given collection.",
       "parts": [
         "A title SHALL be set for all collections.",
         "A title SHALL NOT have more than 50 characters.",
@@ -1136,54 +1143,69 @@
         "A title SHOULD place the most important information first to guard against truncation.",
         "A title SHOULD describe the collection understandably for non-experts (topic/domain and geographical area)."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
     {
       "id": "collection_license",
-      "statement": "A collection SHALL link to a license of its data with rel=license and type=text/html.",
+      "title": null,
+      "description": "A license describes the usage permissions for the data in a collection.",
       "parts": [
         "The links property in a collection SHALL contain a link to a license of its data.",
         "The license link SHALL set the rel property to license.",
         "The type property SHALL be set to text/html.",
         "If the data is open data, the license SHALL be CC BY 4.0 with href https://creativecommons.org/licenses/by/4.0/."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
     {
       "id": "collection_spatial_extent",
-      "statement": "The collection spatial extent and CRS list SHALL use OGC:CRS84.",
+      "title": null,
+      "description": "Spatial extent of a collection.",
       "parts": [
         "The value of extent.spatial.crs SHALL be OGC:CRS84.",
         "The value of crs SHALL include the element OGC:CRS84.",
         "If crs_details is specified for a data_queries object, it SHALL include an object whose crs value is OGC:CRS84.",
         "Additional CRSs SHOULD be presented as EPSG:<code> in crs and data_queries.*.crs_details.crs."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
     {
       "id": "collection_temporal_extent",
-      "statement": "The value of extent.temporal.trs SHALL be Gregorian.",
+      "title": null,
+      "description": "Temporal extent of a collection.",
       "parts": [
         "The value of extent.temporal.trs SHALL be Gregorian."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
     {
       "id": "collection_vertical_extent",
-      "statement": "If extent.vertical is defined, extent.vertical.vrs SHOULD use one of the recommended vertical reference system values.",
+      "title": null,
+      "description": "Vertical extent of a collection.",
       "parts": [
         "If extent.vertical is defined, the value of extent.vertical.vrs SHOULD be one of \"Pressure level in hPa\", \"Geopotential height in gpm\", \"Geometrical altitude above mean sea level in meters\", \"Height above ground in meters\" or \"Flight level\"."
       ],
+      "statement": null,
+      "content": [],
       "level": "recommendation",
       "conformance_class": "core"
     },
     {
       "id": "collection_parameter_names",
-      "statement": "Parameter objects SHALL specify label, description and unit using the profile conventions.",
+      "title": null,
+      "description": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
       "parts": [
         "The keys in parameter_names and id in the parameter object SHALL NOT convey structured metadata.",
         "A parameter object SHALL specify the fields label, description and unit.",
@@ -1192,23 +1214,29 @@
         "unit SHALL use QUDT; unit.symbol.type SHALL be https://qudt.org/vocab/unit/<unit> and unit.symbol.value the qudt symbol.",
         "observedProperty SHALL use the CF-convention (observedProperty.id = https://vocab.nerc.ac.uk/standard_name/<name>) when available; otherwise use observedProperty.description."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
     {
       "id": "collection_radius_data_query",
-      "statement": "A radius data query within_units array SHALL contain m (SI unit of length).",
+      "title": null,
+      "description": "Metadata about the radius data query in a collection.",
       "parts": [
         "The within_units array in a variables object for a radius data query SHALL contain m.",
         "within_units MAY contain more values, each defined as a unit at https://qudt.org using the unit symbol.",
         "A radius query with a limit parameter SHOULD return the closest items to the radius centre."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
     {
       "id": "locations_query_response_format",
-      "statement": "A /locations response SHALL be a GeoJSON FeatureCollection with id and properties.name per feature.",
+      "title": null,
+      "description": "Structure of the response document for a /locations query.",
       "parts": [
         "The /locations response SHALL be a GeoJSON document with a FeatureCollection object.",
         "Each Feature SHALL have id of type string and properties.name of type string.",
@@ -1217,61 +1245,79 @@
         "A more detailed description MAY be provided via properties.description.",
         "All strings SHALL be in English."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
     {
       "id": "error_handling",
-      "statement": "Empty results SHALL return HTTP 204 and 4xx responses SHOULD comply with RFC 9457.",
+      "title": null,
+      "description": "HTTP status codes and response documents for responding to errors.",
       "parts": [
         "A query for data inside the extent that results in no data SHALL return HTTP 204 with no content.",
         "A query partially within the extent SHALL respond as within the extent, returning only the in-extent portion.",
         "Any 4xx response SHOULD comply with RFC 9457 Problem Details for HTTP APIs."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "core"
     },
     {
       "id": "data_query_response_metadata",
-      "statement": "The metadata in a data query response SHOULD mirror the terms and vocabularies used in the collection metadata.",
+      "title": null,
+      "description": "Metadata in the response to a data query.",
       "parts": [
         "The metadata in the response to a data query (e.g. crs, parameters and units) SHOULD mirror as closely as possible the terms and vocabularies used in the collection metadata."
       ],
+      "statement": null,
+      "content": [],
       "level": "recommendation",
       "conformance_class": "core"
     },
     {
       "id": "collection_data_queries",
-      "statement": "An insitu-observations collection SHALL support locations, area and radius.",
+      "title": null,
+      "description": "The types of data queries implemented in a collection.",
       "parts": [
         "A collection SHALL support locations, area and radius."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "insitu-observations"
     },
     {
       "id": "collection_parameter_names",
-      "statement": "Insitu parameters SHALL specify metocean:standard_name, metocean:level and measurementType.",
+      "title": null,
+      "description": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
       "parts": [
         "Each parameter SHALL specify metocean:standard_name set to a value from the standard_name custom dimension.",
         "Each parameter SHALL specify metocean:level set to a value from the level custom dimension.",
         "Each parameter SHALL specify measurementType."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "insitu-observations"
     },
     {
       "id": "collection_parameter_names",
-      "statement": "Each measurementType.method in parameter_names SHOULD follow the CF-convention cell methods.",
+      "title": null,
+      "description": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
       "parts": [
         "Each measurementType.method object in parameter_names SHOULD follow the CF-convention cell methods and use a value from the CF cell-methods appendix."
       ],
+      "statement": null,
+      "content": [],
       "level": "recommendation",
       "conformance_class": "insitu-observations"
     },
     {
       "id": "collection_custom_dimensions",
-      "statement": "An insitu-observations collection SHALL define standard_name and level custom dimensions.",
+      "title": null,
+      "description": "The custom dimensions for which you can query the collection.",
       "parts": [
         "The collection SHALL have an extent.custom object with id standard_name.",
         "Custom dimension standard_name SHALL list CF standard names in values.",
@@ -1279,70 +1325,90 @@
         "The collection SHALL have an extent.custom object with id level.",
         "Custom dimension level SHALL specify reference \"Height of measurement above ground level in meters\"."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "insitu-observations"
     },
     {
       "id": "coveragejson_parameters",
-      "statement": "CoverageJSON parameters SHALL carry metocean:measurementType, metocean:standard_name and metocean:level.",
+      "title": null,
+      "description": "The metadata about parameters in CoverageJSON.",
       "parts": [
         "Each object in parameters in a coverage SHALL have metocean:measurementType with the same properties as measurementType.",
         "Each object in parameters SHALL have metocean:standard_name.",
         "Each object in parameters SHALL have metocean:level."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "insitu-observations"
     },
     {
       "id": "collection_parameter_names",
-      "statement": "NWP parameters SHALL use ECMWF short names per Annex D for id and description.",
+      "title": null,
+      "description": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
       "parts": [
         "WIPPS Manual Global Deterministic NWP parameters SHALL be provided using ECMWF short names per Annex D.",
         "The parameter name SHALL be provided in the description property.",
         "The ECMWF short name SHALL be provided in the id property."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "nwp"
     },
     {
       "id": "collection_granularity",
-      "statement": "An NWP collection represents a model; instances represent model runs identified by RFC3339 datestamps.",
+      "title": null,
+      "description": "The organization of NWP data advertised as collections and instances.",
       "parts": [
         "A collection SHALL represent and describe a model.",
         "A collection instance SHALL represent and describe a model run.",
         "A collection instance identifier SHALL be represented by an RFC3339 datestamp.",
         "A collection temporal instance or interval SHALL represent a timestep or timesteps of a model run."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "nwp"
     },
     {
       "id": "collection_data_queries",
-      "statement": "An NWP collection SHALL support position and cube; no instance means latest.",
+      "title": null,
+      "description": "The types of data queries implemented in a collection.",
       "parts": [
         "A collection SHALL support position and cube queries.",
         "Data queries without an instance SHALL be interpreted as the latest instance of a collection.",
         "A datetime parameter between two timestamps SHALL trigger an HTTP 400 Bad Request."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "nwp"
     },
     {
       "id": "encoding",
-      "statement": "All data queries SHALL support CoverageJSON as a response format.",
+      "title": null,
+      "description": "The response format for data queries.",
       "parts": [
         "All data queries SHALL support CoverageJSON as a response format."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "data-query-response-format"
     },
     {
       "id": "referencing",
-      "statement": "CoverageJSON domain.referencing system id SHALL reflect the crs query parameter (default OGC:CRS84).",
+      "title": null,
+      "description": "Coordinate referencing metadata in CoverageJSON.",
       "parts": [
         "With no crs query param, domain.referencing.* system SHALL have type GeographicCRS and id OGC:CRS84.",
         "With a crs query param, the system object with type GeographicCRS SHALL set id to the crs query param value."
       ],
+      "statement": null,
+      "content": [],
       "level": "requirement",
       "conformance_class": "data-query-response-format"
     }
@@ -1811,6 +1877,8 @@
           "id": "conventions",
           "title": "Conventions",
           "body": "This section provides details and examples for any conventions used in the document. Examples of conventions are symbols, abbreviations, use of JSON and / or JSON schema, or special notes regarding how to read the document.\n\n=== Identifiers\n\nThe normative provisions in this Standard are denoted by the URI:\n\n`http://www.opengis.net/spec/profile/metocean-ogcapi-environmental-data-retrieval/1.0`\n\nAll requirements and conformance tests that appear in this document are denoted by partial URIs which are relative to this base.\n\n=== Examples\n\nExamples provided in this specification are encoded as JSON, GeoJSON or CoverageJSON.\n\n=== Schema representation\n\nJSON Schema footnote:[https://json-schema.org] objects are used throughout this standard to define the structure\nof metadata records. These schema objects are also typically represented using YAML footnote:[https://en.wikipedia.org/wiki/YAML].\nYAML is a superset of JSON, and in this standard are regarded as equivalent.\n\n=== Use of HTTPS\n\nFor simplicity, this document only refers to the HTTP protocol. This is not meant to exclude the use of HTTPS and simply is a shorthand notation for \"HTTP or HTTPS.\" In fact, most servers are expected to use HTTPS, not HTTP.\n",
+          "format": "asciidoc",
+          "blocks": [],
           "position": "after-terms",
           "obligation": "normative"
         },
@@ -1818,6 +1886,8 @@
           "id": "introduction",
           "title": "Introduction",
           "body": "RODEO, the Provision of Open Access to Public Meteorological Data and Development of Shared Federated Data Infrastructure for the Development of Information Products and Services, is a joint effort by eleven European National Meteorological and Hydrological Services (NMHS), the European Centre for Medium-Range Weather Forecasts (ECMWF) and the network of 31 European National Meteorological and Hydrological Services (EUMETNET). The Project Partners are listed in the page Partners footnote:[https://rodeo-project.eu/partners].\n\nThe RODEO project develops a user interface and Application Programming Interfaces (API) for accessing meteorological datasets declared as High Value Datasets (HVD) by the EU Implementing Regulation (EU) 2023/138 under the EU Open Data Directive (EU) 2019/1024. The project also fosters the engagement between data providers and data users for enhancing the understanding of technical solutions being available for sharing and accessing the HVD datasets.\n\nSurface weather observations, climate data, weather warnings, radar data and numerical weather prediction (NWP) data are defined as meteorological high value datasets. The distribution of these datasets is going to be made available under an open licence, in machine-readable formats using APIs and bulk downloads following the FAIR principles (usability, accessibility, interoperability and reusability).\n\nThe project is funded by the EU Digital Europe Program (DIGITAL) and EUMETNET.\n\n=== Project Aims & Goals\n\nThe project makes meteorological High Value Datasets easily available with an aim to bring new data to businesses, public administrations and citizens. It reinforces the European public meteorological data infrastructure and enhances the providers’ digital capacity to share data. Furthermore, the project also fosters the engagement between data providers and data users for enhancing the understanding of technical solutions to be available for sharing and accessing the datasets.\n\nThe project strengthens the capacity of the European meteorological data providers to comply with the HVD Implementing Regulation by:\n\n* Developing a user interface\n* Developing APIs for accessing weather observation data, climate data, weather radar data, warnings, and Artificial Intelligence (AI) datasets\n* Developing a data catalogue for making data discoverable\n* Engaging with the data owners and user communities\n* Supporting the deployment of national data portals and APIs\n* Making HVDs available from the project partners\n\n=== Impact on users\n\nThe increased availability of data boosts entrepreneurship and potentially results in the creation of new companies. New open datasets are an important resource for small and medium-sized enterprises to develop new digital products and services. Reuse of data opens business opportunities for several sectors ultimately leads attracting more investors. By making data much easier to use, reseach, academia, AI applications and many other application areas can utilize the data more efficiently.\n\nOverall, better data availability leads to better warnings, forecasts, and services to the public and weather-critical industries, and contributes to the safe and efficient functioning of society with multiple benefits across the European economy, industry, and society.\n",
+          "format": "asciidoc",
+          "blocks": [],
           "position": "before-requirements",
           "obligation": "informative"
         }
@@ -1858,30 +1928,7 @@
           "preconditions": []
         }
       },
-      "requirement_intros": {
-        "core/req/openapi": "An OpenAPI specification provides a machine-readable description of the API interface.",
-        "core/req/collection_identifier": "A collection identifier provides a mechanism to uniquely identify a given collection in an OGC API.",
-        "core/req/collection_title": "A collection title provides a human-readable short description of the given collection.",
-        "core/req/collection_license": "A license describes the usage permissions for the data in a collection.",
-        "core/req/collection_spatial_extent": "Spatial extent of a collection.",
-        "core/req/collection_temporal_extent": "Temporal extent of a collection.",
-        "core/rec/collection_vertical_extent": "Vertical extent of a collection.",
-        "core/req/collection_parameter_names": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
-        "core/req/collection_radius_data_query": "Metadata about the radius data query in a collection.",
-        "core/req/locations_query_response_format": "Structure of the response document for a /locations query.",
-        "core/req/error_handling": "HTTP status codes and response documents for responding to errors.",
-        "core/rec/data_query_response_metadata": "Metadata in the response to a data query.",
-        "insitu-observations/req/collection_data_queries": "The types of data queries implemented in a collection.",
-        "insitu-observations/req/collection_parameter_names": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
-        "insitu-observations/rec/collection_parameter_names": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
-        "insitu-observations/req/collection_custom_dimensions": "The custom dimensions for which you can query the collection.",
-        "insitu-observations/req/coveragejson_parameters": "The metadata about parameters in CoverageJSON.",
-        "nwp/req/collection_parameter_names": "Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.",
-        "nwp/req/collection_granularity": "The organization of NWP data advertised as collections and instances.",
-        "nwp/req/collection_data_queries": "The types of data queries implemented in a collection.",
-        "data-query-response-format/req/encoding": "The response format for data queries.",
-        "data-query-response-format/req/referencing": "Coordinate referencing metadata in CoverageJSON."
-      },
+      "requirement_intros": {},
       "requirement_headings": {
         "core/req/openapi": "OpenAPI",
         "core/req/collection_identifier": "Collection identifier",
@@ -1906,23 +1953,31 @@
         "data-query-response-format/req/encoding": "Encoding",
         "data-query-response-format/req/referencing": "CoverageJSON referencing"
       },
+      "section_content": {},
+      "text_format": "asciidoc",
       "annexes": [
         {
           "id": "schemas",
           "title": "Schemas (Normative)",
           "body": "// Schemas to be provided.\n",
+          "format": "asciidoc",
+          "blocks": [],
           "obligation": "informative"
         },
         {
           "id": "examples",
           "title": "Examples (Informative)",
           "body": "=== Examples\n",
+          "format": "asciidoc",
+          "blocks": [],
           "obligation": "informative"
         },
         {
           "id": "appendix-d",
           "title": "NWP Global Deterministic parameter name matrix",
           "body": "[cols=\"10,10\",options=\"header\"]\n|===\n|Parameter |ECMWF short name\n|Geopotential Height |gh\n|Temperature |t\n|Wind zonal velocity (u) |u\n|Wind meridional velocity (v) |v\n|Relative Humidity |r\n|Mean Sea Level Pressure (MSLP) |msl\n|2-m Temperature |2t\n|2-m minimum temperature in the last 3 hours |mn2t3\n|2-m maximum temperature in the last 3 hours |mx2t3\n|2-m minimum temperature in the last 6 hours |mn2t6\n|2-m maximum temperature in the last 6 hours |mx2t6\n|2m dewpoint temperature |2d\n|10m u |10u\n|10m v |10v\n|10m wind gust |10fg\n|Total Precipitation |tp\n|Total solid precipitation |TODO fix\n|CAPE |cape\n|Total precipitable water |tcw\n|Total cloud cover |tcc\n|===\n",
+          "format": "asciidoc",
+          "blocks": [],
           "obligation": "informative"
         }
       ],

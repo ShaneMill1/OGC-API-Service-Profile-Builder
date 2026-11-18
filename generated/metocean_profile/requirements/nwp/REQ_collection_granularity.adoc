@@ -3,7 +3,6 @@
 ====
 [%metadata]
 identifier:: /req/nwp/collection_granularity
-statement:: An NWP collection represents a model; instances represent model runs identified by RFC3339 datestamps.
 part:: A collection SHALL represent and describe a model.
 part:: A collection instance SHALL represent and describe a model run.
 part:: A collection instance identifier SHALL be represented by an RFC3339 datestamp.
