@@ -65,21 +65,24 @@ collections:
 requirements:
   # requirement (SHALL) — conformance-tested. Level defaults to `requirement`.
   - id: temperature-geojson
-    statement: The temperature collection SHALL return GeoJSON features.
+    title: GeoJSON response
+    description: The temperature collection SHALL return GeoJSON features.
     parts:
       - The service SHALL provide a /collections/temperature/items endpoint.
       - The response Content-Type SHALL be application/geo+json.
 
   # recommendation (SHOULD) — informative. Level is set explicitly here.
   - id: temperature-units-label
+    title: Temperature unit label
     level: recommendation
-    statement: The temperature collection SHOULD label its unit as Celsius.
+    description: The temperature collection SHOULD label its unit as Celsius.
     parts:
       - Each temp parameter SHOULD expose a unit.label of "Celsius".
 
   # permission (MAY) — informative. No `level:` set; inferred from "MAY".
   - id: temperature-post-query
-    statement: The service MAY support POST queries for the temperature collection.
+    title: POST queries
+    description: The service MAY support POST queries for the temperature collection.
     parts:
       - Implementations MAY offer POST alongside GET on data query endpoints.
 

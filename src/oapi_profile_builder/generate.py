@@ -40,6 +40,7 @@ from pathlib import Path
 import yaml, copy
 
 from edr_pydantic.collections import Collection
+from oapi_profile_builder.content import render_blocks, render_text
 from oapi_profile_builder.models import ServiceProfile
 def _const(val, version: str) -> dict:
     if version == "3.1.0":
@@ -1833,24 +1834,47 @@ def _conf_adoc(profile: ServiceProfile) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _requirement_block_adoc(profile: ServiceProfile, anchor: str, block: str,
+                            identifier: str, req) -> str:
+    """Render one requirement/recommendation/permission file.
+
+    ``description`` becomes the block's ``statement`` (collapsed to one line, as a
+    metadata value must be). An explicit ``title`` is shown as the block title
+    unless the document renders per-requirement clauses, where the title is
+    already the sub-clause heading. Any ``content`` blocks follow the box.
+    """
+    body = _doc_body(profile)
+    clause_mode = bool(body and body.render_requirement_clauses)
+    lines = [f"[[{anchor}]]"]
+    if req.title and not clause_mode:
+        lines.append(f".{req.title}")
+    lines += [
+        f"[{block}]",
+        "====",
+        "[%metadata]",
+        f"identifier:: {identifier}",
+        f"statement:: {' '.join(req.description.split())}",
+    ]
+    for part in req.parts:
+        lines.append(f"part:: {part}")
+    lines.append("====")
+    text = "\n".join(lines) + "\n"
+    if req.content:
+        # Under a '===' sub-clause the next heading level is '====' (offset 3);
+        # under the flat '== Requirements' section it is '===' (offset 2).
+        text += "\n" + render_blocks(req.content, heading_offset=3 if clause_mode else 2, discrete=True)
+    return text
+
+
 def _individual_req_adoc(profile: ServiceProfile, req_id: str) -> str:
     req = next(r for r in profile.requirements if r.id == req_id)
     seg = _req_uri_seg(req)
     anchor = f"{seg}_{profile.name}_{req.id}".replace("/", "_").replace("-", "_")
     block = _LEVEL_BLOCK[_level_of(req)]
-    lines = [
-        f"[[{anchor}]]",
-        f"[{block}]",
-        "====",
-        "[%metadata]",
-        # Obligation-aware identifier namespace: /req/ | /rec/ | /per/.
-        f"identifier:: /{seg}/{profile.name}/{req.id}",
-        f"statement:: {req.statement}",
-    ]
-    for part in req.parts:
-        lines.append(f"part:: {part}")
-    lines.append("====")
-    return "\n".join(lines) + "\n"
+    # Obligation-aware identifier namespace: /req/ | /rec/ | /per/.
+    return _requirement_block_adoc(
+        profile, anchor, block, f"/{seg}/{profile.name}/{req.id}", req
+    )
 
 
 def _abstract_test_component_adoc(anchor: str, label: str, subject: str, test) -> str:
@@ -1995,18 +2019,7 @@ def _individual_req_adoc_for(profile: ServiceProfile, cls: str, req) -> str:
     seg = _req_uri_seg(req)
     anchor = f"{seg}_{cls}_{req.id}".replace("/", "_").replace("-", "_")
     block = _LEVEL_BLOCK[_level_of(req)]
-    lines = [
-        f"[[{anchor}]]",
-        f"[{block}]",
-        "====",
-        "[%metadata]",
-        f"identifier:: /{seg}/{cls}/{req.id}",
-        f"statement:: {req.statement}",
-    ]
-    for part in req.parts:
-        lines.append(f"part:: {part}")
-    lines.append("====")
-    return "\n".join(lines) + "\n"
+    return _requirement_block_adoc(profile, anchor, block, f"/{seg}/{cls}/{req.id}", req)
 
 
 def _individual_test_adoc_for(profile: ServiceProfile, cls: str, test) -> str:
@@ -2521,8 +2534,57 @@ def _doc_body(profile: ServiceProfile):
     return getattr(m, "body", None) if m else None
 
 
-def _titleize(req_id: str) -> str:
-    return req_id.replace("-", " ").replace("_", " ").strip().capitalize()
+def _section_content(profile: ServiceProfile, key: str):
+    body = _doc_body(profile)
+    return body.section_content.get(key) if body else None
+
+
+def _sc_start(profile: ServiceProfile, key: str) -> str:
+    """Rendered 'start' blocks for a section (empty string when none)."""
+    sc = _section_content(profile, key)
+    if not sc or not sc.start:
+        return ""
+    return render_blocks(sc.start, discrete=True) + "\n"
+
+
+def _sc_end(profile: ServiceProfile, key: str, run_in: bool = False) -> str:
+    """Rendered 'end' blocks for a section (empty string when none).
+
+    With ``end_title`` the blocks become a new final sub-clause (``===``), or a
+    bold run-in heading for the front-matter parts that are not real sections.
+    """
+    sc = _section_content(profile, key)
+    if not sc or not sc.end:
+        return ""
+    if sc.end_title:
+        if run_in:
+            return f"\n*{sc.end_title}*\n\n" + render_blocks(sc.end, discrete=True)
+        return f"\n=== {sc.end_title}\n\n" + render_blocks(sc.end, heading_offset=3, discrete=True)
+    return "\n" + render_blocks(sc.end, discrete=True)
+
+
+def _prose(profile: ServiceProfile, text: str, heading_offset: int = 2) -> str:
+    """Render a document_body prose field in its configured text_format."""
+    body = _doc_body(profile)
+    fmt = body.text_format if body else "asciidoc"
+    return render_text(text, fmt, heading_offset)
+
+
+def _all_content_blocks(profile: ServiceProfile):
+    """Yield every author-supplied content block in the profile."""
+    for r in profile.requirements:
+        yield from r.content
+    body = _doc_body(profile)
+    if body:
+        for sc in body.section_content.values():
+            yield from sc.start
+            yield from sc.end
+        for item in list(body.clauses) + list(body.annexes):
+            yield from item.blocks
+
+
+def _uses_plantuml(profile: ServiceProfile) -> bool:
+    return any(b.format == "plantuml" for b in _all_content_blocks(profile))
 
 
 def _authored_clause_section(clause) -> str:
@@ -2532,8 +2594,18 @@ def _authored_clause_section(clause) -> str:
         f"[[{clause.id}]]\n"
         f"{obligation}"
         f"== {clause.title}\n\n"
-        f"{clause.body.rstrip()}\n"
+        + _body_and_blocks(clause)
     )
+
+
+def _body_and_blocks(item) -> str:
+    """Render an authored clause/annex body (in its format) followed by its blocks."""
+    parts = []
+    if item.body.strip():
+        parts.append(render_text(item.body, item.format) + "\n")
+    if item.blocks:
+        parts.append(render_blocks(item.blocks))
+    return "\n".join(parts)
 
 
 def _clauses_at(body, position: str) -> list:
@@ -2575,11 +2647,14 @@ def _requirement_clause_sections(profile: ServiceProfile, groups) -> str:
     for cls, members in groups.items():
         title = class_titles.get(cls, cls.replace("-", " ").replace("_", " ").title())
         lines = [f"== {title}", ""]
+        start = _sc_start(profile, f"class:{cls}")
+        if start:
+            lines.append(start)
         lines.append(f'=== Requirements Class "{title}"')
         lines.append(f"include::../requirements/requirements_class_{cls}.adoc[]")
         lines.append("")
         if class_intros.get(cls):
-            lines.append(class_intros[cls].rstrip())
+            lines.append(_prose(profile, class_intros[cls], heading_offset=3).rstrip())
             lines.append("")
 
         # Resolve each member's heading/intro, then group CONSECUTIVE members
@@ -2595,11 +2670,14 @@ def _requirement_clause_sections(profile: ServiceProfile, groups) -> str:
         prev_heading: str | None = None
         for r in members["reqs"]:
             seg = _req_uri_seg(r)
+            # An explicit Requirement.title wins; requirement_headings is the
+            # fallback for untitled requirements, then a title derived from the id.
             heading = (
-                req_headings.get(f"{cls}/{seg}/{r.id}")
+                r.title
+                or req_headings.get(f"{cls}/{seg}/{r.id}")
                 or req_headings.get(f"{cls}/{r.id}")
                 or req_headings.get(r.id)
-                or _titleize(r.id)
+                or r.display_title
             )
             intro = (
                 req_intros.get(f"{cls}/{seg}/{r.id}")
@@ -2610,11 +2688,12 @@ def _requirement_clause_sections(profile: ServiceProfile, groups) -> str:
                 # New topic sub-clause: emit the heading (and its lead-in prose).
                 lines.append(f"=== {heading}")
                 if intro:
-                    lines.append(intro.rstrip())
+                    lines.append(_prose(profile, intro, heading_offset=3).rstrip())
                 prev_heading = heading
             # Append this member's REQ/REC include under the current heading.
             lines.append(f"include::../requirements/{cls}/{_req_file_prefix(r)}_{r.id}.adoc[]")
             lines.append("")
+        lines.append(_sc_end(profile, f"class:{cls}"))
         blocks.append("\n".join(lines).rstrip() + "\n")
     return "\n\n".join(blocks)
 
@@ -2624,7 +2703,7 @@ def _annex_section(annex) -> str:
         f"[appendix,obligation={annex.obligation}]\n"
         f"[[{annex.id}]]\n"
         f"== {annex.title}\n\n"
-        f"{annex.body.rstrip()}\n"
+        + _body_and_blocks(annex)
     )
 
 
@@ -2743,7 +2822,11 @@ def _build_document_adoc(profile: ServiceProfile) -> str:
     # generate()) and point Metanorma's image resolver at that directory so
     # `image::<filename>[]` in any authored clause/annex resolves. data-uri-image
     # embeds them in the single-file HTML/PDF output.
-    if _doc_body(profile) and _doc_body(profile).figures:
+    #
+    # PlantUML needs :imagesdir: too: without it the Metanorma PlantUML plugin
+    # silently falls back to printing the diagram source as a code listing
+    # (verified against metanorma-plugin-plantuml 1.0.17).
+    if (_doc_body(profile) and _doc_body(profile).figures) or _uses_plantuml(profile):
         lines.append(":imagesdir: images")
         lines.append(":data-uri-image:")
     lines += [
@@ -2939,13 +3022,13 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
         )
 
     body = _doc_body(profile)
-    authored_abstract = (body.abstract.rstrip() + "\n") if body and body.abstract else (
+    authored_abstract = (_prose(profile, body.abstract) + "\n") if body and body.abstract else (
         f"This document defines the {profile.title}, "
         "an OGC API - Environmental Data Retrieval (EDR) Part 3 Service Profile. "
         "It specifies normative requirements and conformance tests for server implementations "
         "conforming to this profile.\n"
     )
-    authored_scope = (body.scope.rstrip() + "\n") if body and body.scope else (
+    authored_scope = (_prose(profile, body.scope) + "\n") if body and body.scope else (
         f"This standard defines the {profile.title}. "
         "It specifies requirements and conformance tests for implementations of this profile.\n"
     )
@@ -2957,7 +3040,8 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
     else:
         requirements_section = (
             "== Requirements\n\n"
-            "[NOTE]\n"
+            + _sc_start(profile, "requirements")
+            + "[NOTE]\n"
             "====\n"
             "Conformance with this profile is assessed against its requirements "
             "(\"shall\") only. Recommendations (\"should\") and permissions (\"may\") "
@@ -2968,6 +3052,7 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
             "====\n\n"
             + (req_class_includes + "\n\n" if req_class_includes else "")
             + req_includes + "\n"
+            + _sc_end(profile, "requirements")
         )
 
     # --- Front matter: two layouts -----------------------------------------
@@ -2980,7 +3065,7 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
     #   section and a separate `== Submitters` section.
     body_sec = _doc_body(profile)
     security_text = (
-        (body_sec.security_considerations.rstrip() + "\n")
+        (_prose(profile, body_sec.security_considerations) + "\n")
         if body_sec and body_sec.security_considerations
         else "No security considerations have been made for this document.\n"
     )
@@ -2997,46 +3082,62 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
         abstract_section = ""
         preface_section = (
             "[.preface]\n== Preface\n\n"
-            "[big]*i. Abstract*\n\n"
+            + _sc_start(profile, "preface")
+            + "[big]*i. Abstract*\n\n"
             + classification_banner
+            + _sc_start(profile, "abstract")
             + authored_abstract
+            + _sc_end(profile, "abstract", run_in=True)
             + "\n"
             "[big]*ii. Keywords*\n\n"
             "The following are keywords to be used by search engines and document catalogues.\n\n"
             + (keywords_line + "\n\n" if keywords_line else "")
             + "[big]*iii. Security Considerations*\n\n"
+            + _sc_start(profile, "security-considerations")
             + security_text
+            + _sc_end(profile, "security-considerations", run_in=True)
             + "\n"
             "[big]*iv. Submitters*\n\n"
-            "All questions regarding this document should be directed to the editor or the submitters:\n\n"
+            + _sc_start(profile, "submitters")
+            + "All questions regarding this document should be directed to the editor or the submitters:\n\n"
             "[%unnumbered]\n"
             ".Submitters\n"
             "|===\n"
             "h|Name h|Affiliation\n\n"
             + submitter_rows
             + "\n|===\n"
+            + _sc_end(profile, "submitters", run_in=True)
             + notice_block
+            + _sc_end(profile, "preface")
+            # contact_block is its own '== Point of Contact' section, so it
+            # comes after the end of the Preface.
             + contact_block
         )
     else:
         abstract_section = (
             "[abstract]\n== Abstract\n\n"
             + classification_banner
+            + _sc_start(profile, "abstract")
             + authored_abstract
+            + _sc_end(profile, "abstract")
             + "\n"
             "[.preface]\n== Submitters\n\n"
-            "All questions regarding this document should be directed to the editor or the submitters:\n\n"
+            + _sc_start(profile, "submitters")
+            + "All questions regarding this document should be directed to the editor or the submitters:\n\n"
             "[%unnumbered]\n"
             ".Submitters\n"
             "|===\n"
             "h|Name h|Affiliation\n\n"
             + submitter_rows
             + "\n|===\n"
+            + _sc_end(profile, "submitters")
         )
         preface_section = (
             "[.preface]\n== Preface\n\n"
-            f"This document was prepared by {', '.join(m.submitting_orgs) if m and m.submitting_orgs else 'the submitting organizations'}.\n"
+            + _sc_start(profile, "preface")
+            + f"This document was prepared by {', '.join(m.submitting_orgs) if m and m.submitting_orgs else 'the submitting organizations'}.\n"
             + notice_block
+            + _sc_end(profile, "preface")
             + contact_block
         )
 
@@ -3045,40 +3146,43 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
         "sections/01-preface.adoc": preface_section,
         "sections/02-scope.adoc": (
             "== Scope\n\n"
+            + _sc_start(profile, "scope")
             + authored_scope
+            + _sc_end(profile, "scope")
         ),
         "sections/03-conformance.adoc": (
             # Authored Conformance prose when supplied; otherwise the generic
             # templated text listing the raw conformance-class URIs.
-            (
-                "== Conformance\n\n"
-                + body_sec.conformance_text.rstrip() + "\n"
+            "== Conformance\n\n"
+            + _sc_start(profile, "conformance")
+            + (
+                (_prose(profile, body_sec.conformance_text) + "\n")
+                if (body_sec and body_sec.conformance_text)
+                else (
+                    "Conformance with this standard shall be checked using the Abstract Test Suite in Annex A.\n\n"
+                    "The following conformance classes are defined:\n\n"
+                    + "\n".join(f"* {u}" for u in conf_uris) + "\n"
+                )
             )
-            if (body_sec and body_sec.conformance_text)
-            else (
-                "== Conformance\n\n"
-                "Conformance with this standard shall be checked using the Abstract Test Suite in Annex A.\n\n"
-                "The following conformance classes are defined:\n\n"
-                + "\n".join(f"* {u}" for u in conf_uris) + "\n"
-            )
+            + _sc_end(profile, "conformance")
         ),
         "sections/04-references.adoc": (
             # OGC flavor renders this clause as "Normative references". When the
             # profile has none, emit the standard statement; the `[bibliography]`
             # macro is required so Metanorma recognises the clause as the
             # references section even when empty of entries.
-            (
-                "[bibliography]\n== References\n\n"
+            "[bibliography]\n== References\n\n"
+            + _sc_start(profile, "references")
+            + (
                 "There are no normative references in this document.\n"
+                if no_norm_refs
+                else "\n".join(reference_lines) + "\n"
             )
-            if no_norm_refs
-            else (
-                "[bibliography]\n== References\n\n"
-                + "\n".join(reference_lines) + "\n"
-            )
+            + _sc_end(profile, "references")
         ),
         "sections/05-terms.adoc": (
             "== Terms and definitions\n\n"
+            + _sc_start(profile, "terms")
             # Optional OGC lead statement for profiles that define no terms.
             + (
                 "No terms and definitions are listed in this document.\n\n"
@@ -3086,7 +3190,7 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
                 else ""
             )
             + (
-                (body.terms_text.rstrip() + "\n")
+                (_prose(profile, body.terms_text) + "\n")
                 if body and body.terms_text
                 else (
                     "This document uses the terms defined in https://portal.ogc.org/public_ogc/directives/directives.php[OGC Policy Directive 49], "
@@ -3096,6 +3200,7 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
                 )
             )
             + _terms_adoc(profile)
+            + _sc_end(profile, "terms")
         ),
         "sections/06-requirements.adoc": requirements_section,
         "sections/07-abstract-tests.adoc": (
@@ -3109,8 +3214,10 @@ def _build_sections(profile: ServiceProfile) -> dict[str, str]:
                 else "[appendix,obligation=normative]\n"
             )
             + f"== {(body.abstract_test_suite_title if body and body.abstract_test_suite_title else 'Abstract Test Suite')}\n\n"
+            + _sc_start(profile, "abstract-tests")
             + (ats_class_includes + "\n\n" if ats_class_includes else "")
             + ats_includes + "\n"
+            + _sc_end(profile, "abstract-tests")
         ),
     }
 

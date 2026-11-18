@@ -1,0 +1,8 @@
+[[ats_class_documentation_content_profile]]
+[conformance_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/documentation_content_profile
+target:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/documentation_content_profile
+abstract-test:: /conf/documentation_content_profile/temperature-geojson
+====

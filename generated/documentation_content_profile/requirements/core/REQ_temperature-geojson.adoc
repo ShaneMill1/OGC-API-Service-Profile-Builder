@@ -1,0 +1,37 @@
+[[req_documentation_content_profile_temperature_geojson]]
+.Temperature GeoJSON response
+[requirement]
+====
+[%metadata]
+identifier:: /req/documentation_content_profile/temperature-geojson
+statement:: The temperature collection SHALL return GeoJSON features.
+part:: The service SHALL provide a /collections/temperature/items endpoint.
+part:: The response Content-Type SHALL be application/geo+json.
+====
+
+image:metadata-discovery-workflow.png[Metadata discovery workflow]
+
+The response is a GeoJSON `+FeatureCollection+`. Each feature carries:
+
+* `+geometry+` - the observation point
+* `+properties.temp+` - the temperature in degrees Celsius
+
+[[fig-items-flow]]
+.Request/response flow for the items endpoint
+[plantuml]
+....
+@startuml
+Client -> Service: GET /collections/temperature/items
+Service --> Client: 200 application/geo+json (FeatureCollection)
+@enduml
+....
+
+.Shape of a response feature
+[subs="-callouts"]
+----
+FeatureCollection
++-- features[]
+    +-- geometry   Point [lon, lat]
+    +-- properties
+        +-- temp   number (degC)
+----

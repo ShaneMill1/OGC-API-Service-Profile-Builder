@@ -1,0 +1,22 @@
+[[ats_documentation_content_profile_temperature_geojson]]
+====
+[%metadata]
+label:: /conf/documentation_content_profile/temperature-geojson
+subject:: /req/documentation_content_profile/temperature-geojson
+test-purpose:: Validate that temperature geojson is correctly implemented.
+[.component,class=test method]
+=====
+[.component,class=step]
+--
+Send GET request to /collections/temperature/items.
+--
+[.component,class=step]
+--
+Verify the response Content-Type is application/geo+json.
+--
+[.component,class=step]
+--
+Verify each feature contains temp property.
+--
+=====
+====

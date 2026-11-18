@@ -1,0 +1,18 @@
+== Conformance
+
+NOTE: This profile defines a single conformance class.
+
+Conformance with this standard shall be checked using the Abstract Test Suite in Annex A.
+
+The following conformance classes are defined:
+
+* http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/documentation_content_profile
+
+.Conformance at a glance
+[subs="-callouts"]
+----
+conformance class
++-- requirement     temperature-geojson   (tested)
++-- recommendation  temperature-units-label
++-- permission      temperature-post-query
+----

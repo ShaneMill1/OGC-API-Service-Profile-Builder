@@ -1,0 +1,19 @@
+[[conventions]]
+[obligation=informative]
+== Conventions
+
+=== Identifiers
+
+Requirement identifiers are relative to the profile namespace:
+
+[%header]
+|===
+| Obligation | Prefix
+
+| requirement | `+/req+`
+
+| recommendation | `+/rec+`
+
+| permission | `+/per+`
+
+|===

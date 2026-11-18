@@ -1,0 +1,1176 @@
+# Reference
+
+Full detail for the [OGC API Service Profile Builder](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/). The [README](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/README.md) covers installation and everyday use; this page documents every command, option and config field.
+
+- [CLI](#cli-reference)
+- [GitHub Actions](#github-actions)
+- [Document generation and branding](#document-generation-and-branding)
+- [Profile config reference](#profile-config-reference)
+- [Validation rules](#validation-rules)
+
+---
+
+## CLI Reference
+
+```
+oapi-profile-builder generate   --config <file> --output <dir> [--pdf]
+oapi-profile-builder validate   --config <file>
+oapi-profile-builder validate-server --config <file> --url <url> [--max-examples N] [--stateful]
+oapi-profile-builder cite-test  --url <url> [--report <dir>]
+oapi-profile-builder cite-test-features --url <url> [--report <dir>]
+oapi-profile-builder schema     [--output <file>]
+```
+
+### `generate`
+
+Validates the profile config and writes all artifacts to the output directory.
+
+```bash
+oapi-profile-builder generate --config my_profile.yaml --output ./output
+```
+
+Add `--pdf` to also compile an OGC-compliant PDF via the `metanorma/metanorma` Docker image (Docker required):
+
+```bash
+oapi-profile-builder generate --config my_profile.yaml --output ./output --pdf
+```
+
+The PDF can be rebranded for another SDO (e.g. DGIWG) — custom cover logo, colours, legal page, footer, and identifier namespace — all from the profile config. See [Document generation and branding](#document-generation-and-branding).
+
+### `validate`
+
+Validates the config without writing any files. Useful in CI before generating.
+
+```bash
+oapi-profile-builder validate --config my_profile.yaml
+# Profile 'my_profile' is valid.
+```
+
+### `validate-server`
+
+Runs [schemathesis](https://schemathesis.io/) against a live server using the profile's generated OpenAPI. Requires `pip install oapi-profile-builder[validate]`.
+
+```bash
+oapi-profile-builder validate-server \
+  --config my_profile.yaml \
+  --url https://my-server.example.com \
+  --max-examples 5
+```
+
+Supply real `instanceId` values in your config so schemathesis can exercise instance-level paths:
+
+```yaml
+collection_examples:
+  my_collection:
+    instanceId: "2025-04-02T00:00:00Z"
+```
+
+### `cite-test` / `cite-test-features`
+
+Runs the official OGC CITE conformance test suites against a live server. Docker and Maven are required for `cite-test` (EDR); Docker only for `cite-test-features`.
+
+```bash
+# OGC API - EDR Part 1 (builds ets-ogcapi-edr10 on first run, ~2 min)
+oapi-profile-builder cite-test \
+  --url https://my-server.example.com \
+  --report ./cite_results
+
+# OGC API - Features Part 1 (pulls pre-built image from Docker Hub)
+oapi-profile-builder cite-test-features \
+  --url https://my-server.example.com \
+  --report ./cite_features_results
+```
+
+Results:
+
+```
+OGC API - EDR CITE Results
+  Passed:  76/84
+  Failed:  0
+  Skipped: 8
+
+✓ All CITE tests passed.
+```
+
+---
+
+## GitHub Actions
+
+### Self-service: generate artifacts from an issue (no fork, no install)
+
+Anyone with a GitHub account can generate artifacts from their own config without cloning or installing anything:
+
+1. Open a new issue using the **"Generate profile artifacts"** template ([New issue](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/issues/new/choose)).
+2. Paste your profile YAML into the config field.
+3. If your profile references local files (typically a cover logo via `document_metadata.cover.logo`), drag-and-drop them into the **"Additional assets (optional)"** field. Reference each uploaded file in your YAML as `uploads/<original-filename>` — for example:
+
+    ```yaml
+    document_metadata:
+      cover:
+        logo: uploads/my_logo.png
+    ```
+
+    The workflow downloads each dropped file into `./uploads/` before generation. It parses your YAML to figure out the target filename, so images that GitHub renders as an `<img>` tag with a UUID URL still land at the exact path your config references. Tip: to skip the upload entirely for the DGIWG logo, point at the copy that already ships in this repo: `logo: examples/assets/DGIWG_logo.png`.
+4. Tick "Compile a PDF?" if you also want a Metanorma PDF, then submit.
+5. A workflow validates the config, generates the artifacts, and comments on the issue with a link to download them as a zip (retained for 14 days).
+
+The workflow only runs the generator over your declarative config — it never executes user-supplied code — and comments back on both success and failure. Don't paste secrets: the artifacts are attached to a public workflow run.
+
+> Maintainers: create a `profile-request` label so requests are easy to filter (the workflow gates on a marker in the issue body, so it works even before the label exists).
+
+### Use the action in your own workflow
+
+No local install needed. Add this to any workflow to generate profile artifacts from a config file:
+
+```yaml
+name: Generate Profile
+
+on:
+  push:
+    paths: ['my_profile.yaml']
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate profile artifacts
+        uses: ShaneMill1/OGC-API-Service-Profile-Builder@main
+        with:
+          config: my_profile.yaml
+          output: ./profile_output
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: profile-artifacts
+          path: ./profile_output/
+```
+
+**To download the artifacts:** Actions tab → click the run → scroll to **Artifacts** at the bottom → download the zip.
+
+### Action inputs
+
+| Input | Default | Description |
+|---|---|---|
+| `config` | — | Path to the profile config YAML (required) |
+| `output` | `./profile_output` | Output directory |
+| `version` | `latest` | Package version to install from PyPI, or `local` to install from the action's own checkout |
+| `pdf` | `false` | Compile PDF via Metanorma (Docker required on runner) |
+| `cite-url` | — | Run OGC CITE tests against this server URL |
+| `cite-type` | `edr` | `edr`, `features`, or `both` |
+
+> **CITE + VPN:** The CITE test runner needs to reach the server from GitHub's runners. Servers behind a VPN require a [self-hosted runner](https://docs.github.com/en/actions/hosting-your-own-runners).
+
+---
+
+## Document generation and branding
+
+With `--pdf`, the builder compiles a Metanorma document (`document.adoc` + `sections/`, `requirements/`, `abstract_tests/`) into `document.pdf` using the official `metanorma/metanorma` Docker image. By default this is an OGC `draft-standard` document.
+
+Everything about the document — cover, title-page metadata, legal page, footer, colours, and even the requirement/conformance identifier namespace — is driven from the profile config, so the same tooling can produce a document branded for another SDO such as **DGIWG** with no OGC branding remaining.
+
+| What you want to change | Field | Mechanism |
+|---|---|---|
+| Cover logo, tagline, fonts, watermark (replaces the OGC cover) | `document_metadata.cover` | Generated cover image via `:coverpage-image:` full replacement |
+| Title, doc number, edition, dates, sub-title/status | `title`, `version`, `document_metadata.{doc_number, doc_type, doc_subtype, status, *_date}` | Metanorma document attributes |
+| PDF colours (titles, tables, cover, backgrounds) | `document_metadata.colors` | `:presentation-metadata-color-*:` |
+| Page-ii legal text (copyright / license / notice) | `document_metadata.boilerplate` | `:boilerplate-authority:` |
+| Footer organisation name | `document_metadata.copyright_holder` | `:copyright-holder:` |
+| Cover layout (logo size/position, tagline/title/edition-date size, bold edition+date) | `document_metadata.cover.{logo_width, logo_y, tagline_font_size, title_font_size, edition_date_font_size, bold_edition}` | Generated cover image |
+| Cover date | `document_metadata.doc_pub_date` | Long-format date on the generated cover + `:published-date:` |
+| Remove the OGC logo from the legal page | `document_metadata.suppress_flavor_logo` | targeted `:pdf-stylesheet-override:` |
+| Remove OGC design (crossing lines, circled numbers, rules, navy divider pages) | `document_metadata.suppress_design_elements` (or the individual `suppress_crossing_lines` / `plain_section_numbers` / `suppress_title_underlines`) | `:pdf-stylesheet-override:` + colour attributes |
+| Remove the standalone section-divider pages | `document_metadata.suppress_section_divider_pages` | `:pdf-stylesheet-override:` |
+| Inline section headings (`1 Scope` in one line, no circle) | `document_metadata.inline_section_headers` | `:pdf-stylesheet-override:` |
+| Flatten reference hanging indent (title under authors) | `document_metadata.suppress_bibliography_indent` | `:pdf-stylesheet-override:` |
+| Every-page DRAFT-style watermark (over content) | `document_metadata.page_watermark` | `:pdf-stylesheet-override:` (footer overlay) |
+| Requirement / conformance identifier namespace | `spec_uri_base` | derives `req_uri` / `conf_uri` |
+| Submitter table, notice paragraph, normative refs, extra terms | `document_metadata.{submitters, notice, normative_references, terms}` | Metanorma attributes / sections |
+| Features `/items` paging (`limit` + `offset` params, `next`/`prev` links, `numberMatched`/`numberReturned`/`timeStamp`) | `paging.{enabled, default_limit, max_limit, offset_enabled, response_metadata}` | OpenAPI query parameters + response metadata |
+
+Custom branding requires Pillow for the cover image: `pip install 'oapi-profile-builder[pdf]'`. Field-by-field detail is in the [`document_metadata`](#document_metadata) reference below; [`examples/nwp_radar.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/nwp_radar.yaml) is a complete DGIWG-branded example. Omit all of these fields and the output keeps the standard OGC house style.
+
+> The `suppress_flavor_logo`, `suppress_design_elements`/`suppress_*`, `suppress_section_divider_pages`, `inline_section_headers`, `suppress_bibliography_indent`, and `page_watermark` overrides reach into the OGC Metanorma flavor's XSL templates (e.g. `insertLogoPreface`, `insertCrossingLines`, `insertSectionNumInCircle`, `insertFooter`, the `sections` mode, `fmt-title`, and `bibitem-normative-style`) and are coupled to that flavor. Everything else uses documented Metanorma attributes. mn2pdf merges our same-named templates over the flavor's at equal precedence (via `merge_override.xsl`), which is what makes these work; a future metanorma-ogc release could require refreshing the template names. For long-term SDO adoption, a dedicated Metanorma "taste"/flavor is the most durable path.
+
+---
+
+## Profile Config Reference
+
+A profile config is a YAML file. The full JSON Schema is at [`profile.schema.json`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/profile.schema.json).
+
+### Minimal valid config
+
+```yaml
+name: my_profile          # lowercase, a-z 0-9 _ only
+title: My EDR Profile
+version: "1.0"
+description: Brief description of what this service profile provides.
+keywords:
+  - my-parameter
+  - my-domain
+
+# ── Profile-level constraints ─────────────────────────────────────────────
+# Define what any conforming implementation MUST support.
+# Validated at build time and embedded in the generated OpenAPI as
+# enum/pattern constraints so runtime tools can enforce them.
+required_conformance_classes:
+  - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
+
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  extent_crs:
+    allowed:
+      - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+
+output_formats:
+  - name: GeoJSON
+    media_type: application/geo+json
+
+# ── Reference metadata ────────────────────────────────────────────────────
+# Describes the structure of collections a conforming service should expose.
+# For dynamic fields (extent intervals, custom dimension values), use the
+# full possible range — not a snapshot of current live data.
+collections:
+  - id: my_collection
+    links:
+      - href: https://example.com/collections/my_collection
+        rel: self
+        type: application/json
+    extent:
+      spatial:
+        bbox: [[-180, -90, 180, 90]]
+        crs: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+    parameter_names:
+      temperature:
+        type: Parameter
+        observedProperty:
+          label: Air Temperature
+        unit:
+          label: Celsius
+          symbol: "°C"
+
+# ── Requirements and abstract tests ────────────────────────────────────────
+# Drive the AsciiDoc/PDF output. Each requirement has an RFC 2119 `level`:
+# requirement (SHALL, conformance-tested), recommendation (SHOULD) or
+# permission (MAY) — the latter two are informative and never fail validation.
+# Tests must reference a valid requirement id.
+requirements: []
+abstract_tests: []
+```
+
+### Top-level fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | yes | Lowercase `a-z 0-9 _`. Drives OGC URIs and OpenAPI `operationId`s |
+| `title` | string | yes | Human-readable profile title |
+| `version` | string | no | Defaults to `"1.0"` |
+| `description` | string | no | Human-readable description of the service profile. Surfaces in the OpenAPI `info.description` and the landing page response schema |
+| `keywords` | list | no | Service-level keywords (e.g. query types, parameter names, domain terms). Surfaces in `info.x-keywords` and the landing page response schema. Distinct from `document_metadata.keywords`, which are for the OGC PDF header |
+| `server_url` | string | no | Documentation only — not written to the profile OpenAPI |
+| `provider` | object | no | Service provider / responsible party. Surfaces in OpenAPI `info.contact` and the document Point of Contact (see below) |
+| `classification` | object | no | Security classification (`level` + `system`). Surfaces as a document banner and `info.x-classification` |
+| `metadata_date` | string | no | Metadata update date (ISO 8601). Surfaces as `info.x-metadata-date` |
+| `resource_service_publish_date` | string | no | Resource/service publication date (ISO 8601). Surfaces as `info.x-resource-publish-date` |
+| `resource_default_locale` | string | no | Default resource locale (e.g. `eng`). Surfaces as `info.x-default-locale` |
+| `allow_post_queries` | bool | no | When `true`, generates `POST` alongside `GET` for all EDR data query endpoints. Defaults to `false` |
+| `collections` | list | yes | One or more EDR collections (see below) |
+| `required_conformance_classes` | list | no | Conformance classes implementations must declare. Defaults to EDR Core |
+| `extent_requirements` | object | no | Profile-level CRS/TRS/VRS constraints (see below) |
+| `output_formats` | list | no | Format name → media type + schema ref mappings |
+| `collection_id_pattern` | string | no | Regex all collection IDs must match |
+| `spec_uri_base` | string | no | Base URI for the requirements/conformance class identifiers. Defaults to the OGC EDR Part 3 namespace; override to publish under another SDO namespace (e.g. DGIWG) |
+| `parameter_name_pattern` | string | no | Regex all `parameter_names` keys must match |
+| `parameter_schema` | object | no | JSON Schema for parameter objects — replaces the default schema in the generated OpenAPI (see below) |
+| `collection_title_max_length` | int | no | When set, every collection title must be present and within this many characters (MetOcean `/req/core/collection_title`) |
+| `require_license_link` | bool | no | When `true`, every collection must declare a `rel='license'` link (MetOcean `/req/core/collection_license`). Defaults to `false` |
+| `license_link_type` | string | no | Expected media type of the `rel='license'` link when `require_license_link` is set. Defaults to `text/html`; set to null to accept any type |
+| `required_data_queries` | list | no | Data-query types every collection must define (e.g. `[locations, area, radius]`) — enforces the mandatory data-query sets |
+| `radius_within_units_required` | list | no | Unit tokens each radius query's `within_units` must contain (e.g. `[m]`) (MetOcean `/req/core/collection_radius_data_query`) |
+| `locations_feature_required_properties` | list | no | Feature properties (e.g. `[name]`) marked required in the generated `/locations` GeoJSON response schema, in addition to the always-required string `id` |
+| `conformance_class_requirements` | object | no | Map of conformance-class short name → constraints (`required_data_queries`, `radius_within_units_required`) applied only to collections that declare the class. Lets one profile document model several EDR Part 3 requirements classes (see below) |
+| `processes` | list | no | OGC API Processes to expose in the OpenAPI |
+| `requirements` | list | no | Requirements for the AsciiDoc/PDF. Each may set `level` (`requirement`/`recommendation`/`permission`) — see [Requirement levels](#requirement-levels-shall--should--may) |
+| `requirements[].title` | string | no | Short heading for the requirement. Derived from the `id` when omitted |
+| `requirements[].description` | string | yes | The requirement text (replaces the deprecated `statement`) |
+| `requirements[].content` | list | no | Extra content blocks rendered after the requirement: `asciidoc`, `markdown`, `preformatted` or `plantuml`. See [Authored content](#authored-content-markdown-diagrams-and-your-own-asciidoc) |
+| `requirements[].level` | string | no | RFC 2119 level. `requirement` (SHALL) is conformance-tested; `recommendation` (SHOULD) and `permission` (MAY) are informative and never fail validation. Inferred from the RFC 2119 keyword in the title, description and parts when omitted; defaults to `requirement`. See [Requirement levels](#requirement-levels-shall--should--may) |
+| `abstract_tests` | list | no | Conformance tests — each must reference a valid requirement `id`. Only SHALL-level requirements are listed in the conformance class |
+| `abstract_tests[].method` | string | no | Optional test method description |
+| `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
+| `collection_examples` | object | no | `{collectionId: {instanceId: "..."}}` — used by `validate-server` |
+| `paging` | object | no | Features `/items` paging — adds `limit` + `offset` query parameters and paging response metadata (`next`/`prev` links, `numberMatched`/`numberReturned`/`timeStamp`) to the generated OpenAPI (see below) |
+| `document_metadata` | object | no | Metanorma PDF header — doc number/type/subtype, status, editors, submitters, dates, notice, normative references (see below) |
+
+---
+
+### `collections[]`
+
+Uses the [edr-pydantic](https://github.com/KNMI/edr-pydantic) `Collection` model — the same schema an EDR server returns at `/collections/{id}`.
+
+> **Service-level vs collection-level fields**
+>
+> The profile has two distinct levels that serve different purposes — they don't merge or override each other:
+>
+> - **Service-level fields** (`extent_requirements`, `parameter_schema`, `parameter_name_pattern`, `collection_id_pattern`) define *constraints* that any conforming implementation must satisfy. They are validated at build time and embedded in the generated OpenAPI as schema constraints (enums, patterns) so runtime tools can enforce them against a live server.
+>
+> - **`collections[]`** provides *reference metadata* — the structure and representative values of collections a conforming service should expose. This mirrors what an EDR server returns at `/collections/{id}` and drives the generated OpenAPI paths and response schemas.
+>
+> For fields that are inherently dynamic (e.g. `extent.temporal.interval`, `extent.custom[].values`), use representative values that describe the *full possible range*, not a snapshot of current live data. For example, use an open-ended temporal interval `["2020-01-01T00:00:00Z", null]` rather than a specific end date, and list all valid custom dimension values rather than only those currently in the dataset. The `validate-server` command tests API structure and response schema conformance — it does not assert that specific data values in responses match the profile config exactly.
+
+| Field | Required | Description |
+|---|---|---|
+| `id` | yes | Collection identifier |
+| `title` | no | Human-readable name |
+| `description` | no | Longer description |
+| `links` | yes | At minimum a `self` link |
+| `extent.spatial.bbox` | yes | `[[minLon, minLat, maxLon, maxLat]]` |
+| `extent.spatial.crs` | yes | CRS URI — validated against `extent_requirements` |
+| `extent.temporal` | no | `interval`, `values`, `trs` |
+| `extent.vertical` | no | `interval`, `values`, `vrs` |
+| `extent.custom` | no | Custom dimensions (e.g. `standard_name`, `level`) |
+| `crs` | no | Full list of CRS values this collection supports |
+| `output_formats` | no | Format names this collection supports (e.g. `[CoverageJSON, GeoJSON]`) |
+| `data_queries` | no | EDR query types: `position`, `area`, `radius`, `cube`, `trajectory`, `corridor`, `locations`, `items`, `instances` |
+| `parameter_names` | no | Map of parameter id → Parameter object. All parameters must have `unit` and `observedProperty` |
+| `conformance_classes` | no | Profile conformance-class short names this collection implements (e.g. `[core, insitu-observations]`). Selects which `conformance_class_requirements` are enforced; surfaced as `x-conformance-classes` in the OpenAPI |
+| `parameter_schema` | no | Per-collection JSON Schema for parameter objects, overriding the profile-level `parameter_schema` for this collection only (precedence: collection → profile → default) |
+
+#### `data_queries` example
+
+```yaml
+data_queries:
+  position:
+    link:
+      href: https://example.com/collections/obs/position
+      rel: data
+      variables:
+        query_type: position
+        output_formats: [CoverageJSON]
+  radius:
+    link:
+      href: https://example.com/collections/obs/radius
+      rel: data
+      variables:
+        query_type: radius
+        output_formats: [CoverageJSON]
+        within_units: [m, km]
+        # crs_details: per-query CRS support, validated against extent_requirements
+        crs_details:
+          - crs: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+          - crs: "http://www.opengis.net/def/crs/EPSG/0/4326"
+  cube:
+    link:
+      href: https://example.com/collections/obs/cube
+      rel: data
+      variables:
+        query_type: cube
+        output_formats: [CoverageJSON, GeoTIFF]
+        # default_output_format: response format used when the `f` query
+        # parameter is omitted. Must be one of output_formats. Sets the
+        # `default` on the generated OpenAPI `f` parameter for this query.
+        default_output_format: GeoTIFF
+        # crs: shorthand for crs_details — a plain list of CRS URIs.
+        # Validated against extent_requirements.supported_crs.
+        crs:
+          - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+          - "http://www.opengis.net/def/crs/EPSG/0/4326"
+```
+
+#### `parameter_names` example
+
+```yaml
+parameter_names:
+  air-temperature-2m:
+    type: Parameter
+    label: Air Temperature at 2m
+    description: Instantaneous air temperature at 2 metres above ground
+    observedProperty:
+      id: "https://vocab.nerc.ac.uk/standard_name/air_temperature"
+      label: Air Temperature
+    unit:
+      label: Kelvin
+      symbol:
+        value: K
+        type: "https://qudt.org/vocab/unit/K"
+    measurementType:
+      method: point
+      duration: PT0S
+```
+
+---
+
+### `extent_requirements`
+
+Constrains CRS, TRS, and VRS values across all collections. Validated at build time and embedded in the generated OpenAPI as `enum` or `pattern` constraints on the collection response schema.
+
+These are **profile-level constraints** — they define what any conforming implementation must support, independent of the specific values a live service happens to have at a given moment.
+
+CRS/TRS/VRS constraints are split into two distinct concerns:
+
+- `extent_crs` / `extent_trs` / `extent_vrs` — constrain the **single value** used to express the extent (`extent.spatial.crs`, `extent.temporal.trs`, `extent.vertical.vrs`). Typically just CRS84 / Gregorian.
+- `supported_crs` / `supported_trs` / `supported_vrs` — constrain the **list of values** the service supports for queries (the top-level `crs` array and `data_queries.*.variables.crs_details`). Usually broader than the extent constraint.
+
+Each constraint uses either `allowed` (exact list) or `pattern` (regex) — not both.
+
+```yaml
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+
+  # Extent is always expressed in CRS84
+  extent_crs:
+    allowed:
+      - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+
+  # Service supports CRS84 plus any EPSG CRS for queries
+  supported_crs:
+    pattern: "^(http://www\\.opengis\\.net/def/crs/OGC/1\\.3/CRS84|http://www\\.opengis\\.net/def/crs/EPSG/.*)$"
+  # or an explicit list:
+  # supported_crs:
+  #   allowed:
+  #     - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+  #     - "http://www.opengis.net/def/crs/EPSG/0/4326"
+
+  extent_trs:
+    allowed:
+      - "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+```
+
+At least one of `extent_crs` or `supported_crs` is required. The same applies to TRS and VRS — all are optional individually but at least one CRS constraint must be present.
+
+#### CRS as WKT2 strings — quote with single quotes
+
+CRS/TRS values can be URIs (as above) **or** full WKT2 strings. A WKT2 string embeds double quotes, square brackets and commas — for example `GEOGCRS["WGS 84",...,ID["EPSG",4326]]`. YAML cannot parse this as a bare scalar or a **double-quoted** scalar (the inner `"` end the string early), so it must be wrapped in **single quotes**, or written as a block scalar:
+
+```yaml
+# Single-quoted (recommended) — the whole WKT2 value in one line:
+crs:
+  - 'GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",...,ID["EPSG",4326]]'
+
+# or a block scalar (`|-` keeps it on multiple lines with no trailing newline):
+extent_requirements:
+  extent_crs:
+    allowed:
+      - |-
+        GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",...,ID["EPSG",4326]]
+```
+
+Double-quoting (`"GEOGCRS["WGS 84"...]"`) will fail to parse. If a config fails with a YAML parse error near a CRS line, this is almost always the cause — the CLI prints a hint pointing here. Publish the `wkt` conformance class (`.../conf/wkt`) in `required_conformance_classes` when your CRS values are WKT2.
+
+#### Vertical direction (`positive`)
+
+OGC API - EDR's vertical extent has no field for which way values increase. This is ambiguous for VRS like pressure levels, which different providers order top-to-bottom or bottom-to-top inconsistently (pressure increases as altitude *decreases*). Set `extent.vertical.positive` to `up` or `down` on a collection (following the CF Conventions `positive` attribute) to make the ordering explicit:
+
+```yaml
+collections:
+  - id: my_collection
+    extent:
+      spatial: { ... }
+      vertical:
+        interval:
+          - ["1000", "100"]   # hPa, surface to top of atmosphere
+        values: ["1000", "850", "700", "500", "300", "100"]
+        vrs: "http://www.opengis.net/def/crs/EPSG/0/5798"  # or similar pressure VRS
+        positive: down   # pressure increases downward, toward the surface
+```
+
+Set `extent_requirements.require_vertical_direction: true` to make `positive` mandatory on every collection with a vertical extent, so a profile can enforce one consistent convention rather than leaving it up to each collection author:
+
+```yaml
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  extent_crs:
+    allowed: ["http://www.opengis.net/def/crs/OGC/1.3/CRS84"]
+  require_vertical_direction: true
+```
+
+---
+
+### Requirement levels (SHALL / SHOULD / MAY)
+
+Every entry in `requirements` carries an RFC 2119 conformance `level`. This lets a profile
+express normative rules, best-practice recommendations, and optional permissions in one
+document while keeping the EDR Part 3 design intent that **only SHALL statements are
+conformance-tested**.
+
+| `level` | RFC 2119 keyword | Meaning | Conformance-tested? |
+|---|---|---|---|
+| `requirement` (default) | SHALL / SHALL NOT / MUST | Normative — mandatory for a conforming implementation | Yes — listed in the conformance class, needs an abstract test |
+| `recommendation` | SHOULD / SHOULD NOT / RECOMMENDED | Informative best practice | No — reported but never fails validation |
+| `permission` | MAY / OPTIONAL | Informative option | No — reported but never fails validation |
+
+#### Setting the level
+
+You can set `level` explicitly, or let the tool infer it from the RFC 2119 keyword in the
+title, description and parts. When `level` is omitted, the strongest keyword present wins
+(SHALL/MUST → `requirement`, SHOULD/RECOMMENDED → `recommendation`, MAY/OPTIONAL →
+`permission`); if no keyword is found it defaults to `requirement`. An explicit `level`
+always overrides inference — so a statement can never be silently downgraded from mandatory.
+
+```yaml
+requirements:
+  # requirement (SHALL) — conformance-tested. `level` defaults to requirement.
+  - id: temperature-geojson
+    description: The temperature collection SHALL return GeoJSON features.
+    parts:
+      - The response Content-Type SHALL be application/geo+json.
+
+  # recommendation (SHOULD) — informative. Level set explicitly.
+  - id: temperature-units-label
+    level: recommendation
+    description: The temperature collection SHOULD label its unit as Celsius.
+    parts:
+      - Each temp parameter SHOULD expose a unit.label of "Celsius".
+
+  # permission (MAY) — informative. No `level:`; inferred from "MAY".
+  - id: temperature-post-query
+    description: The service MAY support POST queries for the temperature collection.
+    parts:
+      - Implementations MAY offer POST alongside GET on data query endpoints.
+
+# Only requirements (SHALL) are conformance-tested, so only the SHALL statement
+# gets an abstract test.
+abstract_tests:
+  - id: temperature-geojson
+    requirement_id: temperature-geojson
+    steps:
+      - Send GET request to /collections/temperature/items.
+      - Verify the response Content-Type is application/geo+json.
+```
+
+This is exactly `examples/minimal_profile.yaml` — run it to see the levels in action.
+
+#### What each level does
+
+- **Document rendering.** Requirements render as Metanorma `[requirement]`, recommendations
+  as `[recommendation]`, permissions as `[permission]`, each with the matching obligation, so
+  the generated AsciiDoc/PDF never mislabels a non-normative statement.
+- **Conformance class / Abstract Test Suite.** Only SHALL-level requirements are listed in
+  the conformance class, and abstract tests are meaningful only for them. Recommendations and
+  permissions are summarised informatively.
+- **Quality assessment (KPI).** `validate` and `generate` print a per-level summary — counts
+  by level (and per conformance class when the profile groups by class), plus any SHALL
+  requirement missing an abstract test. Recommendations/permissions are surfaced for
+  visibility and never cause a non-zero exit.
+
+Running `validate` on the example above prints:
+
+```text
+Profile 'minimal_profile' is valid.
+Quality assessment (RFC 2119 statement levels):
+  requirements  (SHALL) : 1  [conformance-tested]
+  recommendations (SHOULD): 1  [informative]
+  permissions     (MAY)   : 1  [informative]
+  abstract tests          : 1
+```
+
+#### Graduation path
+
+A best practice can be authored as a `recommendation` (SHOULD) today and promoted to a
+`requirement` (SHALL) once it is agreed and testable: change its `level` to `requirement`
+(or reword the statement to use SHALL) and add a matching entry in `abstract_tests`. Because
+`level` defaults to `requirement`, existing profiles that predate this field are unaffected —
+every statement without a `level` stays a SHALL requirement.
+
+---
+
+### Multiple conformance classes in one profile
+
+OGC API - EDR Part 3 profiles are modular: a single profile document can define several requirements/conformance classes, and different collections in the same service may implement different classes. The MetOcean EDR Profile is a good example — Core applies everywhere, but only in-situ collections must offer `locations`/`area`/`radius` while NWP collections must offer `position`/`cube`.
+
+Model this with `conformance_class_requirements` (profile level) plus `conformance_classes` (per collection):
+
+```yaml
+# Core-level rules apply to every collection:
+collection_title_max_length: 50
+require_license_link: true
+
+# Class-scoped rules apply only where a collection opts in:
+conformance_class_requirements:
+  insitu-observations:
+    required_data_queries: [locations, area, radius]
+    radius_within_units_required: [m]
+  nwp:
+    required_data_queries: [position, cube]
+
+collections:
+  - id: insitu-observations
+    conformance_classes: [core, insitu-observations]   # must have locations/area/radius
+    # ...
+  - id: nwp-forecast
+    conformance_classes: [core, nwp]                    # must have position/cube
+    # ...
+```
+
+The flat `required_data_queries` / `radius_within_units_required` fields still apply to *every* collection (the Core-applies-to-all shorthand); class-scoped rules are additive. See `examples/metocean_profile.yaml` for a full worked profile spanning all four MetOcean classes.
+
+---
+
+### `output_formats`
+
+Maps format names (referenced by `collections[].output_formats` and `data_queries.*.variables.output_formats`) to a media type and, optionally, a schema reference. The `schema_ref` flows into the generated OpenAPI response `content` for that format — use it to point a format at a specific schema (e.g. a DGIWG-published schema for GeoTIFF or CoverageJSON) instead of the tool's built-in default.
+
+```yaml
+output_formats:
+  - name: CoverageJSON
+    media_type: application/prs.coverage+json
+    schema_ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
+  - name: GeoJSON
+    media_type: application/geo+json
+    schema_ref: https://geojson.org/schema/FeatureCollection.json
+  - name: GeoTIFF
+    media_type: image/tiff; application=geotiff
+    # Omit schema_ref until a published schema exists for this format —
+    # the requirement/abstract test can still state the standard to conform to.
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `name` | yes | Format name, referenced elsewhere as a string (e.g. `CoverageJSON`) |
+| `media_type` | yes | MIME type used as the OpenAPI response `content` key and the `f` parameter value |
+| `schema_ref` | no | URL to a JSON Schema (or other schema) for this format. When set, the generated response uses `{"$ref": schema_ref}`; when omitted, a generic/default schema is used |
+
+`schema_ref` is optional — if no schema exists yet for a format (as is currently the case for some binary formats like GeoTIFF), leave it unset and capture the required standard as a normative `requirements[]` entry instead. Add `schema_ref` later once a schema URL exists.
+
+---
+
+### `parameter_schema`
+
+A JSON Schema fragment that replaces the default parameter schema in the generated OpenAPI. Use this to enforce field-level constraints — required fields, QUDT unit URIs, CF standard name URIs, ISO 8601 durations, and custom extension properties.
+
+```yaml
+parameter_schema:
+  type: object
+  required:
+    - type
+    - observedProperty
+    - measurementType
+    - label
+    - description
+    - unit
+    - "metocean:standard_name"
+    - "metocean:level"
+  properties:
+    unit:
+      type: object
+      properties:
+        symbol:
+          type: object
+          properties:
+            type:
+              type: string
+              pattern: "^https://qudt\\.org/vocab/unit/.*$"
+    observedProperty:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: "^https://vocab\\.nerc\\.ac\\.uk/standard_name/.*$"
+    measurementType:
+      type: object
+      properties:
+        duration:
+          type: string
+          pattern: "^P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?$"
+    "metocean:standard_name":
+      type: string
+    "metocean:level":
+      type: number
+  additionalProperties: true
+```
+
+See [`examples/insitu_observations_profile.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/insitu_observations_profile.yaml) for a complete working example.
+
+---
+
+### `requirements[]` and `abstract_tests[]`
+
+Requirements drive the AsciiDoc/PDF output. Abstract tests must reference a valid requirement `id`.
+
+Each requirement has an `id` (lowercase, hyphens or underscores), an optional `title`, a `description`, and at least one `parts` entry. The `title` heads the requirement (its sub-clause heading with `render_requirement_clauses`, its box title otherwise) and wins over `requirement_headings`; without one, it is derived from the `id`. `statement` is deprecated: it still works as `description`, and the CLI warns once.
+
+The requirement box in the PDF labels this text **"Statement"**. That is the OGC ModSpec term for a requirement's normative text, and Metanorma's OGC flavor applies it to requirements, recommendations and permissions whichever key you use.
+
+```yaml
+requirements:
+  - id: position-coveragejson          # lowercase, hyphens only
+    title: Position query response
+    description: The position query SHALL return CoverageJSON.
+    parts:
+      - The service SHALL provide a /collections/{id}/position endpoint.
+      - The response Content-Type SHALL be application/prs.coverage+json.
+
+abstract_tests:
+  - id: position-coveragejson          # must equal requirement_id
+    requirement_id: position-coveragejson
+    method: Manual inspection of the /position response.
+    steps:
+      - Send GET /collections/{id}/position?coords=POINT(lon lat).
+      - Verify Content-Type is application/prs.coverage+json.
+```
+
+---
+
+### Authored content: Markdown, diagrams and your own AsciiDoc
+
+Add your own material to the PDF without losing what the generator writes. Every feature below is used in [`examples/documentation_content_profile.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/documentation_content_profile.yaml); its compiled PDF is at [`generated/documentation_content_profile/document.pdf`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/generated/documentation_content_profile/document.pdf).
+
+A **content block** has a `format`, a `body`, and optionally a `title` (caption; `preformatted`/`plantuml` only) and an `id` (anchor):
+
+| `format` | Renders as |
+|---|---|
+| `asciidoc` (default) | The AsciiDoc, unchanged |
+| `markdown` | Converted Markdown: headings, lists, code, tables, links, images |
+| `preformatted` | A monospace listing that reproduces the text exactly, including spacing and characters AsciiDoc would interpret (`*x*`, `{x}`, `<1>`, `include::`). Tabs become 8-column stops |
+| `plantuml` | A rendered diagram, captioned "Figure N" (`@startuml`/`@enduml` optional) |
+
+Blocks go in:
+
+- **`requirements[].content`**: after the requirement box.
+- **`document_metadata.body.section_content.<key>`**: inside a generated section, keeping its text. Use `start` (after the heading) and/or `end` (after everything); a plain list means `end`. Keys: `abstract`, `preface`, `submitters`, `security-considerations` (only with `preface_front_matter`), `scope`, `conformance`, `references` (`end` only; Metanorma owns its introduction), `terms`, `requirements`, `abstract-tests`, and `class:<name>` for a conformance-class clause when `render_requirement_clauses` is on (it replaces `requirements`).
+- **`clauses[]` / `annexes[]`**: `format: markdown` for the `body`, plus a `blocks` list.
+
+```yaml
+requirements:
+  - id: temperature-geojson
+    title: Temperature GeoJSON response
+    description: The temperature collection SHALL return GeoJSON features.
+    parts: [The response Content-Type SHALL be application/geo+json.]
+    content:
+      - format: plantuml
+        title: Request/response flow
+        body: "Client -> Service: GET /collections/temperature/items"
+document_metadata:
+  body:
+    section_content:
+      scope:                           # list = end
+        - format: markdown
+          body: Extra scope text in **Markdown**.
+      terms:
+        end:
+          - format: preformatted
+            body: "core ---> nwp"
+        end_title: Other terms         # Terms ends in a term sub-clause
+```
+
+Rules worth knowing:
+
+- **`end_title`**: text after a sub-clause joins that sub-clause. So when a section ends in one (Terms with entries, every `class:<name>` clause, or prose with its own heading), `end` needs an `end_title`, which puts the content in a new final sub-clause. `validate` reports it when missing.
+- **Headings in blocks**: Markdown headings in `content` and `section_content` render as discrete headings, so they can't capture the text that follows. In clause and annex bodies they are real, numbered sub-clauses. Mark headings in raw `asciidoc` blocks `[discrete]` yourself.
+- **Markdown prose fields**: `text_format: markdown` switches `abstract`, `scope`, `terms_text`, `conformance_text`, `security_considerations`, `class_intros` and `requirement_intros` to Markdown.
+- **Images**: list the file under `figures`, then use `![Caption](file.png)` in Markdown or `image::file.png[]` in AsciiDoc.
+- **Diagrams**: PlantUML is rendered by the Metanorma Docker image during `--pdf`. Without `--pdf` it stays as source. Mermaid isn't supported by Metanorma; export it to an image and add it under `figures`.
+
+---
+
+### `processes[]`
+
+Adds OGC API Processes paths to the generated OpenAPI.
+
+```yaml
+processes:
+  - id: compute-difference
+    title: Compute Dataset Difference
+    description: Calculates the difference between two datasets.
+    output_content:
+      application/zip:
+        schema:
+          type: object
+```
+
+Generates: `/processes/compute-difference`, `/processes/compute-difference/execution`, `/jobs`, `/jobs/{jobId}`, `/jobs/{jobId}/results`.
+
+---
+
+### `paging`
+
+Controls Features `/items` paging in the generated OpenAPI. When enabled (the default), the `/items` endpoints (collection-level and instance-level) describe the full OGC paging contract: `limit` + `offset` query parameters and a FeatureCollection response that carries paging navigation links and counts.
+
+```yaml
+paging:
+  enabled: true            # default true; set false to omit paging entirely
+  default_limit: 10        # OpenAPI schema default for limit (default 10)
+  max_limit: 100           # OpenAPI schema maximum for limit (default 10000)
+  offset_enabled: true     # default true; set false to omit the offset parameter
+  response_metadata: true  # default true; set false for a bare type+features response
+```
+
+Query parameters emitted on `/items`:
+
+- `limit` — `in: query`, `type: integer`, `minimum: 1`, `maximum: <max_limit>`, `default: <default_limit>`.
+- `offset` — `in: query`, `type: integer`, `minimum: 0`, `default: 0` (0-based index of the first feature; omitted when `offset_enabled: false`). Lets a client page through a result set rather than only capping the first page.
+
+Response metadata (when `response_metadata: true`): the `/items` FeatureCollection documents a `links` array carrying `self`/`next`/`prev` navigation links, plus `numberMatched`, `numberReturned` and `timeStamp`, and marks `type` and `features` as required. These are scoped to the feature-collection `/items` response — single features (`/items/{featureId}`), instance listings, and coverage data-query responses are unaffected. Set `response_metadata: false` for a bare `type` + `features` collection.
+
+---
+
+### `pubsub`
+
+When present, generates `asyncapi.yaml` alongside `openapi.yaml`.
+
+```yaml
+pubsub:
+  broker_host: my-broker.example.com
+  broker_port: 5672
+  protocol: amqp          # amqp | amqp1 | mqtt | kafka
+  collections:
+    - my_collection
+  filters:
+    - name: station
+      description: Filter by station ID
+      type: string
+```
+
+`broker_host`/`broker_port`/`protocol` synthesise a single implicit
+`production` AsyncAPI server. To describe an exact transport topology instead —
+e.g. a native WebSocket `/ws` endpoint plus AMQP 1.0 and MQTT brokers, as the
+`nws_connect_profile.yaml` example does — list them explicitly under `servers`.
+When `servers` is set, the implicit `production` server is **not** emitted:
+
+```yaml
+pubsub:
+  broker_host: edr-broker
+  broker_port: 5672
+  protocol: amqp1         # AMQP 1.0 (e.g. RabbitMQ 4.x native)
+  collections: [water_gauge, wwa]
+  servers:
+    - name: websocket_secure
+      description: Native WebSocket live map (production)
+      host: ''
+      protocol: wss       # amqp | amqp1 | mqtt | kafka | ws | wss
+      pathname: /ws
+    - name: amqp
+      description: AMQP 1.0 broker (RabbitMQ 4.x native AMQP 1.0)
+      host: 'edr-broker:5672'
+      protocol: amqp1
+    - name: mqtt
+      description: MQTT broker (RabbitMQ MQTT plugin)
+      host: 'edr-broker:1883'
+      protocol: mqtt
+  collection_filters:     # per-collection filter overrides
+    water_gauge:
+      filters:
+        - name: flood_stages
+          description: Alert for selected flood stages
+          type: array
+```
+
+---
+
+### `document_metadata`
+
+Required only when compiling a PDF with `--pdf`. Fields map to Metanorma OGC document attributes.
+
+```yaml
+document_metadata:
+  doc_number: "25-myprofile"
+  doc_type: draft-standard      # Metanorma :doctype: (draft-standard | standard | best-practice | engineering-report | ...)
+  doc_subtype: implementation   # implementation | best-practice | engineering-report | profile
+  status: approved              # Metanorma :status:/:docstage: (swg-draft | public-rfc | approved | ...)
+  editors:
+    - Jane Smith
+  # submitters: structured table for page iv — each row carries its own affiliation.
+  # When provided, takes precedence over the editors/submitting_orgs fallback.
+  submitters:
+    - name: Jane Smith
+      affiliation: My Organization
+      role: editor
+    - name: Standards Working Group
+      affiliation: My SDO
+  submitting_orgs:
+    - My Organization
+  # Title-page dates (YYYY-MM-DD). Omitted dates fall back to {copyright_year}-01-01.
+  submission_date: "2026-05-01"   # → :received-date:
+  approval_date:   "2026-06-15"   # → :issued-date:
+  publication_date: "2026-07-01"  # → :published-date:
+  doc_pub_date:    "2026-07-16"   # optional; overrides publication_date for the cover
+                                  #   (long-format "16 July 2026") and :published-date:
+  # Custom notice paragraph rendered in the front matter. Note: the OGC cover-page
+  # legal notice itself is generated by Metanorma from doc_type/status.
+  notice: >
+    This is a DRAFT standard and is subject to change.
+  # Additional normative references appended to the References section.
+  normative_references:
+    - anchor: DGIWG-250
+      citation: DGIWG 250
+      title: DGIWG GeoTIFF Profile
+  keywords:
+    - ogcdoc
+    - OGC API
+    - EDR
+  copyright_year: 2026
+  external_id: http://www.opengis.net/doc/dp/my-profile/1.0
+```
+
+The cover-page sub-title (e.g. "Draft Standard — Implementation — Approved") is produced by Metanorma from the `doc_type`, `doc_subtype`, and `status` combination.
+
+#### Custom branding (logo + colors)
+
+Two `document_metadata` blocks let you rebrand the PDF (e.g. for DGIWG) without a custom Metanorma flavor:
+
+- **`colors`** — recolours the PDF via Metanorma's `:presentation-metadata-color-*:` attributes. Values are hex colours.
+- **`cover`** — replaces the built-in OGC cover page with a generated one: your logo plus the document's title, number, edition and date. Requires Pillow (`pip install 'oapi-profile-builder[pdf]'`). The builder renders `cover.png` into the output directory and points Metanorma at it via `:coverpage-image:` + `:presentation-metadata-full-coverpage-replacement:`.
+
+```yaml
+document_metadata:
+  doc_number: "DGIWG 134"
+  cover:
+    logo: examples/assets/DGIWG_logo.png    # path relative to the working directory (or absolute).
+                                            # From the self-service issue form use uploads/<file>
+                                            # instead and drag-drop the file into "Additional assets".
+    tagline: Delivering Military Advantage through multi-national geospatial interoperability
+    background: "#FFFFFF"          # optional cover background (default white)
+    text_color: "#1F3864"          # optional cover text colour (default black)
+    font_regular: "Source Sans Pro" # optional: .ttf/.otf path OR installed family name (fontconfig)
+    font_bold: "Source Sans Pro"    # optional bold face; derived from font_regular when unset
+    font_italic: "Source Sans Pro"  # optional italic face for the tagline
+    watermark: "DRAFT"             # optional diagonal watermark stamped on the cover
+    # --- cover layout (all optional) ---
+    logo_width: 300                # target logo width in px (default 420)
+    logo_y: 100                    # logo vertical offset from top in px (default 180)
+    tagline_font_size: 20          # tagline point size (default 30)
+    title_font_size: 40            # title point size (default 54)
+    edition_date_font_size: 22     # edition/date point size (default 24)
+    bold_edition: true             # render the "Edition X" and "Dated ..." lines in bold (default false)
+  colors:
+    text: "#000000"                # body text
+    cover_text: "#1F3864"          # cover text / section numbers / ToC
+    cover_lines: "#1F3864"         # preface 'crossing lines' element
+    title: "#1F3864"               # clause/table/figure titles
+    page_background: "#FFFFFF"     # cover + section page background
+    table_header: "#1F3864"        # table header background
+    table_row_even: "#EEF1F7"      # even table rows
+    table_row_odd: "#FFFFFF"       # odd table rows
+```
+
+Note: colours work against the normal OGC cover too. The `cover` block does a *full* cover replacement, so the dynamic title/number/edition/date are drawn onto the generated image (which is why the builder composes it rather than relying on Metanorma attributes — logo attributes like `:coverpage-image:` alone are not rendered by the OGC flavor).
+
+#### De-branding the rest of the document (legal page + footer + logo)
+
+Cover + colors handle the front page, but the OGC flavor also stamps its identity on the page-ii legal boilerplate, the page footer, and an OGC logo on the legal page. Three more `document_metadata` fields remove those:
+
+- **`copyright_holder`** — sets `:copyright-holder:`, which also drives the **PDF footer** organisation name (replacing "OPEN GEOSPATIAL CONSORTIUM").
+- **`boilerplate`** — replaces the page-ii legal text (copyright / license / legal notice / feedback) via `:boilerplate-authority:`. Any field left unset is synthesised from `copyright_holder`, so no OGC text leaks through.
+- **`suppress_flavor_logo`** — removes the OGC logo from the preface/legal page via a targeted PDF-stylesheet override. (Coupled to the OGC Metanorma flavor's XSL.)
+
+```yaml
+document_metadata:
+  copyright_holder: DGIWG
+  suppress_flavor_logo: true
+  boilerplate:
+    copyright: "Copyright © 2026 Defence Geospatial Information Working Group (DGIWG). All rights reserved."
+    license: "Use of this document is subject to the DGIWG terms and conditions."
+    legal: "Attention is drawn to the possibility that some elements may be subject to patent rights; DGIWG shall not be held responsible for identifying any such rights."
+    feedback: "Comments on this document should be directed to DGIWG."
+```
+
+#### Removing the OGC page design (crossing lines, circled numbers, divider pages)
+
+The OGC flavor also draws decorative design elements: the blue "crossing lines with a dot" motif, circled section-divider numbers, a short rule under section titles, and full-navy section-divider pages. One switch removes them all:
+
+- **`suppress_design_elements: true`** — a consolidated switch that:
+  - removes the blue crossing-lines + dot motif (on divider/cover pages via a template override; on the Contents/preface pages, which draw the lines inline in the flavor's own colour, by whiting that colour out);
+  - renders section numbers as plain text (e.g. `1 Scope`, `i Abstract`) instead of coloured circles;
+  - removes the short rule beneath section titles;
+  - rebrands the full-navy section-divider pages to a clean white page with a DGIWG-navy (from `colors.title`) plain number and title.
+
+  The individual toggles `suppress_crossing_lines`, `plain_section_numbers`, and `suppress_title_underlines` are still available if you want finer control; `suppress_design_elements` simply turns all three on plus the divider rebrand.
+
+- **`page_watermark`** — stamps a light diagonal watermark (e.g. `DRAFT`) on **every page**, rendered *over* the content including tables. This is distinct from `cover.watermark`, which marks only the generated cover image. The cover page is left unmarked.
+
+```yaml
+document_metadata:
+  suppress_design_elements: true   # plain numbers, no crossing lines/rules, white divider pages
+  page_watermark: DRAFT            # every-page diagonal watermark (over content)
+```
+
+With `cover` + `colors` + `copyright_holder` + `boilerplate` + `suppress_flavor_logo` + `suppress_design_elements` (and `spec_uri_base` for the requirement/conformance identifiers), the generated PDF carries no OGC branding — only legitimate citations to the OGC standards the profile conforms to. Omit these fields and you get the standard OGC house style. See [`examples/nwp_radar.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/nwp_radar.yaml).
+
+> These design-element overrides (and the `page_watermark` footer overlay) reach into the OGC Metanorma flavor's XSL template names and are coupled to that flavor; a future metanorma-ogc release could require refreshing them.
+
+#### Structural layout changes (divider pages, inline headers, references)
+
+`suppress_design_elements` only changes *decorative* styling — it keeps the document's structure (standalone section-divider pages, the standard heading layout, and the reference hanging indent) intact. The following are **independent, opt-in** structural changes, so the default OGC output is unaffected unless you set them:
+
+- **`suppress_section_divider_pages: true`** — removes the standalone full-page section dividers, so each section's content follows its heading directly.
+- **`inline_section_headers: true`** — renders Level 1/2 headings inline with the title (e.g. `1 Scope`, `i Abstract`) rather than the OGC circled-number layout.
+- **`suppress_bibliography_indent: true`** — flattens both the Normative References and the Bibliography so each entry is a single flush paragraph, removing the hanging indent that placed the title under the authors.
+
+```yaml
+document_metadata:
+  suppress_section_divider_pages: true
+  inline_section_headers: true
+  suppress_bibliography_indent: true
+```
+
+Additionally, when `copyright_holder` is set to a non-OGC organisation, the flavor's auto-generated "Submitting Organizations" sentence ("…submitted this Document to the Open Geospatial Consortium (OGC)") is rebranded to name that organisation instead, so no residual OGC text remains in the preface.
+
+#### Extending Terms and Definitions
+
+Add profile-specific terms (e.g. EDR Part 3 or Pub/Sub terms) appended after the base terms in the Terms and Definitions section:
+
+```yaml
+document_metadata:
+  terms:
+    - term: service profile
+      definition: A named, referenceable set of constraints and additional requirements applied to an OGC API - EDR implementation.
+      source: "SOURCE: OGC API - EDR Part 3: Service Profiles (draft)"
+```
+
+#### Authored document body (`document_metadata.body`)
+
+By default the builder emits a standard set of templated sections (abstract, preface, scope, conformance, references, terms, a flat Requirements section, and the Abstract Test Suite). When you need to reproduce a **content-complete** OGC profile document — the kind normally hand-authored as a set of `.adoc` clause/annex files — supply a `document_metadata.body` block. Everything in it is optional and additive: omit the block and output is unchanged.
+
+It lets one YAML config carry the bespoke prose, figure and annexes of a full standard, so `generate --pdf` produces a document that matches a hand-authored one in structure and content. [`examples/metocean_profile.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/metocean_profile.yaml) uses this to reproduce the OGC MetOcean EDR Profile (26-027) — scope, a Conventions clause, an informative Introduction with a figure, the four requirements classes rendered as clauses with per-requirement lead-in prose, and Annexes for schemas, examples, the NWP parameter matrix, a bibliography and a revision history.
+
+| Field | Description |
+|---|---|
+| `abstract` / `scope` | Prose replacing the generic Abstract / Scope text (AsciiDoc, or Markdown with `text_format`) |
+| `render_requirement_clauses` | When `true`, render each conformance class as an OGC-style clause (class heading → requirements-class block → one sub-clause per requirement/recommendation) instead of the flat Requirements section. Requires per-class requirement grouping (`conformance_class` on requirements) |
+| `class_intros` | Map of class short name → lead-in prose shown under the class heading |
+| `requirement_intros` | Map of requirement/recommendation id → lead-in sentence shown before that requirement's box |
+| `requirement_headings` | Map of requirement id → sub-clause heading (defaults to a title-cased id) |
+| `clauses` | Extra authored top-level clauses (e.g. Conventions, Introduction), each with `id`, `title`, `body` (AsciiDoc or `format: markdown`), optional `blocks`, `obligation`, and a `position` slotting it into the canonical order (`after-scope`, `after-conformance`, `after-references`, `after-terms`, `before-requirements`, `after-requirements`) |
+| `figures` | Images copied into `images/` and referenceable from any authored body as `image::<filename>[]` (the builder sets `:imagesdir: images:` + `:data-uri-image:` automatically). `path` is resolved relative to the config file |
+| `annexes` | Authored annexes rendered after the Abstract Test Suite, each with `id`, `title`, `body`, `format` (`asciidoc`/`markdown`), `blocks`, `obligation` |
+| `section_content` / `text_format` | Add content blocks to any generated section; write prose fields in Markdown. See [Authored content](#authored-content-markdown-diagrams-and-your-own-asciidoc) |
+| `bibliography` | Informative bibliography annex entries (`anchor` + `citation` + `title`) |
+| `revision_history` | Rows (`date`, `release`, `editor`, `clauses`, `description`) rendered as a Revision History annex table |
+
+```yaml
+document_metadata:
+  body:
+    render_requirement_clauses: true
+    scope: |
+      This document defines the conventions, constraints and extensions of EDR
+      for the MetOcean community of practice.
+    figures:
+      - id: fig-workflow
+        path: assets/workflow.png
+        title: Metadata discovery workflow
+    clauses:
+      - id: conventions
+        title: Conventions
+        position: after-terms
+        body: |
+          === Identifiers
+          The normative provisions in this standard are denoted by the URI ...
+      - id: introduction
+        title: Introduction
+        position: before-requirements
+        obligation: informative
+        body: |
+          Background prose ...
+          image::workflow.png[Metadata discovery workflow]
+    requirement_headings:
+      core-openapi: OpenAPI
+    requirement_intros:
+      core-openapi: An OpenAPI specification provides a machine-readable description of the API interface.
+    annexes:
+      - id: appendix-d
+        title: NWP parameter name matrix
+        obligation: normative
+        body: |
+          [cols="10,10",options="header"]
+          |===
+          |Parameter |ECMWF short name
+          |Temperature |t
+          |===
+    bibliography:
+      - anchor: SPDX
+        citation: SPDX
+        title: "Linux Foundation: SPDX License List, https://spdx.org/licenses"
+    revision_history:
+      - date: "2026-01-16"
+        release: Draft
+        editor: Jane Smith
+        clauses: all
+        description: Add NWP requirements
+```
+
+---
+
+### `provider`, `classification`, and provenance metadata
+
+Optional service-level metadata. Each may also be set per-collection (the collection value overrides the profile root for that collection and is round-tripped into `profile_config.json`).
+
+```yaml
+provider:
+  name: Austrian Military
+  url: "https://www.bmlv.gv.at/english/forces/organisation.shtml"
+  contact:
+    email: presse@bmlvs.gv.at
+    phone: "+43 ..."
+    hours: Monday to Friday 08:00 - 17:00
+    instructions: During hours of Service
+    address: "Ministry of Defence, Rossauer Lände 1"
+    postalcode: A-1090
+    city: Vienna
+    country: Austria
+
+classification:
+  level: "NATO RESTRICTED (NR)"
+  system: NATO
+
+metadata_date: "2026-06-25T07:31Z"
+resource_service_publish_date: "2026-06-24T14:10Z"
+resource_default_locale: eng
+```
+
+Where these surface:
+
+- `provider` → OpenAPI `info.contact` (`name`/`url`/`email`; the remaining contact fields become `x-` extensions) and a **Point of Contact** section in the generated document.
+- `classification` → a **security classification banner** in the document Abstract and `info.x-classification` in the OpenAPI.
+- `metadata_date` / `resource_service_publish_date` / `resource_default_locale` → `info.x-metadata-date` / `info.x-resource-publish-date` / `info.x-default-locale`.
+
+> The profile OpenAPI is implementation-independent (per EDR Part 3 REQ_publishing), so these describe the profile/data provenance rather than a specific deployment endpoint.
+
+---
+
+### `spec_uri_base`
+
+By default, the requirements class and conformance class identifiers are published under the OGC API - EDR Part 3 namespace:
+
+```
+http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/<name>
+http://www.opengis.net/spec/ogcapi-edr-3/1.0/conf/<name>
+```
+
+Set `spec_uri_base` to publish under a different SDO namespace. This updates the OpenAPI `x-ogc-profile` link, the requirements/conformance AsciiDoc identifiers, and the conformance section:
+
+```yaml
+spec_uri_base: "https://schemas.dgiwg.org/edr/1.0"
+# → https://schemas.dgiwg.org/edr/1.0/req/<name>
+# → https://schemas.dgiwg.org/edr/1.0/conf/<name>
+```
+
+---
+
+## Validation Rules
+
+The tool enforces these rules at build time. Violations produce clear error messages.
+
+| Rule | Detail |
+|---|---|
+| `name` format | Must match `^[a-z0-9_]+$` |
+| No duplicate collection IDs | Across the whole profile |
+| `extent_requirements` requires CRS spec | At least one of `extent_crs` or `supported_crs` must be set (each uses `allowed` or `pattern`) |
+| Collection CRS validated | Each `extent.spatial.crs` checked against `extent_crs`; `crs[]` and `crs_details` checked against `supported_crs` |
+| Collection TRS validated | Each `extent.temporal.trs` checked against `extent_trs` |
+| `crs_details` / `crs` validated | Each `data_queries.*.variables.crs_details[].crs` and `crs[]` checked against `supported_crs` |
+| `default_output_format` validated | Each `data_queries.*.variables.default_output_format` must be one of that query's `output_formats` |
+| `require_vertical_direction` enforced | If set, every collection with a vertical extent must declare `extent.vertical.positive` as `up` or `down` |
+| Document dates format | `submission_date` / `approval_date` / `publication_date` must be `YYYY-MM-DD` |
+| Parameters need `unit` + `observedProperty` | Required by OGC API - EDR Part 3 |
+| `parameter_name_pattern` enforced | All `parameter_names` keys must match if set |
+| `collection_id_pattern` enforced | All collection IDs must match if set |
+| `collection_title_max_length` enforced | If set, every collection title must be present and within the limit |
+| `require_license_link` enforced | If set, every collection must have a `rel='license'` link (of `license_link_type` when specified) |
+| `required_data_queries` enforced | If set, every collection with `data_queries` must define each listed query type |
+| `radius_within_units_required` enforced | If set, each radius query's `within_units` must contain every listed unit token |
+| `conformance_class_requirements` enforced | Class-scoped `required_data_queries` / `radius_within_units_required` applied to collections whose `conformance_classes` include the class key |
+| `conformance_classes` references known class | When `conformance_class_requirements` is set, a collection's `conformance_classes` may only use `core` or a defined class key (catches typos) |
+| Abstract test IDs match requirements | `requirement_id` must reference an existing requirement |
+| Requirement IDs | Must match `^[a-z0-9][a-z0-9_\-]*$`, no trailing hyphen |

@@ -49,7 +49,8 @@ jobs:
         with:
           config: ${{ matrix.profile }}
           output: ./output/${{ matrix.profile }}
-          version: latest
+          # Test this branch's code, not the last PyPI release.
+          version: local
           pdf: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.pdf || 'false' }}
 
       - name: Upload artifacts

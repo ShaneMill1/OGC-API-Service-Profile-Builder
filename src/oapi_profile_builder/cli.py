@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import json
 import sys
+import warnings
 from pathlib import Path
 
 import yaml
@@ -105,6 +106,28 @@ def _yaml_error_hint(exc: "yaml.YAMLError") -> str:
             '        GEOGCRS["WGS 84",...,ID["EPSG",4326]]'
         )
     return base
+
+
+def _warn_legacy_statement(raw: dict) -> None:
+    """Tell the user once, in plain words, that `statement` was renamed.
+
+    The model still accepts `statement` (as `description`) so existing configs
+    keep working; this replaces the library's per-requirement warning with a
+    single actionable line.
+    """
+    legacy = [
+        r.get("id", "?")
+        for r in (raw.get("requirements") or [])
+        if isinstance(r, dict) and "statement" in r
+    ]
+    if legacy:
+        shown = ", ".join(legacy[:5]) + (f", ... ({len(legacy)} in total)" if len(legacy) > 5 else "")
+        print(
+            f"Warning: {len(legacy)} requirement(s) use the deprecated 'statement' key "
+            f"({shown}). Rename it to 'description' and optionally add a 'title'; "
+            "'statement' will be removed in a future release.",
+            file=sys.stderr,
+        )
 
 
 def _print_quality_assessment(profile: ServiceProfile) -> None:
@@ -216,6 +239,9 @@ def main() -> None:
         sys.exit(1)
 
     raw = load_config(args.config)
+    _warn_legacy_statement(raw)
+    # The CLI reports the deprecated key itself (one line, with a count).
+    warnings.filterwarnings("ignore", message=r".*'statement' is deprecated.*", category=FutureWarning)
 
     try:
         profile = ServiceProfile.model_validate(raw)
@@ -232,7 +258,14 @@ def main() -> None:
     _print_quality_assessment(profile)
 
     if args.pdf:
-        compile_pdf(args.output.resolve(), profile=profile)
+        if not compile_pdf(args.output.resolve(), profile=profile):
+            err = args.output.resolve() / "document.err.html"
+            print(
+                "Error: PDF compilation failed."
+                + (f" See {err} for Metanorma's error report." if err.exists() else ""),
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
 
 def _run_validate_server(args) -> None:
@@ -247,6 +280,8 @@ def _run_validate_server(args) -> None:
             print(f"Error: config file not found: {args.config}", file=sys.stderr)
             sys.exit(1)
         raw = load_config(args.config)
+        _warn_legacy_statement(raw)
+        warnings.filterwarnings("ignore", message=r".*'statement' is deprecated.*", category=FutureWarning)
         try:
             profile = ServiceProfile.model_validate(raw)
         except Exception as exc:

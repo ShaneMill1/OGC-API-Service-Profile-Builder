@@ -19,8 +19,9 @@ inputs:
     default: ./profile_output
   version:
     description: >
-      oapi-profile-builder version to install from PyPI.
-      Defaults to latest.
+      oapi-profile-builder version to install from PyPI. Defaults to latest.
+      Use 'local' to install from the action's own checkout (for testing
+      unreleased changes, e.g. on pull requests to this repository).
     required: false
     default: latest
   pdf:
@@ -68,7 +69,9 @@ runs:
         # Always install the [pdf] extra so cover-image generation (Pillow) works
         # whenever a profile sets document_metadata.cover.logo, regardless of
         # whether --pdf is requested.
-        if [ "$VERSION" = "latest" ]; then
+        if [ "$VERSION" = "local" ]; then
+          pip install "${{ github.action_path }}[pdf]"
+        elif [ "$VERSION" = "latest" ]; then
           pip install 'oapi-profile-builder[pdf]'
         else
           # Retry to tolerate PyPI index propagation delay right after publish.

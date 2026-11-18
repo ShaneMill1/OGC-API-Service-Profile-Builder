@@ -1,0 +1,6 @@
+== Scope
+
+This standard defines the Documentation Content Example Profile. It specifies requirements and conformance tests for implementations of this profile.
+
+This example shows how author-supplied **Markdown**, AsciiDoc,
+preformatted text and PlantUML diagrams are carried into the PDF.

@@ -1,0 +1,10 @@
+[[req_class_documentation_content_profile]]
+[requirements_class]
+====
+[%metadata]
+identifier:: http://www.opengis.net/spec/ogcapi-edr-3/1.0/req/documentation_content_profile
+target-type:: Documentation Content Example Profile Profile Standard
+requirement:: /req/documentation_content_profile/temperature-geojson
+recommendation:: /rec/documentation_content_profile/temperature-units-label
+permission:: /per/documentation_content_profile/temperature-post-query
+====

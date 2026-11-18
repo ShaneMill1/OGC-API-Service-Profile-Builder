@@ -1,0 +1,225 @@
+# Showcase for the document content features: requirement title/description,
+# and author-supplied content blocks (asciidoc, markdown, preformatted, plantuml)
+# carried into the generated PDF. Compare with minimal_profile.yaml.
+name: documentation_content_profile
+title: Documentation Content Example Profile
+version: "1.0"
+openapi_version: "3.0.0"
+
+# ── Profile-level constraints ─────────────────────────────────────────────
+# Define what any conforming implementation MUST support.
+# Validated at build time and embedded in the generated OpenAPI as
+# enum/pattern constraints so runtime tools can enforce them.
+required_conformance_classes:
+  - "http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core"
+
+extent_requirements:
+  minimum_bbox: [-180, -90, 180, 90]
+  extent_crs:
+    allowed:
+      - "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+
+output_formats:
+  - name: GeoJSON
+    media_type: application/geo+json
+    schema_ref: https://geojson.org/schema/FeatureCollection.json
+
+# ── Reference metadata ────────────────────────────────────────────────────
+# Describes the structure of collections a conforming service should expose.
+# For dynamic fields (extent intervals, custom dimension values), use the
+# full possible range — not a snapshot of current live data.
+collections:
+  - id: temperature
+    title: Temperature Observations
+    description: Real-time temperature observations
+    links:
+      - href: https://example.com/collections/temperature
+        rel: self
+        type: application/json
+    extent:
+      spatial:
+        bbox:
+          - [-180, -90, 180, 90]
+        crs: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+    parameter_names:
+      temp:
+        type: Parameter
+        description: Air temperature
+        observedProperty:
+          label: Air Temperature
+        unit:
+          label: Celsius
+          symbol:
+            value: "°C"
+            type: "http://www.opengis.net/def/uom/UCUM/degC"
+
+# ── Requirements, recommendations, permissions ────────────────────────────
+# Drive the AsciiDoc/PDF output. Each statement has an RFC 2119 `level`:
+#
+#   requirement    (SHALL) — normative, the only conformance-tested level.
+#   recommendation (SHOULD) — informative best practice; never fails validation.
+#   permission     (MAY)    — informative option; never fails validation.
+#
+# `level` may be set explicitly (see the recommendation below). When omitted it
+# is inferred from the RFC 2119 keyword in the statement text — the permission
+# below has no `level:` and is classified as a permission from its "MAY".
+# Abstract tests only apply to requirements (SHALL); recommendations and
+# permissions are reported in the quality assessment but not conformance-tested.
+requirements:
+  # requirement (SHALL) — conformance-tested. Level defaults to `requirement`.
+  - id: temperature-geojson
+    title: Temperature GeoJSON response
+    description: The temperature collection SHALL return GeoJSON features.
+    parts:
+      - The service SHALL provide a /collections/temperature/items endpoint.
+      - The response Content-Type SHALL be application/geo+json.
+    # Extra material rendered right after this requirement. Four formats:
+    #   asciidoc | markdown | preformatted (spacing kept) | plantuml (diagram)
+    content:
+      - format: markdown
+        body: |
+          ![Metadata discovery workflow](metadata-discovery-workflow.png)
+
+          The response is a GeoJSON `FeatureCollection`. Each feature carries:
+
+          * `geometry` - the observation point
+          * `properties.temp` - the temperature in degrees Celsius
+      - format: plantuml
+        title: Request/response flow for the items endpoint
+        id: fig-items-flow
+        body: |
+          Client -> Service: GET /collections/temperature/items
+          Service --> Client: 200 application/geo+json (FeatureCollection)
+      - format: preformatted
+        title: Shape of a response feature
+        body: |
+          FeatureCollection
+          +-- features[]
+              +-- geometry   Point [lon, lat]
+              +-- properties
+                  +-- temp   number (degC)
+
+  # recommendation (SHOULD) — informative. Level is set explicitly here.
+  - id: temperature-units-label
+    title: Temperature unit label
+    level: recommendation
+    description: The temperature collection SHOULD label its unit as Celsius.
+    parts:
+      - Each temp parameter SHOULD expose a unit.label of "Celsius".
+
+  # permission (MAY) — informative. No `level:` set; inferred from "MAY".
+  - id: temperature-post-query
+    title: POST queries
+    description: The service MAY support POST queries for the temperature collection.
+    parts:
+      - Implementations MAY offer POST alongside GET on data query endpoints.
+
+# Only requirements (SHALL) are conformance-tested, so only the SHALL statement
+# has an abstract test. A recommendation can graduate into a requirement later:
+# change its `level` to `requirement` (or reword the statement to SHALL) and add
+# a matching abstract test here.
+abstract_tests:
+  - id: temperature-geojson
+    requirement_id: temperature-geojson
+    steps:
+      - Send GET request to /collections/temperature/items.
+      - Verify the response Content-Type is application/geo+json.
+      - Verify each feature contains temp property.
+
+# ── PDF document ──────────────────────────────────────────────────────────
+document_metadata:
+  doc_number: "26-documentation-content"
+  doc_subtype: implementation
+  copyright_year: 2026
+  editors:
+    - Shane Mill
+  submitting_orgs:
+    - NOAA/NWS/MDL
+  keywords:
+    - ogcdoc
+    - OGC API
+    - EDR
+    - service profile
+  # A defined term gives the Terms section a sub-clause (see section_content.terms).
+  terms:
+    - term: content block
+      definition: Author-supplied material (AsciiDoc, Markdown, preformatted text or a PlantUML diagram) carried into the generated document.
+  body:
+    # Prose fields (abstract, scope, terms_text, conformance_text, class_intros,
+    # requirement_intros, ...) are written in Markdown instead of AsciiDoc.
+    text_format: markdown
+    abstract: |
+      This document shows the **authored content** features of the profile
+      builder. Every block below comes from `documentation_content_profile.yaml`.
+    # Images copied into the document; reference them by file name.
+    figures:
+      - id: fig-workflow
+        path: assets/metadata-discovery-workflow.png
+        title: Metadata discovery workflow
+    # Added to a generated section, keeping the generated text. Each key takes
+    # `start` (after the heading) and/or `end` (after everything); a plain list
+    # is shorthand for `end`. Keys: abstract, preface, submitters, scope,
+    # conformance, references (end only), terms, requirements, abstract-tests.
+    section_content:
+      # Terms ends in a term sub-clause, so 'end' content needs an end_title
+      # (it becomes its own final sub-clause instead of joining the term).
+      terms:
+        end:
+          - format: markdown
+            body: Terms not defined here follow OGC API - EDR Part 1.
+        end_title: Other terms
+      conformance:
+        start:
+          - format: asciidoc
+            body: "NOTE: This profile defines a single conformance class."
+        end:
+          - format: preformatted
+            title: Conformance at a glance
+            body: |
+              conformance class
+              +-- requirement     temperature-geojson   (tested)
+              +-- recommendation  temperature-units-label
+              +-- permission      temperature-post-query
+      scope:
+        - format: markdown
+          body: |
+            This example shows how author-supplied **Markdown**, AsciiDoc,
+            preformatted text and PlantUML diagrams are carried into the PDF.
+      requirements:
+        - format: asciidoc
+          body: |
+            NOTE: Recommendations and permissions are informative; only
+            requirements (SHALL) are conformance-tested.
+    # Whole clauses and annexes can be written in Markdown too.
+    clauses:
+      - id: conventions
+        title: Conventions
+        obligation: informative
+        format: markdown
+        body: |
+          ## Identifiers
+
+          Requirement identifiers are relative to the profile namespace:
+
+          | Obligation     | Prefix |
+          |----------------|--------|
+          | requirement    | `/req` |
+          | recommendation | `/rec` |
+          | permission     | `/per` |
+    annexes:
+      - id: annex-usage
+        title: Usage notes
+        format: markdown
+        blocks:
+          - format: preformatted
+            title: Directory layout of the generated profile
+            body: |
+              my_profile/
+              +-- openapi.yaml
+              +-- requirements/
+              +-- abstract_tests/
+              +-- document.adoc
+        body: |
+          # Generating this document
+
+          Run `oapi-profile-builder generate --config profile.yaml --output out --pdf`.
