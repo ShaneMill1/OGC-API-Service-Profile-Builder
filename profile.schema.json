@@ -463,6 +463,14 @@
           "default": null,
           "title": "Resource Default Locale"
         },
+        "query_options": {
+          "additionalProperties": {
+            "$ref": "#/$defs/QueryOptions"
+          },
+          "description": "Per data query OpenAPI settings, keyed by query type (items, radius, cube, ...): which optional parameters to generate, HTTP status codes, and the feature geometry types.",
+          "title": "Query Options",
+          "type": "object"
+        },
         "conformance_classes": {
           "description": "Short keys of the profile's conformance classes this collection implements (e.g. ['core', 'insitu-observations']). Drives which entries in ServiceProfile.conformance_class_requirements are enforced for this collection, so a single profile document can hold collections of different EDR Part 3 requirements classes. Round-tripped into profile_config.json and surfaced as x-conformance-classes in the generated OpenAPI.",
           "items": {
@@ -2080,6 +2088,53 @@
       "title": "FilterType",
       "type": "string"
     },
+    "HttpResponseSpec": {
+      "description": "One HTTP status code documented in the generated OpenAPI.\n\nFor 4xx/5xx codes the response body is an RFC 9457 problem document\n(application/problem+json); `title` and `detail` populate its example.",
+      "properties": {
+        "description": {
+          "description": "Response description shown in Swagger, e.g. 'Bad request'.",
+          "title": "Description",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Problem `title` for the example body (4xx/5xx).",
+          "title": "Title"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Problem `detail` for the example body (4xx/5xx).",
+          "title": "Detail"
+        },
+        "type": {
+          "default": "about:blank",
+          "description": "Problem `type` URI for the example body (4xx/5xx).",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "title": "HttpResponseSpec",
+      "type": "object"
+    },
     "ItemVariables": {
       "additionalProperties": true,
       "properties": {
@@ -2918,6 +2973,61 @@
         "host"
       ],
       "title": "PubSubServer",
+      "type": "object"
+    },
+    "QueryOptions": {
+      "description": "Per-query settings for the generated OpenAPI of one collection.",
+      "properties": {
+        "parameters": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional query parameters to include, e.g. [datetime, parameter-name, crs]. When set, exactly these optional parameters are generated (required ones, such as coords or a cube's bbox, are always present). When omitted, the defaults apply: every optional parameter, with z only when the collection has a vertical extent and resolution-x/y/z off.",
+          "title": "Parameters"
+        },
+        "http_responses": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/HttpResponseSpec"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "HTTP status codes for this query, overriding the profile-level http_responses.",
+          "title": "Http Responses"
+        },
+        "geometry_types": {
+          "description": "GeoJSON geometry types of the returned features (used to shape the example response).",
+          "items": {
+            "enum": [
+              "Point",
+              "MultiPoint",
+              "LineString",
+              "MultiLineString",
+              "Polygon",
+              "MultiPolygon"
+            ],
+            "type": "string"
+          },
+          "title": "Geometry Types",
+          "type": "array"
+        }
+      },
+      "title": "QueryOptions",
       "type": "object"
     },
     "RadiusVariables": {
@@ -3818,6 +3928,22 @@
     },
     "paging": {
       "$ref": "#/$defs/PagingConfig"
+    },
+    "http_responses": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/HttpResponseSpec"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "HTTP status codes documented on every operation, with their descriptions and problem messages, e.g. the DGIWG set 200, 204, 304, 400, 404, 405, 408, 413, 500. 204 applies to data queries only. When omitted: data queries document 204/400/500 and metadata endpoints 400/404/500. A collection can override per query with query_options.<query>.http_responses.",
+      "title": "Http Responses"
     },
     "required_conformance_classes": {
       "description": "Conformance classes that implementations must declare",

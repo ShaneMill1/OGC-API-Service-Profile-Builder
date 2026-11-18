@@ -303,6 +303,7 @@ abstract_tests: []
 | `abstract_tests[].method` | string | no | Optional test method description |
 | `pubsub` | object | no | OGC API - EDR Part 2 PubSub config — generates `asyncapi.yaml` |
 | `collection_examples` | object | no | `{collectionId: {instanceId: "..."}}` — used by `validate-server` |
+| `http_responses` | object | no | HTTP status codes documented on every operation, with descriptions and problem messages. See [OpenAPI per endpoint](#openapi-per-endpoint-formats-parameters-status-codes) |
 | `paging` | object | no | Features `/items` paging — adds `limit` + `offset` query parameters and paging response metadata (`next`/`prev` links, `numberMatched`/`numberReturned`/`timeStamp`) to the generated OpenAPI (see below) |
 | `document_metadata` | object | no | Metanorma PDF header — doc number/type/subtype, status, editors, submitters, dates, notice, normative references (see below) |
 
@@ -337,6 +338,8 @@ Uses the [edr-pydantic](https://github.com/KNMI/edr-pydantic) `Collection` model
 | `output_formats` | no | Format names this collection supports (e.g. `[CoverageJSON, GeoJSON]`) |
 | `data_queries` | no | EDR query types: `position`, `area`, `radius`, `cube`, `trajectory`, `corridor`, `locations`, `items`, `instances` |
 | `parameter_names` | no | Map of parameter id → Parameter object. All parameters must have `unit` and `observedProperty` |
+| `query_options` | no | Per-query OpenAPI settings: optional `parameters`, `http_responses`, `geometry_types`. See [OpenAPI per endpoint](#openapi-per-endpoint-formats-parameters-status-codes) |
+| `metadata_date`, `resource_service_publish_date` | no | Extended collection metadata, shown in the collection response |
 | `conformance_classes` | no | Profile conformance-class short names this collection implements (e.g. `[core, insitu-observations]`). Selects which `conformance_class_requirements` are enforced; surfaced as `x-conformance-classes` in the OpenAPI |
 | `parameter_schema` | no | Per-collection JSON Schema for parameter objects, overriding the profile-level `parameter_schema` for this collection only (precedence: collection → profile → default) |
 
@@ -811,6 +814,45 @@ Query parameters emitted on `/items`:
 - `offset` — `in: query`, `type: integer`, `minimum: 0`, `default: 0` (0-based index of the first feature; omitted when `offset_enabled: false`). Lets a client page through a result set rather than only capping the first page.
 
 Response metadata (when `response_metadata: true`): the `/items` FeatureCollection documents a `links` array carrying `self`/`next`/`prev` navigation links, plus `numberMatched`, `numberReturned` and `timeStamp`, and marks `type` and `features` as required. These are scoped to the feature-collection `/items` response — single features (`/items/{featureId}`), instance listings, and coverage data-query responses are unaffected. Set `response_metadata: false` for a bare `type` + `features` collection.
+
+---
+
+### OpenAPI per endpoint: formats, parameters, status codes
+
+Each endpoint in the generated OpenAPI reflects what the YAML declares for it. See [`examples/nwp_earth_observations_lightning_profile.yaml`](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/nwp_earth_observations_lightning_profile.yaml).
+
+| What | Comes from |
+|---|---|
+| `f` choices on a data query | The query's `output_formats` (else the collection's). The default is `default_output_format`, or the only format. Values are format names, as in OGC API - EDR (`GeoJSON`, `CoverageJSON`) |
+| `f` choices on collection metadata | The media types of the collection's `links` (`json`, `html`) |
+| 200 response media types | Only the query's formats, labelled e.g. "CoverageJSON data response" |
+| 200 response examples | Built from `parameter_names` (value + unit), the extent (`bbox`, start time) and `query_options.<query>.geometry_types`. A format's `schema_ref` is kept as a link |
+| `parameter-name` | The collection's parameter ids, with each unit in the description |
+| `crs` | The collection's `crs` list (else `extent_requirements.supported_crs`) |
+| `within-units` | The radius query's `within_units` |
+| `lang` | Only when `default_language` or `supported_languages` is set |
+| POST body | The same parameters as GET, with an example filled in |
+
+**Optional parameters and status codes:**
+
+```yaml
+http_responses:                      # every operation; 204 on data queries only
+  "400": {description: Bad request, title: Bad request, detail: A parameter is invalid.}
+  "413": {description: Content too large, title: Content too large}
+collections:
+  - id: lightning
+    query_options:
+      items:
+        parameters: [datetime, parameter-name, crs]   # exactly these optional parameters
+        geometry_types: [Point]
+      cube:
+        parameters: [datetime, z, resolution-x, resolution-y]
+        http_responses:              # overrides the profile set for this query
+          "400": {description: Bad request}
+```
+
+- **`parameters`:** without it, a query gets all its optional parameters, with `z` only when the collection has a vertical extent and `resolution-x/y/z` off. Optional parameters by query: `items` bbox, datetime, parameter-name, crs, z; `cube` datetime, parameter-name, crs, z, resolution-x/y/z; position, area, radius, trajectory, corridor datetime, parameter-name, crs, z. Required parameters (coords, a cube's bbox, within) are always generated.
+- **`http_responses`:** without it, data queries document 204/400/500 and metadata endpoints 400/404/500. 4xx/5xx responses carry an RFC 9457 problem example built from `title` and `detail`.
 
 ---
 
