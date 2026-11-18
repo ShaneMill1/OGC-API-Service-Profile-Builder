@@ -24,6 +24,18 @@ paging:
   enabled: true
   default_limit: 10
   max_limit: 100
+# HTTP status codes documented on every operation (DGIWG set). 204 applies to
+# data queries only; 4xx/5xx carry an RFC 9457 problem example.
+http_responses:
+  "200": {description: Success - the query executed successfully}
+  "204": {description: Success - the server processed the request and is not returning any content}
+  "304": {description: Redirection - not modified}
+  "400": {description: Client error - bad request, title: Bad request, detail: The request is malformed or a parameter is invalid.}
+  "404": {description: Client error - not found, title: Not found, detail: The requested resource does not exist.}
+  "405": {description: Client error - method not allowed, title: Method not allowed, detail: Use POST for this request.}
+  "408": {description: Client error - request timed out, title: Request timeout, detail: The server timed out waiting for the request.}
+  "413": {description: Client error - content too large, title: Content too large, detail: The request asks for more data than the server allows.}
+  "500": {description: Server error - internal server error, title: Internal server error, detail: An unexpected condition was encountered.}
 
 # Publish requirement/conformance identifiers under the DGIWG namespace.
 # Derives conformance/requirement URIs of the form
@@ -60,7 +72,7 @@ output_formats:
     media_type: application/geo+json
     schema_ref: https://geojson.org/schema/FeatureCollection.json
   - name: CoverageJSON
-    media_type: application/json
+    media_type: application/prs.coverage+json
     schema_ref: https://schemas.opengis.net/covjson/1.0/coveragejson.json
 
 # ── Reference metadata ────────────────────────────────────────────────────
@@ -85,6 +97,17 @@ collections:
         rel: self
         title: Earth observations lightning strikes
         type: application/json
+      - href: https://example.com/collections/earth_observations_lightning
+        rel: alternate
+        title: Earth observations lightning strikes
+        type: text/html
+      - href: https://example.com/terms_resource_use_limitation.html
+        rel: terms_of_service
+        title: Resource Use Limitation
+        type: text/html
+    # Extended (DGIWG) collection metadata, shown in the collection response.
+    metadata_date: "2026-07-16"
+    resource_service_publish_date: "2026-07-16"
     extent:
       spatial:
         bbox:
@@ -133,6 +156,16 @@ collections:
             within_units:
               - km
               - m
+    # Per-query OpenAPI settings. `parameters` lists the optional query
+    # parameters to generate (required ones such as coords are always present).
+    query_options:
+      items:
+        parameters: [datetime, parameter-name, crs]
+        geometry_types: [Point]
+      radius:
+        parameters: [datetime, parameter-name, crs]
+      cube:
+        parameters: [datetime, parameter-name, crs]
     parameter_names:
       frequency_of_lightning_flashes_per_unit_area:
         type: Parameter

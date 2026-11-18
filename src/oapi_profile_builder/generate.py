@@ -42,6 +42,7 @@ import yaml, copy
 from edr_pydantic.collections import Collection
 from oapi_profile_builder.content import render_blocks, render_text
 from oapi_profile_builder.models import ServiceProfile
+from oapi_profile_builder import openapi_queries as oq
 def _const(val, version: str) -> dict:
     if version == "3.1.0":
         return {"const": val}
@@ -297,7 +298,24 @@ def _features_schema(version: str, profile: "ServiceProfile | None" = None) -> d
             "items": {"type": "object"},
         },
     }
+    properties.update(_paging_props(profile))
+    return {
+        "description": "Feature collection",
+        "content": {
+            "application/json": {
+                "schema": {
+                    "type": "object",
+                    "required": ["type", "features"],
+                    "properties": properties,
+                },
+            }
+        },
+    }
 
+
+def _paging_props(profile: "ServiceProfile | None") -> dict:
+    """FeatureCollection paging metadata properties (links, numberMatched, ...), or {}."""
+    properties: dict = {}
     want_metadata = bool(
         profile and profile.paging and profile.paging.enabled and profile.paging.response_metadata
     )
@@ -331,19 +349,7 @@ def _features_schema(version: str, profile: "ServiceProfile | None" = None) -> d
             "format": "date-time",
             "description": "Time when the response was generated.",
         }
-
-    return {
-        "description": "Feature collection",
-        "content": {
-            "application/json": {
-                "schema": {
-                    "type": "object",
-                    "required": ["type", "features"],
-                    "properties": properties,
-                },
-            }
-        },
-    }
+    return properties
 
 def _locations_response_schema(profile: "ServiceProfile | None") -> dict:
     """Build the 200 response for a /locations query.
@@ -940,6 +946,13 @@ def _collection_response_schema(coll: Collection,
             }
         }
 
+    # Extended collection metadata (e.g. DGIWG metadata_date and
+    # resource_service_publish_date); collection value wins over the profile's.
+    for key in ("metadata_date", "resource_service_publish_date", "resource_default_locale"):
+        val = getattr(coll, key, None) or (getattr(profile, key, None) if profile else None)
+        if val:
+            coll_props[key] = {"type": "string", **_fixed(val, version)}
+
     schema: dict = {
         "type": "object", "required": ["id", "links", "extent"],
         "properties": coll_props,
@@ -1105,58 +1118,90 @@ def _with_paging_limit(params: list[dict], profile: "ServiceProfile | None") -> 
     return out
 
 
+def _lang_params(profile: "ServiceProfile | None") -> list[dict]:
+    """The `lang` parameter, only when the profile configures languages."""
+    return [_LANG] if profile and profile.languages_configured else []
+
+
+def _query_op(profile, coll, qt: str, variables, opts, summary: str, op_id: str,
+              desc: str, prefix_params: list[dict] | None = None, include_post: bool = False) -> dict:
+    """GET (and optional POST) operations for one data query, built from the YAML."""
+    formats = oq.query_formats(profile, coll, variables)
+    default_fmt = oq.default_format(variables, formats)
+    params = oq.query_parameters(qt, profile, coll, variables, opts, formats, default_fmt)
+    limit = None
+    if qt == "items":
+        params = _with_paging_limit(params, profile)
+        limit = next((p for p in params if isinstance(p, dict) and p.get("name") == "limit"), None)
+    responses = {"200": oq.data_response(profile, coll, qt, formats, opts,
+                                         paging_props=_paging_props(profile) if qt == "items" else None)}
+    responses.update(oq.status_responses(profile, opts, data=True))
+    get_op = {
+        "summary": summary, "description": desc, "operationId": op_id, "tags": [coll.id],
+        "parameters": [*(prefix_params or []), *params], "responses": responses,
+    }
+    ops = {"get": get_op}
+    if include_post:
+        body_params = [p for p in params if p.get("name") not in ("limit", "offset")]
+        body, example = oq.post_body(body_params, coll, profile, limit_param=limit)
+        ops["post"] = {
+            "summary": summary.replace(" by ", " by (POST) ", 1) if " by " in summary else summary + " (POST)",
+            "description": desc,
+            "operationId": op_id.replace("Query", "QueryPost", 1) if op_id.startswith("Query") else op_id + "Post",
+            "tags": [coll.id],
+            "parameters": list(prefix_params or []),
+            "requestBody": {"required": True, "description": f"Query parameters for {qt} request",
+                            "content": {"application/json": {"schema": body, "example": example}}},
+            "responses": responses,
+        }
+        if not ops["post"]["parameters"]:
+            del ops["post"]["parameters"]
+    return ops
+
+
 def _collection_paths(coll: Collection, examples: dict | None = None,
                       profile: ServiceProfile | None = None) -> dict:
     paths: dict = {}
     tag = coll.id
     desc = getattr(coll, "description", None) or coll.id
     base = f"/collections/{coll.id}"
+    version = profile.openapi_version if profile else "3.0.0"
 
     # Resolve effective POST flag: collection-level overrides profile-level default.
-    # Collection.post_queries is None → inherit; True/False → explicit override.
     profile_default = profile.allow_post_queries if profile else False
     include_post = coll.post_queries if coll.post_queries is not None else profile_default
-
-    # Build a collection-specific response schema that includes CRS and
-    # parameter-name constraints from the profile's extent_requirements
-    # and parameter_name_pattern.
-    coll_schema = _collection_response_schema(coll, profile)
-    # Build coverage response reflecting this collection's actual output formats
-    cov_resp = _coverage_response(coll, profile)
+    opts_for = lambda qt: (coll.query_options or {}).get(qt)
 
     describe_op = {
         "summary": f"Get {coll.title or coll.id} metadata",
         "description": desc,
         "operationId": _operation_id("describe", coll.id, "Collection"),
         "tags": [tag],
-        "parameters": [_F, _LANG],
-        "responses": {
-            "200": coll_schema,
-            "400": _ERR_400, "404": _ERR_404, "500": _ERR_500,
-        },
+        "parameters": [oq.f_param(oq.metadata_formats(coll), None, "collection metadata"), *_lang_params(profile)],
+        "responses": {"200": _collection_response_schema(coll, profile),
+                      **oq.status_responses(profile, None, data=False)},
     }
-    # Surface the profile conformance classes this collection implements so the
-    # OpenAPI records which EDR Part 3 requirements classes apply to it.
     if getattr(coll, "conformance_classes", None):
         describe_op["x-conformance-classes"] = list(coll.conformance_classes)
     paths[base] = {"get": describe_op}
 
-    # Always generate Features paths (items, queryables, schema)
-    items_params = _with_paging_limit([_F, _LANG], profile)
+    dq_map = {name: val for name, val in (coll.data_queries or []) if val is not None}
 
-    paths[f"{base}/items"] = {"get": {
-        "summary": f"Get {coll.title or coll.id} items",
-        "description": desc,
-        "operationId": _operation_id("get", coll.id, "Features"),
-        "tags": [tag],
-        "parameters": items_params,
-        "responses": {
-            # Feature-collection response carries paging metadata (links,
-            # numberMatched/numberReturned/timeStamp) when the profile enables it.
-            "200": _features_schema(profile.openapi_version if profile else "3.0.0", profile),
-            "400": _ERR_400, "404": _ERR_404, "500": _ERR_500,
-        },
-    }}
+    def _vars(query_type: str) -> object | None:
+        qv = dq_map.get(query_type)
+        return qv.link.variables if qv is not None and qv.link else None
+
+    # /items (Features) is always generated; an `items` data query refines it.
+    items_vars = _vars("items")
+    items_opts = opts_for("items")
+    paths[f"{base}/items"] = _query_op(
+        profile, coll, "items", items_vars, items_opts,
+        f"query {coll.id} by items", _operation_id("queryItems", coll.id), desc,
+        include_post=include_post and "items" in dq_map)
+    # /items/{featureId}: a single Feature in the items formats.
+    item_formats = oq.query_formats(profile, coll, items_vars)
+    feature_resp = {"200": oq.data_response(profile, coll, "items", item_formats, items_opts, single_feature=True)}
+    feature_resp.update(oq.status_responses(profile, items_opts, data=False))
     paths[f"{base}/items/{{featureId}}"] = {"get": {
         "summary": f"Get {coll.title or coll.id} item by id",
         "description": desc,
@@ -1164,38 +1209,27 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
         "tags": [tag],
         "parameters": [
             {"name": "featureId", "in": "path", "required": True, "description": "Feature identifier", "schema": {"type": "string"}},
-            _F, _LANG,
+            oq.crs_param(profile, coll),
+            oq.f_param(item_formats, oq.default_format(items_vars, item_formats), "feature"),
+            *_lang_params(profile),
         ],
-        "responses": {
-            "200": _features_schema(profile.openapi_version if profile else "3.0.0"),
-            "400": _ERR_400, "404": _ERR_404, "500": _ERR_500,
-        },
+        "responses": feature_resp,
     }}
 
-    if not coll.data_queries:
-        return paths
-
-    dq_map = {name: val for name, val in coll.data_queries if val is not None}
-    active = set(dq_map)
-
-    def _vars(query_type: str) -> object | None:
-        qv = dq_map.get(query_type)
-        return qv.link.variables if qv is not None and qv.link else None
-
-    for qt in active:
-        params = _params_for_query(_QUERY_PARAMS.get(qt, []), profile, coll, _vars(qt))
+    for qt in sorted(dq_map):
+        if qt == "items":
+            continue
+        variables, opts = _vars(qt), opts_for(qt)
 
         if qt == "instances":
+            inst_formats = ["json", "html"]
             paths[f"{base}/instances"] = {"get": {
                 "summary": f"Get pre-defined instances of {coll.id}",
                 "description": desc,
                 "operationId": _operation_id("getInstances", coll.id),
                 "tags": [tag],
-                "parameters": [_F],
-                "responses": {
-                    "200": _features_schema(profile.openapi_version if profile else "3.0.0"),
-                    "400": _ERR_400, "500": _ERR_500,
-                },
+                "parameters": [oq.f_param(inst_formats, None, "instance list")],
+                "responses": {"200": _features_schema(version), **oq.status_responses(profile, opts, data=False)},
             }}
             instance_id_param = {"$ref": f"{_EDR}/parameters/instanceId.yaml"}
             if examples and "instanceId" in examples:
@@ -1210,90 +1244,51 @@ def _collection_paths(coll: Collection, examples: dict | None = None,
                 "description": desc,
                 "operationId": _operation_id("getInstance", coll.id),
                 "tags": [tag],
-                "parameters": [instance_id_param, _F],
-                "responses": {"200": _features_schema(profile.openapi_version if profile else "3.0.0")},
+                "parameters": [instance_id_param, oq.f_param(inst_formats, None, "instance")],
+                "responses": {"200": _features_schema(version), **oq.status_responses(profile, opts, data=False)},
             }}
-            # instance-level query sub-paths — GET + optional POST
-            for sub_qt in (active - {"instances"}):
-                sub_params = _params_for_query(_QUERY_PARAMS.get(sub_qt, []), profile, coll, _vars(sub_qt))
-                if sub_qt == "items":
-                    sub_params = _with_paging_limit(sub_params, profile)
-                get_op = {
-                    "summary": f"query {coll.id} instance by {sub_qt}",
-                    "description": desc,
-                    "operationId": _operation_id("query", sub_qt, "Instance", coll.id),
-                    "tags": [tag],
-                    "parameters": [instance_id_param, *sub_params],
-                    "responses": cov_resp,
-                }
-                path_ops = {"get": get_op}
-                if include_post:
-                    path_ops["post"] = _post_operation(get_op, sub_qt, coll, cov_resp)
-                paths[f"{base}/instances/{{instanceId}}/{sub_qt}"] = path_ops
-
-        elif qt == "items":
-            items_params = _with_paging_limit(params, profile)
-            get_op = {
-                "summary": f"query {coll.id} by items",
-                "description": desc,
-                "operationId": _operation_id("queryItems", coll.id),
-                "tags": [tag],
-                "parameters": items_params,
-                "responses": cov_resp,
-            }
-            path_ops = {"get": get_op}
-            if include_post:
-                path_ops["post"] = _post_operation(get_op, "items", coll, cov_resp)
-            paths[f"{base}/items"] = path_ops
+            for sub_qt in sorted(set(dq_map) - {"instances"}):
+                paths[f"{base}/instances/{{instanceId}}/{sub_qt}"] = _query_op(
+                    profile, coll, sub_qt, _vars(sub_qt), opts_for(sub_qt),
+                    f"query {coll.id} instance by {sub_qt}",
+                    _operation_id("query", sub_qt, "Instance", coll.id), desc,
+                    prefix_params=[instance_id_param], include_post=include_post)
 
         elif qt == "locations":
-            loc_resp = _locations_response_schema(profile)
-            locations_responses = {
-                "200": loc_resp,
-                "400": _ERR_400, "500": _ERR_500,
-            }
-            get_locations_op = {
+            loc_resp = {"200": _locations_response_schema(profile), **oq.status_responses(profile, opts, data=True)}
+            loc_params = [p for p in oq.query_parameters("locations", profile, coll, variables, opts,
+                                                          ["GeoJSON"], "GeoJSON")]
+            paths[f"{base}/locations"] = {"get": {
                 "summary": f"Get pre-defined locations of {coll.id}",
                 "description": desc,
                 "operationId": _operation_id("getLocations", coll.id),
                 "tags": [tag],
-                "parameters": params,
-                "responses": locations_responses,
-            }
-            path_ops = {"get": get_locations_op}
-            if include_post:
-                path_ops["post"] = _post_operation(get_locations_op, "locations", coll, locations_responses)
-            paths[f"{base}/locations"] = path_ops
-
-            get_location_op = {
-                "summary": f"query {coll.id} by location",
-                "description": desc,
-                "operationId": _operation_id("getLocation", coll.id),
-                "tags": [tag],
-                "parameters": [
-                    {"$ref": f"{_EDR}/parameters/locationId.yaml"},
-                    _DATETIME, _PARAM_NAME, _f_param(profile, _vars("locations")),
-                ],
-                "responses": cov_resp,
-            }
-            loc_path_ops = {"get": get_location_op}
-            if include_post:
-                loc_path_ops["post"] = _post_operation(get_location_op, "locations", coll, cov_resp)
-            paths[f"{base}/locations/{{locId}}"] = loc_path_ops
+                "parameters": loc_params,
+                "responses": loc_resp,
+            }}
+            loc_ops = _query_op(profile, coll, "position", variables, opts,
+                                f"query {coll.id} by location", _operation_id("getLocation", coll.id), desc,
+                                include_post=include_post)
+            for op in loc_ops.values():
+                if "parameters" in op:
+                    op["parameters"] = [p for p in op["parameters"]
+                                        if not p.get("$ref", "").endswith("positionCoords.yaml")]
+                op.setdefault("parameters", []).insert(0, {"$ref": f"{_EDR}/parameters/locationId.yaml"})
+                if "requestBody" in op:
+                    schema = op["requestBody"]["content"]["application/json"]["schema"]
+                    schema["properties"].pop("coords", None)
+                    if "required" in schema:
+                        schema["required"] = [r for r in schema["required"] if r != "coords"] or None
+                        if not schema["required"]:
+                            del schema["required"]
+                    op["requestBody"]["content"]["application/json"]["example"].pop("coords", None)
+            paths[f"{base}/locations/{{locId}}"] = loc_ops
 
         else:
-            get_op = {
-                "summary": f"query {coll.id} by {qt}",
-                "description": desc,
-                "operationId": _operation_id("query", qt, coll.id),
-                "tags": [tag],
-                "parameters": params,
-                "responses": cov_resp,
-            }
-            path_ops = {"get": get_op}
-            if include_post:
-                path_ops["post"] = _post_operation(get_op, qt, coll, cov_resp)
-            paths[f"{base}/{qt}"] = path_ops
+            paths[f"{base}/{qt}"] = _query_op(
+                profile, coll, qt, variables, opts,
+                f"query {coll.id} by {qt}", _operation_id("query", qt, coll.id), desc,
+                include_post=include_post)
 
     return paths
 
@@ -1410,7 +1405,7 @@ def _core_paths(profile: ServiceProfile) -> dict:
             "description": "Landing page",
             "operationId": "getLandingPage",
             "tags": ["server"],
-            "parameters": [_F, _LANG],
+            "parameters": [_F, *_lang_params(profile)],
             "responses": {"200": landing_response, "400": _ERR_400, "500": _ERR_500},
         }},
         "/conformance": {"get": {
@@ -1418,7 +1413,7 @@ def _core_paths(profile: ServiceProfile) -> dict:
             "description": "API conformance definition",
             "operationId": "getConformanceDeclaration",
             "tags": ["server"],
-            "parameters": [_F, _LANG],
+            "parameters": [_F, *_lang_params(profile)],
             "responses": {"200": conformance_response, "400": _ERR_400, "500": _ERR_500},
         }},
         "/collections": {"get": {
@@ -1426,7 +1421,7 @@ def _core_paths(profile: ServiceProfile) -> dict:
             "description": "Collections",
             "operationId": "getCollections",
             "tags": ["server"],
-            "parameters": [_F, _LANG],
+            "parameters": [_F, *_lang_params(profile)],
             "responses": {"200": _collections_response_schema(profile), "400": _ERR_400, "500": _ERR_500},
         }},
         "/api": {"get": {
@@ -1566,8 +1561,9 @@ def build_openapi(profile: ServiceProfile) -> dict:
         tags += [{"name": p["id"]} for p in profile.processes]
         tags += [{"name": "jobs"}]
 
-    # Build f parameter enum from profile output formats + standard formats
-    f_enum = _f_enum(profile)
+    # The shared f component is used by the metadata endpoints (landing page,
+    # conformance, collections); data queries carry their own inline f.
+    f_enum = ["json", "html"]
 
     # Build the info.contact block. A profile-level `provider` takes precedence;
     # otherwise fall back to document_metadata editors/orgs.
@@ -1646,11 +1642,11 @@ def build_openapi(profile: ServiceProfile) -> dict:
                     "schema": {"type": "string", "enum": f_enum},
                     "style": "form", "explode": False,
                 },
-                "lang": {
+                **({"lang": {
                     "name": "lang", "in": "query", "required": False,
                     "description": "The optional lang parameter instructs the server return a response in a certain language, if supported.",
                     "schema": {"type": "string", "default": profile.effective_language, "enum": profile.effective_languages},
-                },
+                }} if profile.languages_configured else {}),
             },
             "responses": {
                 "default": {"description": "Unexpected error", "content": {_PROBLEM_MEDIA_TYPE: {"schema": _PROBLEM_SCHEMA}}},

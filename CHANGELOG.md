@@ -1,5 +1,29 @@
 # CHANGELOG - OGC API - EDR Part 3 Compliance
 
+## [3.17.0] - 2026-11-19
+
+The generated OpenAPI now reflects what the YAML declares for each endpoint (#54, Met Office / DGIWG review of the lightning profile). See [`docs/reference.md`](docs/reference.md#openapi-per-endpoint-formats-parameters-status-codes).
+
+### Added
+- **`http_responses`** (profile) and **`query_options.<query>.http_responses`**: configurable HTTP status codes, descriptions and RFC 9457 problem examples.
+- **`query_options.<query>.parameters`**: choose a query's optional parameters (bbox, datetime, parameter-name, crs, z, and `resolution-x/y/z` on cube).
+- **`query_options.<query>.geometry_types`**: geometry types of returned features.
+- **Example responses shaped by the data:** GeoJSON features and CoverageJSON parameters list the collection's parameters with value and unit, plus datetime, geometry and the extent bbox.
+- **`/items/{featureId}`** has a `crs` parameter.
+
+### Changed
+- `f`, the 200 media types and their labels are per query. `f` takes format names (`GeoJSON`, `CoverageJSON`) as in OGC API - EDR; collection metadata `f` follows the collection's link types.
+- `parameter-name`, `crs` and `within-units` list the YAML's values. The CRS list was previously hidden in Swagger because it sat next to a `$ref`, which OpenAPI 3.0 ignores.
+- POST bodies mirror the GET parameters and carry a populated example.
+- `lang` appears only when languages are configured.
+
+### Fixed
+- `/items/{featureId}` returned a FeatureCollection schema; it is a single Feature.
+- A collection's `metadata_date` and `resource_service_publish_date` now appear in its response.
+- Image formats (e.g. PNG) are binary responses; a web-page `schema_ref` is linked instead of `$ref`'d, which made the spec invalid.
+- The lightning example declares CoverageJSON as `application/prs.coverage+json`.
+
+
 ## [3.16.0] - 2026-11-18
 
 Feature requests from the OGC MetOcean Profile Workshop (#51): requirement `title` and `description`, Markdown and diagrams, and your own preformatted text or AsciiDoc in any section. See [`examples/documentation_content_profile.yaml`](examples/documentation_content_profile.yaml).

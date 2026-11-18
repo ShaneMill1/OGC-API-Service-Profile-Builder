@@ -161,6 +161,69 @@ class Provider(BaseModel):
     contact: ProviderContact | None = None
 
 
+# Optional query parameters that a profile can switch on/off per data query
+# (document_metadata-independent; drives the generated OpenAPI only).
+QUERY_OPTIONAL_PARAMETERS: dict[str, tuple[str, ...]] = {
+    "position": ("datetime", "parameter-name", "crs", "z"),
+    "area": ("datetime", "parameter-name", "crs", "z"),
+    "radius": ("datetime", "parameter-name", "crs", "z"),
+    "cube": ("datetime", "parameter-name", "crs", "z", "resolution-x", "resolution-y", "resolution-z"),
+    "trajectory": ("datetime", "parameter-name", "crs", "z"),
+    "corridor": ("datetime", "parameter-name", "crs", "z"),
+    "items": ("bbox", "datetime", "parameter-name", "crs", "z"),
+    "locations": ("bbox", "datetime"),
+}
+GEOMETRY_TYPES = ("Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon")
+
+
+class HttpResponseSpec(BaseModel):
+    """One HTTP status code documented in the generated OpenAPI.
+
+    For 4xx/5xx codes the response body is an RFC 9457 problem document
+    (application/problem+json); `title` and `detail` populate its example.
+    """
+    description: str = Field(description="Response description shown in Swagger, e.g. 'Bad request'.")
+    title: str | None = Field(default=None, description="Problem `title` for the example body (4xx/5xx).")
+    detail: str | None = Field(default=None, description="Problem `detail` for the example body (4xx/5xx).")
+    type: str = Field(default="about:blank", description="Problem `type` URI for the example body (4xx/5xx).")
+
+
+def _check_status_codes(v: dict | None) -> dict | None:
+    if v is None:
+        return v
+    bad = [k for k in v if not (len(str(k)) == 3 and str(k).isdigit() and 100 <= int(k) <= 599)]
+    if bad:
+        raise ValueError(f"HTTP status codes must be 3-digit numbers between 100 and 599: {bad}")
+    return {str(k): spec for k, spec in v.items()}
+
+
+class QueryOptions(BaseModel):
+    """Per-query settings for the generated OpenAPI of one collection."""
+    parameters: list[str] | None = Field(
+        default=None,
+        description=(
+            "Optional query parameters to include, e.g. [datetime, parameter-name, crs]. "
+            "When set, exactly these optional parameters are generated (required ones, "
+            "such as coords or a cube's bbox, are always present). When omitted, the "
+            "defaults apply: every optional parameter, with z only when the collection "
+            "has a vertical extent and resolution-x/y/z off."
+        ),
+    )
+    http_responses: dict[str, HttpResponseSpec] | None = Field(
+        default=None,
+        description="HTTP status codes for this query, overriding the profile-level http_responses.",
+    )
+    geometry_types: list[Literal["Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon"]] = Field(
+        default_factory=lambda: ["Point"],
+        description="GeoJSON geometry types of the returned features (used to shape the example response).",
+    )
+
+    @field_validator("http_responses")
+    @classmethod
+    def _codes(cls, v):
+        return _check_status_codes(v)
+
+
 class Collection(EDRCollection):
     """
     EDR Collection with a null-aware temporal extent and optional parameter_names.
@@ -213,6 +276,14 @@ class Collection(EDRCollection):
     metadata_date: Optional[str] = None
     resource_service_publish_date: Optional[str] = None
     resource_default_locale: Optional[str] = None
+    query_options: dict[str, QueryOptions] = Field(
+        default_factory=dict,
+        description=(
+            "Per data query OpenAPI settings, keyed by query type (items, radius, cube, "
+            "...): which optional parameters to generate, HTTP status codes, and the "
+            "feature geometry types."
+        ),
+    )
     conformance_classes: List[str] = Field(
         default_factory=list,
         description=(
@@ -1676,6 +1747,21 @@ class ServiceProfile(BaseModel):
     processes: list[dict] = Field(default_factory=list)
     document_metadata: DocumentMetadata | None = None
     paging: PagingConfig = Field(default_factory=PagingConfig)
+    http_responses: dict[str, HttpResponseSpec] | None = Field(
+        default=None,
+        description=(
+            "HTTP status codes documented on every operation, with their descriptions "
+            "and problem messages, e.g. the DGIWG set 200, 204, 304, 400, 404, 405, "
+            "408, 413, 500. 204 applies to data queries only. When omitted: data "
+            "queries document 204/400/500 and metadata endpoints 400/404/500. A "
+            "collection can override per query with query_options.<query>.http_responses."
+        ),
+    )
+
+    @field_validator("http_responses")
+    @classmethod
+    def _http_codes(cls, v):
+        return _check_status_codes(v)
     
     # OGC API - EDR Part 3 specific fields
     required_conformance_classes: list[str] = Field(
@@ -1808,6 +1894,11 @@ class ServiceProfile(BaseModel):
         if v is None:
             return v
         return v.strip()
+
+    @property
+    def languages_configured(self) -> bool:
+        """True when the profile declares a language (so a `lang` parameter is emitted)."""
+        return bool(self.default_language or self.supported_languages)
 
     @property
     def effective_language(self) -> str:
@@ -2352,6 +2443,26 @@ class ServiceProfile(BaseModel):
                         f"{list(within_units)} must contain {missing} "
                         f"(radius_within_units_required / conformance_class_requirements)"
                     )
+        return self
+
+    @model_validator(mode="after")
+    def validate_query_options(self) -> ServiceProfile:
+        """query_options keys must be queries the collection defines; parameters must be valid."""
+        problems = []
+        for coll in self.collections:
+            if not coll.query_options:
+                continue
+            defined = {n for n, v in (coll.data_queries or []) if v is not None} if coll.data_queries else set()
+            for qt, opts in coll.query_options.items():
+                if qt not in defined:
+                    problems.append(f"collection '{coll.id}': query_options.{qt} but the collection defines no '{qt}' query (defined: {sorted(defined)})")
+                    continue
+                allowed = QUERY_OPTIONAL_PARAMETERS.get(qt, ())
+                bad = [p for p in (opts.parameters or []) if p not in allowed]
+                if bad:
+                    problems.append(f"collection '{coll.id}': query_options.{qt}.parameters {bad} not optional parameters of {qt} (allowed: {list(allowed)})")
+        if problems:
+            raise ValueError("; ".join(problems))
         return self
 
     @model_validator(mode="after")
