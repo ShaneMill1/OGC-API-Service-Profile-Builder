@@ -1,9 +1,12 @@
+
+Some clients send queries that are too long for a URL.
+
 [[per_documentation_content_profile_temperature_post_query]]
 .POST queries
 [permission]
 ====
 [%metadata]
 identifier:: /per/documentation_content_profile/temperature-post-query
-statement:: The service MAY support POST queries for the temperature collection.
+part:: The service MAY support POST queries for the temperature collection.
 part:: Implementations MAY offer POST alongside GET on data query endpoints.
 ====

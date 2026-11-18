@@ -124,8 +124,9 @@ def _warn_legacy_statement(raw: dict) -> None:
         shown = ", ".join(legacy[:5]) + (f", ... ({len(legacy)} in total)" if len(legacy) > 5 else "")
         print(
             f"Warning: {len(legacy)} requirement(s) use the deprecated 'statement' key "
-            f"({shown}). Rename it to 'description' and optionally add a 'title'; "
-            "'statement' will be removed in a future release.",
+            f"({shown}). It still renders a 'Statement' row; to match OGC 26-027, move "
+            "the normative text into 'parts' and use 'description' for the informative "
+            "introduction. 'statement' will be removed in a future release.",
             file=sys.stderr,
         )
 

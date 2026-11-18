@@ -3,7 +3,6 @@
 ====
 [%metadata]
 identifier:: /req/core/collection_license
-statement:: A collection SHALL link to a license of its data with rel=license and type=text/html.
 part:: The links property in a collection SHALL contain a link to a license of its data.
 part:: The license link SHALL set the rel property to license.
 part:: The type property SHALL be set to text/html.

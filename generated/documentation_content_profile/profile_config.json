@@ -94,15 +94,10 @@
     {
       "id": "temperature-geojson",
       "title": "Temperature GeoJSON response",
-      "description": "The temperature collection SHALL return GeoJSON features.",
-      "parts": [
-        "The service SHALL provide a /collections/temperature/items endpoint.",
-        "The response Content-Type SHALL be application/geo+json."
-      ],
-      "content": [
+      "description": [
         {
           "format": "markdown",
-          "body": "![Metadata discovery workflow](metadata-discovery-workflow.png)\n\nThe response is a GeoJSON `FeatureCollection`. Each feature carries:\n\n* `geometry` - the observation point\n* `properties.temp` - the temperature in degrees Celsius\n",
+          "body": "Clients need a predictable encoding for temperature observations.\n\n![Metadata discovery workflow](metadata-discovery-workflow.png)\n\nThe response is a GeoJSON `FeatureCollection`. Each feature carries:\n\n* `geometry` - the observation point\n* `properties.temp` - the temperature in degrees Celsius\n",
           "title": null,
           "id": null
         },
@@ -119,28 +114,39 @@
           "id": null
         }
       ],
+      "description_position": "before",
+      "parts": [
+        "The temperature collection SHALL return GeoJSON features.",
+        "The service SHALL provide a /collections/temperature/items endpoint.",
+        "The response Content-Type SHALL be application/geo+json."
+      ],
+      "statement": null,
       "level": "requirement",
       "conformance_class": null
     },
     {
       "id": "temperature-units-label",
       "title": "Temperature unit label",
-      "description": "The temperature collection SHOULD label its unit as Celsius.",
+      "description": "NOTE: A consistent unit label lets clients show temperatures without guessing the unit.",
+      "description_position": "after",
       "parts": [
+        "The temperature collection SHOULD label its unit as Celsius.",
         "Each temp parameter SHOULD expose a unit.label of \"Celsius\"."
       ],
-      "content": [],
+      "statement": null,
       "level": "recommendation",
       "conformance_class": null
     },
     {
       "id": "temperature-post-query",
       "title": "POST queries",
-      "description": "The service MAY support POST queries for the temperature collection.",
+      "description": "Some clients send queries that are too long for a URL.",
+      "description_position": "before",
       "parts": [
+        "The service MAY support POST queries for the temperature collection.",
         "Implementations MAY offer POST alongside GET on data query endpoints."
       ],
-      "content": [],
+      "statement": null,
       "level": "permission",
       "conformance_class": null
     }

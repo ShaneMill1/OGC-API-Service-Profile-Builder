@@ -1,13 +1,5 @@
-[[req_documentation_content_profile_temperature_geojson]]
-.Temperature GeoJSON response
-[requirement]
-====
-[%metadata]
-identifier:: /req/documentation_content_profile/temperature-geojson
-statement:: The temperature collection SHALL return GeoJSON features.
-part:: The service SHALL provide a /collections/temperature/items endpoint.
-part:: The response Content-Type SHALL be application/geo+json.
-====
+
+Clients need a predictable encoding for temperature observations.
 
 image:metadata-discovery-workflow.png[Metadata discovery workflow]
 
@@ -35,3 +27,14 @@ FeatureCollection
     +-- properties
         +-- temp   number (degC)
 ----
+
+[[req_documentation_content_profile_temperature_geojson]]
+.Temperature GeoJSON response
+[requirement]
+====
+[%metadata]
+identifier:: /req/documentation_content_profile/temperature-geojson
+part:: The temperature collection SHALL return GeoJSON features.
+part:: The service SHALL provide a /collections/temperature/items endpoint.
+part:: The response Content-Type SHALL be application/geo+json.
+====

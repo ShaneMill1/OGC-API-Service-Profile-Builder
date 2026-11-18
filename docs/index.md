@@ -66,9 +66,10 @@ collections:                          # what a conforming service exposes
 
 requirements:                         # SHALL = requirement, SHOULD = recommendation, MAY = permission
   - id: temperature-geojson
-    title: GeoJSON response
-    description: The temperature collection SHALL return GeoJSON features.
-    parts:
+    title: GeoJSON response            # the requirement's heading
+    description: Clients need a predictable encoding for temperature observations.   # informative
+    parts:                             # the normative text, one row each
+      - The temperature collection SHALL return GeoJSON features.
       - The response Content-Type SHALL be application/geo+json.
 
 abstract_tests:                       # one per requirement (SHALL)
@@ -91,7 +92,7 @@ The full working version is [`examples/minimal_profile.yaml`](https://github.com
 | **Constrain implementations**: CRS/TRS, bounding box, required queries, ID and parameter-name patterns, license links | `extent_requirements`, `required_data_queries`, `collection_id_pattern`, … [Reference](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/reference.md#extent_requirements) | [insitu](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/insitu_observations_profile.yaml) |
 | **Requirements, recommendations, permissions**: only SHALL is conformance-tested; SHOULD/MAY are informative | `requirements[].level` (inferred from SHALL/SHOULD/MAY). [Reference](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/reference.md#requirement-levels-shall--should--may) | [minimal](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/minimal_profile.yaml), [walkthrough](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/demo-requirements-recommendations.md) |
 | **Several conformance classes** in one profile, with class-specific rules | `requirements[].conformance_class`, `conformance_class_requirements`. [Reference](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/reference.md#multiple-conformance-classes-in-one-profile) | [metocean](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/metocean_profile.yaml) |
-| **Write the document**: your own text, Markdown, PlantUML diagrams, images and preformatted (ASCII) text in any section | `requirements[].content`, `document_metadata.body`. [Below](#write-the-document) | [documentation content](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/documentation_content_profile.yaml) |
+| **Write the document**: your own text, Markdown, PlantUML diagrams, images and preformatted (ASCII) text in any section | `requirements[].description`, `document_metadata.body`. [Below](#write-the-document) | [documentation content](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/documentation_content_profile.yaml) |
 | **Brand the PDF** for another organization (logo, colors, legal page, identifiers) | `document_metadata.cover`, `colors`, `boilerplate`, `spec_uri_base`. [Reference](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/reference.md#document-generation-and-branding) | [DGIWG radar](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/nwp_radar.yaml) |
 | **Pub/Sub** (AsyncAPI), **OGC API Processes**, **Features paging** | `pubsub`, `processes`, `paging`. [Reference](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/reference.md#pubsub) | [NWS Connect](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/nws_connect_profile.yaml), [NWSViz](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/nwsviz_profile.yaml) |
 
@@ -108,9 +109,8 @@ The PDF is generated from the config, and you can add your own material anywhere
 requirements:
   - id: temperature-geojson
     title: GeoJSON response
-    description: The temperature collection SHALL return GeoJSON features.
-    parts: [The response Content-Type SHALL be application/geo+json.]
-    content:                                # shown after the requirement
+    parts: [The temperature collection SHALL return GeoJSON features.]
+    description:                            # before the box; description_position: after moves it
       - format: plantuml
         title: Request flow
         body: "Client -> Service: GET /collections/temperature/items"
@@ -127,7 +127,7 @@ document_metadata:
 
 Content can go in any generated section, at its start or end, and in your own clauses and annexes. The [`documentation_content` example](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/examples/documentation_content_profile.yaml) uses every option; see its [compiled PDF](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/generated/documentation_content_profile/document.pdf). Details are in the [Reference](https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder/blob/main/docs/reference.md#authored-content-markdown-diagrams-and-your-own-asciidoc).
 
-> In the PDF, a requirement's text is labeled **Statement**, the OGC ModSpec term. You set it with `description`.
+> Requirements are laid out like [OGC 26-027](https://docs.ogc.org/DRAFTS/26-027.pdf): the `title` is the heading, the `description` is informative text before the box, and the box holds the identifier and the `parts`. The `description` can be one sentence or blocks with tables, figures and diagrams; set `description_position: after` to place it after the box, as a note. There is no Statement row. Profiles that still use `statement` keep their Statement row, with a deprecation warning.
 
 ## Examples
 

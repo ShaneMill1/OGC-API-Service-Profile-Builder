@@ -52,8 +52,8 @@ collections:
 requirements:
   # One requirement (SHALL) — conformance-tested.
   - id: temperature-geojson
-    description: The temperature collection SHALL return GeoJSON features.
     parts:
+      - The temperature collection SHALL return GeoJSON features.
       - The service SHALL provide a /collections/temperature/items endpoint.
       - The response Content-Type SHALL be application/geo+json.
 
@@ -61,8 +61,8 @@ requirements:
   # minimal_requirement.yaml is `level: recommendation` below.
   - id: temperature-units-label
     level: recommendation
-    description: The temperature collection SHOULD label its unit as Celsius.
     parts:
+      - The temperature collection SHOULD label its unit as Celsius.
       - Each temp parameter SHOULD expose a unit.label of "Celsius".
 
 abstract_tests:

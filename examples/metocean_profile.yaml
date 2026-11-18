@@ -444,29 +444,6 @@ document_metadata:
       nwp/req/collection_data_queries: Collection data queries
       data-query-response-format/req/encoding: Encoding
       data-query-response-format/req/referencing: CoverageJSON referencing
-    requirement_intros:
-      core/req/openapi: An OpenAPI specification provides a machine-readable description of the API interface.
-      core/req/collection_identifier: A collection identifier provides a mechanism to uniquely identify a given collection in an OGC API.
-      core/req/collection_title: A collection title provides a human-readable short description of the given collection.
-      core/req/collection_license: A license describes the usage permissions for the data in a collection.
-      core/req/collection_spatial_extent: Spatial extent of a collection.
-      core/req/collection_temporal_extent: Temporal extent of a collection.
-      core/rec/collection_vertical_extent: Vertical extent of a collection.
-      core/req/collection_parameter_names: Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
-      core/req/collection_radius_data_query: Metadata about the radius data query in a collection.
-      core/req/locations_query_response_format: Structure of the response document for a /locations query.
-      core/req/error_handling: HTTP status codes and response documents for responding to errors.
-      core/rec/data_query_response_metadata: Metadata in the response to a data query.
-      insitu-observations/req/collection_data_queries: The types of data queries implemented in a collection.
-      insitu-observations/req/collection_parameter_names: Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
-      insitu-observations/rec/collection_parameter_names: Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
-      insitu-observations/req/collection_custom_dimensions: The custom dimensions for which you can query the collection.
-      insitu-observations/req/coveragejson_parameters: The metadata about parameters in CoverageJSON.
-      nwp/req/collection_parameter_names: Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
-      nwp/req/collection_granularity: The organization of NWP data advertised as collections and instances.
-      nwp/req/collection_data_queries: The types of data queries implemented in a collection.
-      data-query-response-format/req/encoding: The response format for data queries.
-      data-query-response-format/req/referencing: Coordinate referencing metadata in CoverageJSON.
 
     # Annexes (rendered after the Abstract Test Suite in Annex A).
     annexes:
@@ -1188,7 +1165,7 @@ requirements:
   # ---------- Core ----------
   - id: openapi
     conformance_class: core
-    description: An API definition SHALL be described using an OpenAPI 3.1 document.
+    description: An OpenAPI specification provides a machine-readable description of the API interface.
     parts:
       - The API definition SHALL be described using an OpenAPI document (version 3.1 or higher).
       - The OpenAPI document SHALL be encoded as one of the OpenAPI JSON/YAML media types.
@@ -1196,14 +1173,14 @@ requirements:
       - The landing page SHALL link API documentation with rel=service-doc and type text/html.
   - id: collection_identifier
     conformance_class: core
-    description: A collection identifier SHALL NOT convey structured metadata and SHOULD use the fixed value list.
+    description: A collection identifier provides a mechanism to uniquely identify a given collection in an OGC API.
     parts:
       - A collection identifier SHALL NOT be used to convey structured metadata.
       - A collection identifier SHOULD use one of insitu-observations, climate_data, radar_observations, weather_warnings, weather_forecast.
       - The identifier string MAY include a postfix to the listed values if needed.
   - id: collection_title
     conformance_class: core
-    description: A title SHALL be set for all collections and SHALL NOT exceed 50 characters.
+    description: A collection title provides a human-readable short description of the given collection.
     parts:
       - A title SHALL be set for all collections.
       - A title SHALL NOT have more than 50 characters.
@@ -1212,7 +1189,7 @@ requirements:
       - A title SHOULD describe the collection understandably for non-experts (topic/domain and geographical area).
   - id: collection_license
     conformance_class: core
-    description: A collection SHALL link to a license of its data with rel=license and type=text/html.
+    description: A license describes the usage permissions for the data in a collection.
     parts:
       - The links property in a collection SHALL contain a link to a license of its data.
       - The license link SHALL set the rel property to license.
@@ -1220,7 +1197,7 @@ requirements:
       - If the data is open data, the license SHALL be CC BY 4.0 with href https://creativecommons.org/licenses/by/4.0/.
   - id: collection_spatial_extent
     conformance_class: core
-    description: The collection spatial extent and CRS list SHALL use OGC:CRS84.
+    description: Spatial extent of a collection.
     parts:
       - The value of extent.spatial.crs SHALL be OGC:CRS84.
       - The value of crs SHALL include the element OGC:CRS84.
@@ -1228,7 +1205,7 @@ requirements:
       - Additional CRSs SHOULD be presented as EPSG:<code> in crs and data_queries.*.crs_details.crs.
   - id: collection_temporal_extent
     conformance_class: core
-    description: The value of extent.temporal.trs SHALL be Gregorian.
+    description: Temporal extent of a collection.
     parts:
       - The value of extent.temporal.trs SHALL be Gregorian.
   # /rec/core/collection_vertical_extent (recommendation) — upstream renders this
@@ -1236,12 +1213,12 @@ requirements:
   - id: collection_vertical_extent
     conformance_class: core
     level: recommendation
-    description: If extent.vertical is defined, extent.vertical.vrs SHOULD use one of the recommended vertical reference system values.
+    description: Vertical extent of a collection.
     parts:
       - If extent.vertical is defined, the value of extent.vertical.vrs SHOULD be one of "Pressure level in hPa", "Geopotential height in gpm", "Geometrical altitude above mean sea level in meters", "Height above ground in meters" or "Flight level".
   - id: collection_parameter_names
     conformance_class: core
-    description: Parameter objects SHALL specify label, description and unit using the profile conventions.
+    description: Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
     parts:
       - The keys in parameter_names and id in the parameter object SHALL NOT convey structured metadata.
       - A parameter object SHALL specify the fields label, description and unit.
@@ -1251,14 +1228,14 @@ requirements:
       - observedProperty SHALL use the CF-convention (observedProperty.id = https://vocab.nerc.ac.uk/standard_name/<name>) when available; otherwise use observedProperty.description.
   - id: collection_radius_data_query
     conformance_class: core
-    description: A radius data query within_units array SHALL contain m (SI unit of length).
+    description: Metadata about the radius data query in a collection.
     parts:
       - The within_units array in a variables object for a radius data query SHALL contain m.
       - within_units MAY contain more values, each defined as a unit at https://qudt.org using the unit symbol.
       - A radius query with a limit parameter SHOULD return the closest items to the radius centre.
   - id: locations_query_response_format
     conformance_class: core
-    description: A /locations response SHALL be a GeoJSON FeatureCollection with id and properties.name per feature.
+    description: Structure of the response document for a /locations query.
     parts:
       - The /locations response SHALL be a GeoJSON document with a FeatureCollection object.
       - Each Feature SHALL have id of type string and properties.name of type string.
@@ -1268,7 +1245,7 @@ requirements:
       - All strings SHALL be in English.
   - id: error_handling
     conformance_class: core
-    description: Empty results SHALL return HTTP 204 and 4xx responses SHOULD comply with RFC 9457.
+    description: HTTP status codes and response documents for responding to errors.
     parts:
       - A query for data inside the extent that results in no data SHALL return HTTP 204 with no content.
       - A query partially within the extent SHALL respond as within the extent, returning only the in-extent portion.
@@ -1277,19 +1254,19 @@ requirements:
   - id: data_query_response_metadata
     conformance_class: core
     level: recommendation
-    description: The metadata in a data query response SHOULD mirror the terms and vocabularies used in the collection metadata.
+    description: Metadata in the response to a data query.
     parts:
       - The metadata in the response to a data query (e.g. crs, parameters and units) SHOULD mirror as closely as possible the terms and vocabularies used in the collection metadata.
 
   # ---------- Insitu observations ----------
   - id: collection_data_queries
     conformance_class: insitu-observations
-    description: An insitu-observations collection SHALL support locations, area and radius.
+    description: The types of data queries implemented in a collection.
     parts:
       - A collection SHALL support locations, area and radius.
   - id: collection_parameter_names
     conformance_class: insitu-observations
-    description: Insitu parameters SHALL specify metocean:standard_name, metocean:level and measurementType.
+    description: Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
     parts:
       - Each parameter SHALL specify metocean:standard_name set to a value from the standard_name custom dimension.
       - Each parameter SHALL specify metocean:level set to a value from the level custom dimension.
@@ -1300,12 +1277,12 @@ requirements:
   - id: collection_parameter_names
     conformance_class: insitu-observations
     level: recommendation
-    description: Each measurementType.method in parameter_names SHOULD follow the CF-convention cell methods.
+    description: Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
     parts:
       - Each measurementType.method object in parameter_names SHOULD follow the CF-convention cell methods and use a value from the CF cell-methods appendix.
   - id: collection_custom_dimensions
     conformance_class: insitu-observations
-    description: An insitu-observations collection SHALL define standard_name and level custom dimensions.
+    description: The custom dimensions for which you can query the collection.
     parts:
       - The collection SHALL have an extent.custom object with id standard_name.
       - Custom dimension standard_name SHALL list CF standard names in values.
@@ -1314,7 +1291,7 @@ requirements:
       - Custom dimension level SHALL specify reference "Height of measurement above ground level in meters".
   - id: coveragejson_parameters
     conformance_class: insitu-observations
-    description: CoverageJSON parameters SHALL carry metocean:measurementType, metocean:standard_name and metocean:level.
+    description: The metadata about parameters in CoverageJSON.
     parts:
       - Each object in parameters in a coverage SHALL have metocean:measurementType with the same properties as measurementType.
       - Each object in parameters SHALL have metocean:standard_name.
@@ -1323,14 +1300,14 @@ requirements:
   # ---------- Numerical Weather Prediction ----------
   - id: collection_parameter_names
     conformance_class: nwp
-    description: NWP parameters SHALL use ECMWF short names per Annex D for id and description.
+    description: Parameter names is an object containing parameter objects with metadata about all parameters the collection contains.
     parts:
       - WIPPS Manual Global Deterministic NWP parameters SHALL be provided using ECMWF short names per Annex D.
       - The parameter name SHALL be provided in the description property.
       - The ECMWF short name SHALL be provided in the id property.
   - id: collection_granularity
     conformance_class: nwp
-    description: An NWP collection represents a model; instances represent model runs identified by RFC3339 datestamps.
+    description: The organization of NWP data advertised as collections and instances.
     parts:
       - A collection SHALL represent and describe a model.
       - A collection instance SHALL represent and describe a model run.
@@ -1338,7 +1315,7 @@ requirements:
       - A collection temporal instance or interval SHALL represent a timestep or timesteps of a model run.
   - id: collection_data_queries
     conformance_class: nwp
-    description: An NWP collection SHALL support position and cube; no instance means latest.
+    description: The types of data queries implemented in a collection.
     parts:
       - A collection SHALL support position and cube queries.
       - Data queries without an instance SHALL be interpreted as the latest instance of a collection.
@@ -1347,12 +1324,12 @@ requirements:
   # ---------- Data query response format ----------
   - id: encoding
     conformance_class: data-query-response-format
-    description: All data queries SHALL support CoverageJSON as a response format.
+    description: The response format for data queries.
     parts:
       - All data queries SHALL support CoverageJSON as a response format.
   - id: referencing
     conformance_class: data-query-response-format
-    description: CoverageJSON domain.referencing system id SHALL reflect the crs query parameter (default OGC:CRS84).
+    description: Coordinate referencing metadata in CoverageJSON.
     parts:
       - With no crs query param, domain.referencing.* system SHALL have type GeographicCRS and id OGC:CRS84.
       - With a crs query param, the system object with type GeographicCRS SHALL set id to the crs query param value.

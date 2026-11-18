@@ -3,7 +3,6 @@
 ====
 [%metadata]
 identifier:: /req/core/collection_parameter_names
-statement:: Parameter objects SHALL specify label, description and unit using the profile conventions.
 part:: The keys in parameter_names and id in the parameter object SHALL NOT convey structured metadata.
 part:: A parameter object SHALL specify the fields label, description and unit.
 part:: label SHALL NOT have more than 50 characters.
