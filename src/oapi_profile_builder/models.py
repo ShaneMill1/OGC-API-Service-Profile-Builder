@@ -39,6 +39,7 @@ so that EDR data model types are authoritative and shared with the broader ecosy
 from __future__ import annotations
 
 import re
+import warnings
 from datetime import datetime
 from enum import Enum
 from typing import Annotated, List, Literal, Optional
@@ -293,14 +294,87 @@ class RequirementLevel(str, Enum):
 # Sub-models
 # ---------------------------------------------------------------------------
 
+ContentFormat = Literal["asciidoc", "markdown", "preformatted", "plantuml"]
+
+
+class ContentBlock(BaseModel):
+    """Author-supplied content carried into the generated PDF.
+
+    Use it to add your own material alongside the generated sections: extra
+    explanatory text, a diagram, or fixed-width ASCII art. ``format`` selects how
+    ``body`` is interpreted:
+
+    * ``asciidoc``     - raw AsciiDoc, passed through verbatim.
+    * ``markdown``     - Markdown, converted to AsciiDoc (headings, lists, code
+                         fences, tables, links, images, quotes).
+    * ``preformatted`` - a literal block: spacing is preserved exactly, so
+                         ASCII art and aligned text survive.
+    * ``plantuml``     - PlantUML source, rendered to an image by Metanorma.
+                         ``@startuml``/``@enduml`` are added when omitted.
+    """
+    format: ContentFormat = Field(
+        default="asciidoc",
+        description="How `body` is interpreted: asciidoc, markdown, preformatted or plantuml.",
+    )
+    body: str = Field(description="The content, in the chosen format.")
+    title: str | None = Field(
+        default=None,
+        description=(
+            "Caption shown with the block. Only valid for 'preformatted' and "
+            "'plantuml' blocks; text blocks carry their own headings."
+        ),
+    )
+    id: Annotated[str, Field(pattern=r"^[A-Za-z0-9_\-]+$")] | None = Field(
+        default=None,
+        description="Optional cross-reference anchor, referenceable as <<id>> from other AsciiDoc.",
+    )
+
+    @model_validator(mode="after")
+    def _check_block(self) -> ContentBlock:
+        if not self.body.strip():
+            raise ValueError("content block body must not be empty")
+        if self.title and self.format in ("asciidoc", "markdown"):
+            raise ValueError(
+                "'title' is only supported for 'preformatted' and 'plantuml' blocks; "
+                "put a heading in the body of an asciidoc/markdown block instead"
+            )
+        return self
+
+
+def _titleize_id(req_id: str) -> str:
+    return req_id.replace("-", " ").replace("_", " ").strip().capitalize()
+
+
 class Requirement(BaseModel):
     # Lowercase alnum with hyphen or underscore separators. Underscores are
     # permitted so a profile can mirror the source document's requirement names
     # verbatim (e.g. `collection_data_queries`) in the generated
     # /req/<class>/<name> identifiers.
     id: Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9_\-]*$")]
-    statement: str
+    title: str | None = Field(
+        default=None,
+        description=(
+            "Short human-readable title of the requirement, e.g. 'Collection license'. "
+            "Used as the sub-clause heading in the generated document. When omitted, "
+            "it is derived from the id."
+        ),
+    )
+    description: str = Field(
+        description=(
+            "The requirement text (rendered as the requirement's statement). Write "
+            "it as a single paragraph; use `parts` for the individual provisions and "
+            "`content` for longer explanatory material. Replaces the deprecated "
+            "`statement` field."
+        ),
+    )
     parts: list[str] = Field(min_length=1)
+    content: list[ContentBlock] = Field(
+        default_factory=list,
+        description=(
+            "Extra author-supplied content (AsciiDoc, Markdown, preformatted text or a "
+            "PlantUML diagram) rendered immediately after this requirement."
+        ),
+    )
     level: RequirementLevel = Field(
         default=RequirementLevel.requirement,
         description=(
@@ -335,18 +409,42 @@ class Requirement(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def infer_level(cls, data):
-        """Infer the RFC 2119 level from the statement text when not set.
+    def normalize_input(cls, data):
+        """Accept the legacy `statement` key, then infer the RFC 2119 level.
 
-        SHALL/SHALL NOT/MUST -> requirement, SHOULD/SHOULD NOT/RECOMMENDED ->
-        recommendation, MAY/OPTIONAL -> permission. An explicit `level` always
-        wins; a mixed statement falls back to the strongest keyword present so
-        the tooling never silently downgrades a mandatory statement.
+        `statement` was replaced by `title` + `description`. Existing configs keep
+        working: a legacy `statement` becomes the `description` (a FutureWarning
+        asks the author to migrate).
+
+        When `level` is not set it is inferred from the text: SHALL/MUST ->
+        requirement, SHOULD/RECOMMENDED -> recommendation, MAY/OPTIONAL ->
+        permission. An explicit `level` always wins; mixed text falls back to the
+        strongest keyword present so a mandatory statement is never silently
+        downgraded.
         """
-        if not isinstance(data, dict) or data.get("level") is not None:
+        if not isinstance(data, dict):
+            return data
+        data = dict(data)  # never mutate the caller's mapping
+        if "statement" in data:
+            legacy = data.pop("statement")
+            if data.get("description") is None:
+                data["description"] = legacy
+            # One generic message so Python's default filter shows it once, not once
+            # per requirement. The CLI replaces it with a count (see cli.py).
+            warnings.warn(
+                "Requirement 'statement' is deprecated; rename it to 'description' "
+                "(and optionally add a 'title').",
+                FutureWarning,
+                stacklevel=2,
+            )
+        if data.get("level") is not None:
             return data
         text = " ".join(
-            str(x) for x in ([data.get("statement", "")] + list(data.get("parts") or []))
+            str(x)
+            for x in (
+                [data.get("title") or "", data.get("description") or ""]
+                + list(data.get("parts") or [])
+            )
         ).upper()
         if re.search(r"\bSHALL\b|\bMUST\b", text):
             data["level"] = RequirementLevel.requirement.value
@@ -355,6 +453,11 @@ class Requirement(BaseModel):
         elif re.search(r"\bMAY\b|\bOPTIONAL\b", text):
             data["level"] = RequirementLevel.permission.value
         return data
+
+    @property
+    def display_title(self) -> str:
+        """The title, or one derived from the id when none was given."""
+        return self.title or _titleize_id(self.id)
 
     @property
     def is_normative(self) -> bool:
@@ -730,6 +833,31 @@ class Boilerplate(BaseModel):
 
 _OBLIGATION = Literal["normative", "informative"]
 
+# Generated sections that accept author content (document_body.section_content).
+# In addition, 'class:<name>' targets one conformance-class clause when
+# render_requirement_clauses is on.
+SECTION_CONTENT_KEYS = (
+    "abstract",
+    "preface",
+    "submitters",
+    "security-considerations",
+    "scope",
+    "conformance",
+    "references",
+    "terms",
+    "requirements",
+    "abstract-tests",
+)
+_CLASS_KEY_RE = re.compile(r"^class:([a-z0-9][a-z0-9_\-]*)$")
+
+
+def _has_heading(text: str | None, fmt: str) -> bool:
+    """True when authored prose contains a section heading (so it ends in a sub-clause)."""
+    if not text:
+        return False
+    pattern = r"^#{1,6}\s+\S" if fmt == "markdown" else r"^={2,6}\s+\S"
+    return re.search(pattern, text, re.M) is not None
+
 
 class Figure(BaseModel):
     """An image to copy into the generated document and reference from prose.
@@ -762,12 +890,27 @@ class DocumentClause(BaseModel):
     )
     title: str = Field(description="Clause heading text, e.g. 'Conventions'.")
     body: str = Field(
+        default="",
         description=(
-            "Raw AsciiDoc body of the clause (may contain sub-headings '===', lists, "
-            "tables, figure refs, footnotes — anything Metanorma accepts). The config "
-            "is the single source of truth: author the full verbatim prose here."
+            "Body of the clause, in `format` (AsciiDoc by default: sub-headings '===', "
+            "lists, tables, figure refs, footnotes — anything Metanorma accepts). The "
+            "config is the single source of truth: author the full verbatim prose here."
         ),
     )
+    format: Literal["asciidoc", "markdown"] = Field(
+        default="asciidoc",
+        description="Format of `body`. 'markdown' is converted to AsciiDoc ('#' becomes a '===' sub-heading).",
+    )
+    blocks: list[ContentBlock] = Field(
+        default_factory=list,
+        description="Extra content blocks (text, preformatted, PlantUML diagram) rendered after `body`.",
+    )
+
+    @model_validator(mode="after")
+    def _has_content(self) -> DocumentClause:
+        if not self.body.strip() and not self.blocks:
+            raise ValueError(f"clause '{self.id}' needs a body or at least one block")
+        return self
     position: Literal[
         "after-scope",
         "after-conformance",
@@ -804,11 +947,26 @@ class DocumentAnnex(BaseModel):
     )
     title: str = Field(description="Annex heading text, e.g. 'Schemas'.")
     body: str = Field(
+        default="",
         description=(
-            "Raw AsciiDoc body of the annex. The config is the single source of "
-            "truth: author the full verbatim content here."
+            "Body of the annex, in `format` (AsciiDoc by default). The config is the "
+            "single source of truth: author the full verbatim content here."
         ),
     )
+    format: Literal["asciidoc", "markdown"] = Field(
+        default="asciidoc",
+        description="Format of `body`. 'markdown' is converted to AsciiDoc ('#' becomes a '===' sub-heading).",
+    )
+    blocks: list[ContentBlock] = Field(
+        default_factory=list,
+        description="Extra content blocks (text, preformatted, PlantUML diagram) rendered after `body`.",
+    )
+
+    @model_validator(mode="after")
+    def _has_content(self) -> DocumentAnnex:
+        if not self.body.strip() and not self.blocks:
+            raise ValueError(f"annex '{self.id}' needs a body or at least one block")
+        return self
     obligation: _OBLIGATION = Field(
         default="informative",
         description="Metanorma obligation for the annex (normative or informative).",
@@ -871,6 +1029,44 @@ class BibliographyEntry(BaseModel):
     )
     citation: str = Field(description="Short citation label shown in brackets.")
     title: str = Field(description="Full reference title.")
+
+
+class SectionContent(BaseModel):
+    """Author content added to one generated section, keeping the generated text.
+
+    * ``start`` - right after the section heading, before the generated text.
+    * ``end``   - after everything the section contains.
+    * ``end_title`` - renders ``end`` as a new final sub-clause with this title.
+      Required when the section ends in sub-clauses (Terms with term entries or
+      abbreviated terms, and every conformance-class clause), because text placed
+      after a sub-clause would otherwise become part of that sub-clause.
+
+    A plain list is shorthand for ``end``.
+    """
+    start: list[ContentBlock] = Field(default_factory=list, description="Blocks right after the section heading.")
+    end: list[ContentBlock] = Field(default_factory=list, description="Blocks after everything the section contains.")
+    end_title: str | None = Field(
+        default=None,
+        description=(
+            "Title for a new final sub-clause holding the `end` blocks. Required when "
+            "the section ends in sub-clauses (Terms with entries, conformance-class clauses)."
+        ),
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _list_is_end(cls, data):
+        if isinstance(data, list):
+            return {"end": data}
+        return data
+
+    @model_validator(mode="after")
+    def _check(self) -> SectionContent:
+        if not self.start and not self.end:
+            raise ValueError("section content needs at least one 'start' or 'end' block")
+        if self.end_title is not None and not self.end:
+            raise ValueError("'end_title' needs 'end' blocks")
+        return self
 
 
 class DocumentBody(BaseModel):
@@ -951,10 +1147,31 @@ class DocumentBody(BaseModel):
             "omitted, the requirement id is title-cased."
         ),
     )
+    section_content: dict[str, SectionContent] = Field(
+        default_factory=dict,
+        description=(
+            "Author content added to a generated section while keeping the generated "
+            "text (unlike `scope`/`abstract`/`terms_text`/`conformance_text`, which "
+            "replace it). Keys: abstract, preface, submitters, security-considerations, "
+            "scope, conformance, references, terms, requirements, abstract-tests, and "
+            "'class:<name>' for one conformance-class clause when "
+            "render_requirement_clauses is on. Each value is {start, end, end_title} "
+            "or a plain list of blocks (shorthand for end)."
+        ),
+    )
+    text_format: Literal["asciidoc", "markdown"] = Field(
+        default="asciidoc",
+        description=(
+            "Format of the document_body prose fields: abstract, scope, terms_text, "
+            "conformance_text, security_considerations, class_intros and "
+            "requirement_intros. Set 'markdown' to write them in Markdown."
+        ),
+    )
     annexes: list[DocumentAnnex] = Field(
         default_factory=list,
         description="Authored annexes rendered after the Abstract Test Suite.",
     )
+
     figures: list[Figure] = Field(
         default_factory=list,
         description="Images copied into images/ and referenceable from any authored body.",
@@ -1033,6 +1250,17 @@ class DocumentBody(BaseModel):
             "the '== Conformance' heading."
         ),
     )
+
+    @field_validator("section_content")
+    @classmethod
+    def _known_sections(cls, v: dict[str, SectionContent]) -> dict[str, SectionContent]:
+        unknown = sorted(k for k in v if k not in SECTION_CONTENT_KEYS and not _CLASS_KEY_RE.match(k))
+        if unknown:
+            raise ValueError(
+                f"unknown section_content key(s) {unknown}; allowed: "
+                f"{list(SECTION_CONTENT_KEYS)} or 'class:<conformance class>'"
+            )
+        return v
 
 
 class DocumentMetadata(BaseModel):
@@ -1725,12 +1953,81 @@ class ServiceProfile(BaseModel):
         return self
 
     @model_validator(mode="after")
+    def validate_section_content(self) -> ServiceProfile:
+        """Check document_body.section_content keys against the document layout.
+
+        Which sections exist, and which end in sub-clauses, depends on the layout
+        options, so the rules live here rather than on DocumentBody.
+        """
+        m = self.document_metadata
+        body = getattr(m, "body", None) if m else None
+        if not body or not body.section_content:
+            return self
+        classes = list(dict.fromkeys(r.conformance_class or "core" for r in self.requirements))
+        clause_mode = body.render_requirement_clauses and any(
+            r.conformance_class for r in self.requirements
+        )
+        terms_have_subclauses = bool(m.terms) or bool(body.abbreviated_terms)
+        problems: list[str] = []
+        for key, sc in body.section_content.items():
+            cls_match = _CLASS_KEY_RE.match(key)
+            if key == "requirements" and clause_mode:
+                problems.append(
+                    "'requirements': with render_requirement_clauses the requirements are "
+                    "one clause per conformance class; use 'class:<name>' keys instead "
+                    f"(classes: {', '.join(classes)})"
+                )
+                continue
+            if cls_match:
+                if not clause_mode:
+                    problems.append(
+                        f"'{key}': class keys need render_requirement_clauses and requirements "
+                        "with a conformance_class; otherwise use 'requirements'"
+                    )
+                    continue
+                if cls_match.group(1) not in classes:
+                    problems.append(f"'{key}': unknown conformance class (classes: {', '.join(classes)})")
+                    continue
+            if key == "security-considerations" and not body.preface_front_matter:
+                problems.append(
+                    "'security-considerations': this section is only rendered when "
+                    "preface_front_matter is true"
+                )
+                continue
+            if key == "references" and sc.start:
+                problems.append(
+                    "'references': Metanorma writes the standard Normative References "
+                    "introduction at the start of this section and drops other text there; "
+                    "use 'end'"
+                )
+                continue
+            prose = {
+                "abstract": body.abstract, "scope": body.scope,
+                "conformance": body.conformance_text, "terms": body.terms_text,
+                "security-considerations": body.security_considerations,
+            }.get(key)
+            ends_in_subclauses = (
+                bool(cls_match)
+                or (key == "terms" and terms_have_subclauses)
+                or _has_heading(prose, body.text_format)
+            )
+            if sc.end and ends_in_subclauses and not sc.end_title:
+                problems.append(
+                    f"'{key}': this section ends in sub-clauses, so 'end' content would "
+                    "become part of the last one; set 'end_title' to place it in a new "
+                    "final sub-clause, or use 'start'"
+                )
+        if problems:
+            raise ValueError("document_body.section_content: " + "; ".join(problems))
+        return self
+
+    @model_validator(mode="after")
     def validate_pubsub_conformance(self) -> ServiceProfile:
         """Ensure pub/sub requirements include Part 2 conformance per REQ_pubsub."""
         if self.pubsub:
             # Check if there's a requirement for Part 2 conformance
             has_part2_req = any(
-                "part 2" in req.statement.lower() or "part-2" in req.statement.lower() or "pubsub" in req.statement.lower()
+                "part 2" in req.description.lower() or "part-2" in req.description.lower() or "pubsub" in req.description.lower()
                 for req in self.requirements
             )
             if not has_part2_req:
@@ -1738,7 +2035,8 @@ class ServiceProfile(BaseModel):
                 self.requirements.append(
                     Requirement(
                         id="pubsub-part2-conformance",
-                        statement="The service SHALL conform to OGC API - EDR Part 2: Publish-Subscribe",
+                        title="Pub/Sub conformance",
+                        description="The service SHALL conform to OGC API - EDR Part 2: Publish-Subscribe",
                         parts=[
                             "The service SHALL implement the channels defined in the AsyncAPI document",
                             "The service SHALL support the message payloads defined for each channel"

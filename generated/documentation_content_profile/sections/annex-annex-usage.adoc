@@ -1,0 +1,17 @@
+[appendix,obligation=informative]
+[[annex-usage]]
+== Usage notes
+
+=== Generating this document
+
+Run `+oapi-profile-builder generate --config profile.yaml --output out --pdf+`.
+
+.Directory layout of the generated profile
+[subs="-callouts"]
+----
+my_profile/
++-- openapi.yaml
++-- requirements/
++-- abstract_tests/
++-- document.adoc
+----

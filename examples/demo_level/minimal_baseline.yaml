@@ -55,7 +55,7 @@ collections:
 requirements:
   # One requirement (SHALL) — conformance-tested.
   - id: temperature-geojson
-    statement: The temperature collection SHALL return GeoJSON features.
+    description: The temperature collection SHALL return GeoJSON features.
     parts:
       - The service SHALL provide a /collections/temperature/items endpoint.
       - The response Content-Type SHALL be application/geo+json.

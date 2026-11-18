@@ -154,21 +154,21 @@ collections:
 # Drive the AsciiDoc/PDF output. Tests must reference a valid requirement id.
 requirements:
   - id: items-endpoint
-    statement: The service SHALL provide a /collections/earth_observations_lightning/items endpoint.
+    description: The service SHALL provide a /collections/earth_observations_lightning/items endpoint.
     parts:
       - The service SHALL return GeoJSON FeatureCollection.
       - Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.
       - Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.
 
   - id: cube-endpoint
-    statement: The service SHALL provide a /collections/earth_observations_lightning/cube endpoint.
+    description: The service SHALL provide a /collections/earth_observations_lightning/cube endpoint.
     parts:
       - The service SHALL return CoverageJSON FeatureCollection.
       - Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.
       - Each feature SHALL include datetime property in the format YYYY-MM-DDTHH:MM:SSZ e.g. 2026-04-12T21:20:50.52Z.
 
   - id: radius-endpoint
-    statement: The service SHALL provide a /collections/earth_observations_lightning/radius endpoint.
+    description: The service SHALL provide a /collections/earth_observations_lightning/radius endpoint.
     parts:
       - The service SHALL return CoverageJSON FeatureCollection.
       - Each feature SHALL include frequency_of_lightning_flashes_per_unit_area property.

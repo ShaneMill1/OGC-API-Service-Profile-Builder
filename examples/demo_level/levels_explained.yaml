@@ -110,7 +110,7 @@ collections:
 requirements:
   # ---- REQUIREMENT (SHALL) — conformance-tested ----
   - id: output-geojson
-    statement: A conforming service SHALL return GeoJSON for the example collection. (This is a requirement — it is conformance-tested via Annex A.)
+    description: A conforming service SHALL return GeoJSON for the example collection. (This is a requirement — it is conformance-tested via Annex A.)
     parts:
       - The service SHALL expose /collections/example/items.
       - The response Content-Type SHALL be application/geo+json.
@@ -118,14 +118,14 @@ requirements:
   # ---- RECOMMENDATION (SHOULD) — informative, NOT conformance-tested ----
   - id: document-units
     level: recommendation
-    statement: A conforming service SHOULD document the unit of each parameter. (This is a recommendation — it is informative guidance and is NOT conformance-tested.)
+    description: A conforming service SHOULD document the unit of each parameter. (This is a recommendation — it is informative guidance and is NOT conformance-tested.)
     parts:
       - Each parameter SHOULD expose a human-readable unit.label.
 
   # ---- PERMISSION (MAY) — informative, an allowed option ----
   - id: support-post
     level: permission
-    statement: A conforming service MAY support POST queries in addition to GET. (This is a permission — it describes an allowed option and is NOT conformance-tested.)
+    description: A conforming service MAY support POST queries in addition to GET. (This is a permission — it describes an allowed option and is NOT conformance-tested.)
     parts:
       - Implementations MAY offer POST alongside GET on data query endpoints.
 

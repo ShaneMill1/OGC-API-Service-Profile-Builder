@@ -1,8 +1,8 @@
 site_name: OGC EDR Service Profile Generator
 site_description: Authoritative tooling for creating OGC API - EDR Part 3 Service Profiles
 site_author: Shane Mill
-repo_url: https://github.com/ShaneMill1/OGC-Service-Profile-Creation
-repo_name: ShaneMill1/OGC-Service-Profile-Creation
+repo_url: https://github.com/ShaneMill1/OGC-API-Service-Profile-Builder
+repo_name: ShaneMill1/OGC-API-Service-Profile-Builder
 
 theme:
   name: material
@@ -16,6 +16,7 @@ theme:
 
 nav:
   - Home: index.md
+  - Reference: reference.md
 
 markdown_extensions:
   - pymdownx.highlight:

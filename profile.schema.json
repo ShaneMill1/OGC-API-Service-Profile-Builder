@@ -529,6 +529,60 @@
       "title": "ConformanceClassConstraints",
       "type": "object"
     },
+    "ContentBlock": {
+      "description": "Author-supplied content carried into the generated PDF.\n\nUse it to add your own material alongside the generated sections: extra\nexplanatory text, a diagram, or fixed-width ASCII art. ``format`` selects how\n``body`` is interpreted:\n\n* ``asciidoc``     - raw AsciiDoc, passed through verbatim.\n* ``markdown``     - Markdown, converted to AsciiDoc (headings, lists, code\n                     fences, tables, links, images, quotes).\n* ``preformatted`` - a literal block: spacing is preserved exactly, so\n                     ASCII art and aligned text survive.\n* ``plantuml``     - PlantUML source, rendered to an image by Metanorma.\n                     ``@startuml``/``@enduml`` are added when omitted.",
+      "properties": {
+        "format": {
+          "default": "asciidoc",
+          "description": "How `body` is interpreted: asciidoc, markdown, preformatted or plantuml.",
+          "enum": [
+            "asciidoc",
+            "markdown",
+            "preformatted",
+            "plantuml"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "body": {
+          "description": "The content, in the chosen format.",
+          "title": "Body",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Caption shown with the block. Only valid for 'preformatted' and 'plantuml' blocks; text blocks carry their own headings.",
+          "title": "Title"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9_\\-]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cross-reference anchor, referenceable as <<id>> from other AsciiDoc.",
+          "title": "Id"
+        }
+      },
+      "required": [
+        "body"
+      ],
+      "title": "ContentBlock",
+      "type": "object"
+    },
     "CorridorVariables": {
       "additionalProperties": true,
       "properties": {
@@ -993,9 +1047,28 @@
           "type": "string"
         },
         "body": {
-          "description": "Raw AsciiDoc body of the annex. The config is the single source of truth: author the full verbatim content here.",
+          "default": "",
+          "description": "Body of the annex, in `format` (AsciiDoc by default). The config is the single source of truth: author the full verbatim content here.",
           "title": "Body",
           "type": "string"
+        },
+        "format": {
+          "default": "asciidoc",
+          "description": "Format of `body`. 'markdown' is converted to AsciiDoc ('#' becomes a '===' sub-heading).",
+          "enum": [
+            "asciidoc",
+            "markdown"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "blocks": {
+          "description": "Extra content blocks (text, preformatted, PlantUML diagram) rendered after `body`.",
+          "items": {
+            "$ref": "#/$defs/ContentBlock"
+          },
+          "title": "Blocks",
+          "type": "array"
         },
         "obligation": {
           "default": "informative",
@@ -1010,8 +1083,7 @@
       },
       "required": [
         "id",
-        "title",
-        "body"
+        "title"
       ],
       "title": "DocumentAnnex",
       "type": "object"
@@ -1106,6 +1178,24 @@
           "title": "Requirement Headings",
           "type": "object"
         },
+        "section_content": {
+          "additionalProperties": {
+            "$ref": "#/$defs/SectionContent"
+          },
+          "description": "Author content added to a generated section while keeping the generated text (unlike `scope`/`abstract`/`terms_text`/`conformance_text`, which replace it). Keys: abstract, preface, submitters, security-considerations, scope, conformance, references, terms, requirements, abstract-tests, and 'class:<name>' for one conformance-class clause when render_requirement_clauses is on. Each value is {start, end, end_title} or a plain list of blocks (shorthand for end).",
+          "title": "Section Content",
+          "type": "object"
+        },
+        "text_format": {
+          "default": "asciidoc",
+          "description": "Format of the document_body prose fields: abstract, scope, terms_text, conformance_text, security_considerations, class_intros and requirement_intros. Set 'markdown' to write them in Markdown.",
+          "enum": [
+            "asciidoc",
+            "markdown"
+          ],
+          "title": "Text Format",
+          "type": "string"
+        },
         "annexes": {
           "description": "Authored annexes rendered after the Abstract Test Suite.",
           "items": {
@@ -1143,6 +1233,63 @@
           "description": "When true, render each conformance class as an OGC-style clause with per-requirement sub-headings and intro prose (using class_intros / requirement_intros / requirement_headings), instead of the flat Requirements section. Enables a faithful clause-7..n layout.",
           "title": "Render Requirement Clauses",
           "type": "boolean"
+        },
+        "preface_front_matter": {
+          "default": false,
+          "description": "When true, emit the Abstract, Keywords, Security Considerations and Submitters as a single Preface block using the OGC flavor's native front-matter conventions (an `[abstract]` block collected under the Preface, with keywords/submitting-organizations driven by document metadata), matching the hand-authored OGC profile layout where these appear inside the Preface rather than as separate top-level sections. When false (default) the generator emits a standalone `== Abstract` section and a separate `== Submitters` section.",
+          "title": "Preface Front Matter",
+          "type": "boolean"
+        },
+        "security_considerations": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "AsciiDoc body for the Security Considerations front-matter section. Rendered inside the Preface when preface_front_matter is true.",
+          "title": "Security Considerations"
+        },
+        "no_normative_references": {
+          "default": false,
+          "description": "When true, the Normative References section renders the standard OGC statement 'There are no normative references in this document.' and the generator does NOT inject any default EDR references. Mirrors profiles that carry no normative references (e.g. the MetOcean profile, whose referenced documents live in the informative bibliography instead).",
+          "title": "No Normative References",
+          "type": "boolean"
+        },
+        "no_terms": {
+          "default": false,
+          "description": "When true, the Terms and Definitions clause leads with the standard OGC statement 'No terms and definitions are listed in this document.' before the directive/ModSpec prose and the abbreviated-terms table.",
+          "title": "No Terms",
+          "type": "boolean"
+        },
+        "abstract_test_suite_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Title for the Abstract Test Suite annex (Annex A). Defaults to 'Abstract Test Suite'. Set e.g. 'Conformance Class Abstract Test Suite (Normative)' to match a hand-authored OGC profile.",
+          "title": "Abstract Test Suite Title"
+        },
+        "conformance_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "AsciiDoc body for the Conformance clause, replacing the generic templated text (which lists the raw conformance-class URIs). Use this to reproduce a hand-authored Conformance clause with narrative prose and human-readable requirements-class bullets. Rendered under the '== Conformance' heading.",
+          "title": "Conformance Text"
         }
       },
       "title": "DocumentBody",
@@ -1163,9 +1310,28 @@
           "type": "string"
         },
         "body": {
-          "description": "Raw AsciiDoc body of the clause (may contain sub-headings '===', lists, tables, figure refs, footnotes \u2014 anything Metanorma accepts). The config is the single source of truth: author the full verbatim prose here.",
+          "default": "",
+          "description": "Body of the clause, in `format` (AsciiDoc by default: sub-headings '===', lists, tables, figure refs, footnotes \u2014 anything Metanorma accepts). The config is the single source of truth: author the full verbatim prose here.",
           "title": "Body",
           "type": "string"
+        },
+        "format": {
+          "default": "asciidoc",
+          "description": "Format of `body`. 'markdown' is converted to AsciiDoc ('#' becomes a '===' sub-heading).",
+          "enum": [
+            "asciidoc",
+            "markdown"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "blocks": {
+          "description": "Extra content blocks (text, preformatted, PlantUML diagram) rendered after `body`.",
+          "items": {
+            "$ref": "#/$defs/ContentBlock"
+          },
+          "title": "Blocks",
+          "type": "array"
         },
         "position": {
           "default": "after-terms",
@@ -1194,8 +1360,7 @@
       },
       "required": [
         "id",
-        "title",
-        "body"
+        "title"
       ],
       "title": "DocumentClause",
       "type": "object"
@@ -2194,7 +2359,7 @@
       "type": "object"
     },
     "PagingConfig": {
-      "description": "Optional pagination parameters config.",
+      "description": "Optional pagination parameters config.\n\nPaging is central to OGC APIs: a client requests a bounded page (`limit`),\nwalks through the result set (`offset`), and follows `next`/`prev` links,\nwhile the server reports how many features matched and were returned. This\nconfig gates each of those pieces so a profile can describe the full paging\ncontract in its generated OpenAPI. Every field keeps the prior behaviour by\ndefault (a `limit` param is emitted; the extras are additive opt-ins that\ndefault on but can be switched off for minimal profiles).",
       "properties": {
         "enabled": {
           "default": true,
@@ -2215,6 +2380,18 @@
           "minimum": 1,
           "title": "Max Limit",
           "type": "integer"
+        },
+        "offset_enabled": {
+          "default": true,
+          "description": "When true, include a standard `offset` query parameter on the /items endpoints so clients can page through a result set. Without it, `limit` only truncates the first page.",
+          "title": "Offset Enabled",
+          "type": "boolean"
+        },
+        "response_metadata": {
+          "default": true,
+          "description": "When true, the /items FeatureCollection response documents the OGC paging metadata \u2014 a `links` array (carrying `self`/`next`/`prev` navigation links) plus `numberMatched`, `numberReturned` and `timeStamp`. Set false for a bare FeatureCollection (type + features only).",
+          "title": "Response Metadata",
+          "type": "boolean"
         }
       },
       "title": "PagingConfig",
@@ -2799,8 +2976,22 @@
           "title": "Id",
           "type": "string"
         },
-        "statement": {
-          "title": "Statement",
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Short human-readable title of the requirement, e.g. 'Collection license'. Used as the sub-clause heading in the generated document. When omitted, it is derived from the id.",
+          "title": "Title"
+        },
+        "description": {
+          "description": "The requirement text (rendered as the requirement's statement). Write it as a single paragraph; use `parts` for the individual provisions and `content` for longer explanatory material. Replaces the deprecated `statement` field.",
+          "title": "Description",
           "type": "string"
         },
         "parts": {
@@ -2809,6 +3000,14 @@
           },
           "minItems": 1,
           "title": "Parts",
+          "type": "array"
+        },
+        "content": {
+          "description": "Extra author-supplied content (AsciiDoc, Markdown, preformatted text or a PlantUML diagram) rendered immediately after this requirement.",
+          "items": {
+            "$ref": "#/$defs/ContentBlock"
+          },
+          "title": "Content",
           "type": "array"
         },
         "level": {
@@ -2836,7 +3035,7 @@
       },
       "required": [
         "id",
-        "statement",
+        "description",
         "parts"
       ],
       "title": "Requirement",
@@ -2932,6 +3131,42 @@
         "$ref": "#/$defs/Parameter"
       },
       "title": "RootModel[Dict[str, Parameter]]",
+      "type": "object"
+    },
+    "SectionContent": {
+      "description": "Author content added to one generated section, keeping the generated text.\n\n* ``start`` - right after the section heading, before the generated text.\n* ``end``   - after everything the section contains.\n* ``end_title`` - renders ``end`` as a new final sub-clause with this title.\n  Required when the section ends in sub-clauses (Terms with term entries or\n  abbreviated terms, and every conformance-class clause), because text placed\n  after a sub-clause would otherwise become part of that sub-clause.\n\nA plain list is shorthand for ``end``.",
+      "properties": {
+        "start": {
+          "description": "Blocks right after the section heading.",
+          "items": {
+            "$ref": "#/$defs/ContentBlock"
+          },
+          "title": "Start",
+          "type": "array"
+        },
+        "end": {
+          "description": "Blocks after everything the section contains.",
+          "items": {
+            "$ref": "#/$defs/ContentBlock"
+          },
+          "title": "End",
+          "type": "array"
+        },
+        "end_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Title for a new final sub-clause holding the `end` blocks. Required when the section ends in sub-clauses (Terms with entries, conformance-class clauses).",
+          "title": "End Title"
+        }
+      },
+      "title": "SectionContent",
       "type": "object"
     },
     "Spatial": {

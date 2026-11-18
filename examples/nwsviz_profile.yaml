@@ -670,7 +670,7 @@ collections:
 # Drive the AsciiDoc/PDF output. Tests must reference a valid requirement id.
 requirements:
   - id: conformance
-    statement: The service SHALL declare conformance to OGC API Common, EDR, EDR Part 3, and OGC API Processes.
+    description: The service SHALL declare conformance to OGC API Common, EDR, EDR Part 3, and OGC API Processes.
     parts:
       - The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core.
       - The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json.
@@ -681,13 +681,13 @@ requirements:
       - The /conformance endpoint SHALL include http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/core.
 
   - id: collections-endpoint
-    statement: The service SHALL provide a /collections endpoint listing all NWSViz collections.
+    description: The service SHALL provide a /collections endpoint listing all NWSViz collections.
     parts:
       - The /collections endpoint SHALL return metadata for all 13 NWSViz collections.
       - Each collection SHALL include extent, data_queries, and output_formats.
 
   - id: position-coveragejson
-    statement: The position query SHALL return CoverageJSON.
+    description: The position query SHALL return CoverageJSON.
     parts:
       - Each collection SHALL provide a /collections/{id}/position endpoint.
       - The position endpoint SHALL accept a coords parameter containing a WKT POINT geometry.
@@ -695,7 +695,7 @@ requirements:
       - The response Content-Type SHALL be application/prs.coverage+json.
 
   - id: items-zarr-endpoint
-    statement: The items query SHALL expose a virtual Zarr endpoint for each collection.
+    description: The items query SHALL expose a virtual Zarr endpoint for each collection.
     parts:
       - Each collection SHALL provide a /collections/{id}/items endpoint.
       - The items endpoint SHALL include an item with id zarr that acts as a virtual Zarr store.
@@ -705,7 +705,7 @@ requirements:
       - The virtual Zarr store SHALL reflect the full spatio-temporal extent of the collection.
 
   - id: process-zarr-difference
-    statement: The service SHALL provide the edr-zarr-difference process for computing the difference between two EDR Zarr datasets.
+    description: The service SHALL provide the edr-zarr-difference process for computing the difference between two EDR Zarr datasets.
     parts:
       - The service SHALL expose a /processes/edr-zarr-difference endpoint.
       - The process SHALL accept collection_a, instance_a, collection_b, instance_b, parameter_name, zoom_level, crs, and unit as required inputs.
@@ -714,7 +714,7 @@ requirements:
       - The process SHALL return a difference_result output containing the result of (A - B) as a virtual Zarr dataset.
 
   - id: process-zarr-difference-streaming
-    statement: The service SHALL provide the edr-zarr-difference-streaming process for streaming difference computation via a virtual Zarr endpoint.
+    description: The service SHALL provide the edr-zarr-difference-streaming process for streaming difference computation via a virtual Zarr endpoint.
     parts:
       - The service SHALL expose a /processes/edr-zarr-difference-streaming endpoint.
       - The process SHALL accept collection_a, instance_a, collection_b, instance_b, parameter_name, and zoom_level as required inputs.
@@ -723,7 +723,7 @@ requirements:
       - The process SHALL return a zarr_endpoint output containing a URL to stream difference chunks on-demand.
 
   - id: process-zarr-wind-streaming
-    statement: The service SHALL provide the edr-zarr-wind-streaming process for deriving wind speed and direction from u/v components via a virtual Zarr endpoint.
+    description: The service SHALL provide the edr-zarr-wind-streaming process for deriving wind speed and direction from u/v components via a virtual Zarr endpoint.
     parts:
       - The service SHALL expose a /processes/edr-zarr-wind-streaming endpoint.
       - The process SHALL accept collection, instance, output_parameters, and zoom_level as required inputs.

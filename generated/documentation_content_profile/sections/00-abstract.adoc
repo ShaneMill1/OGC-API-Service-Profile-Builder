@@ -1,0 +1,18 @@
+[abstract]
+== Abstract
+
+This document shows the **authored content** features of the profile
+builder. Every block below comes from `+documentation_content_profile.yaml+`.
+
+[.preface]
+== Submitters
+
+All questions regarding this document should be directed to the editor or the submitters:
+
+[%unnumbered]
+.Submitters
+|===
+h|Name h|Affiliation
+
+| Shane Mill _(editor)_ |NOAA/NWS/MDL
+|===
